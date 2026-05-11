@@ -8,7 +8,7 @@ Este proyecto toma como base el PDF del curso y usa `Maquetado.html` como refere
 - Backend Flask API: [Docs/Backend.md](Docs/Backend.md)
 - Android Kotlin: [Docs/Android.md](Docs/Android.md)
 - Indice general: [Docs/Arquitectura_BD_Backend_Mobile.md](Docs/Arquitectura_BD_Backend_Mobile.md)
-- Documento base del proyecto: https://docs.google.com/document/d/1JA2L67GCn3O9hgsXnInqmPEkfET6qprq-zigwR8L-G0/edit?usp=sharing
+- Documento base del proyecto: https://docs.google.com/document/d/17NVohPg2bjVlZ_WTKR1ElYv2Bw3S3ONzCkSl15gZHbk/edit?usp=sharing
 
 ## Stack
 
