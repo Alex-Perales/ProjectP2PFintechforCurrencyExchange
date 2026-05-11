@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perú Exchange P2P - Prototipo Profesional Core</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* =========================================
+           VARIABLES Y SISTEMA DE DISEÑO
+           Inspirado en los colores de la imagen adjunta
+           ========================================= */
+        :root {
+            --bg-page: #0A1128;        /* Azul marino profundo (Fondo exterior) */
+            --bg-phone: #F8FAFC;       /* Blanco/Gris muy suave para la app */
+            --surface: #FFFFFF;        /* Tarjetas blancas limpias */
+            
+            /* Paleta Turquesa / Cian / Menta vibrante de la imagen */
+            --primary: #00ACC1;        /* Turquesa principal */
+            --primary-light: #26C6DA;  /* Cian claro vibrante */
+            --primary-mint: #00E676;   /* Verde menta brillante */
+            
+            --success: #10B981;        /* Verde confirmación */
+            --danger: #EF4444;         /* Rojo alertas y disputas */
+            --warning: #F59E0B;        /* Amarillo para monedas y estrellas */
+            
+            --text-main: #1E293B;
+            --text-muted: #64748B;
+            --border-color: #E2E8F0;
+
+            /* Identidad de Bancos en Perú */
+            --bcp: #FF7A00; --interbank: #00B14F; --bbva: #072146; --yape: #742284; --plin: #00C3DA;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        
+        body {
+            background-color: var(--bg-page);
+            min-height: 100vh;
+            display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
+            padding: 30px 20px; overflow-x: hidden;
+        }
+
+        .hidden { display: none !important; }
+        
+        /* Botones Profesionales */
+        .btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white; border: none; padding: 14px 20px; border-radius: 14px;
+            font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;
+            width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px;
+            box-shadow: 0 4px 15px rgba(0, 172, 193, 0.3);
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 172, 193, 0.4); }
+        .btn-success { background: var(--success); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2); }
+        .btn-danger { background: var(--danger); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2); }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); box-shadow: none; }
+        .btn-outline:hover { background: rgba(0, 172, 193, 0.05); transform: none; }
+
+        /* Contenedor y Mockup de Teléfono Google Pixel Centrado */
+        .app-wrapper { width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        
+        .phone-frame {
+            width: 100%; height: 780px; background-color: var(--bg-phone);
+            border-radius: 44px; border: 10px solid #1E293B;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6); position: relative;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        /* Barra de Estado nativa */
+        .status-bar {
+            height: 40px; background-color: var(--surface); display: flex; justify-content: space-between; align-items: center;
+            padding: 0 24px; font-size: 12px; font-weight: 700; color: var(--text-main); border-bottom: 1px solid var(--border-color); z-index: 10;
+        }
+        .notch { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 90px; height: 16px; background-color: #1E293B; border-radius: 10px; }
+
+        /* Ticker Financiero Real */
+        .ticker {
+            background-color: #1E293B; color: white; padding: 8px 12px; display: flex; justify-content: space-around;
+            font-size: 11px; font-weight: 600; border-bottom: 1px solid #334155;
+        }
+        .up { color: var(--primary-mint); } .down { color: var(--danger); }
+
+        .phone-screen { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 90px; scrollbar-width: none; }
+        .phone-screen::-webkit-scrollbar { display: none; }
+
+        /* Menú Inferior Obligatorio */
+        .bottom-nav {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 72px; background-color: var(--surface);
+            border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; align-items: center; z-index: 100;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.03);
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); font-size: 11px; font-weight: 600; cursor: pointer; }
+        .nav-item.active { color: var(--primary); font-weight: 800; }
+        .nav-item i { font-size: 20px; }
+
+        /* Elementos de Vistas */
+        .view { animation: fadeIn 0.25s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.99); } to { opacity: 1; transform: scale(1); } }
+
+        .card { background-color: var(--surface); border-radius: 16px; padding: 16px; margin-bottom: 14px; border: 1px solid var(--border-color); box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+        
+        /* Tarjeta Global Visa (Plus Solicitado al Inicio) */
+        .visa-card {
+            background: linear-gradient(135deg, var(--primary), #005662); color: white;
+            padding: 20px; border-radius: 20px; margin-bottom: 16px; position: relative; overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 172, 193, 0.3);
+        }
+        .visa-card::after { content: ''; position: absolute; right: -30px; bottom: -30px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%; }
+
+        /* Formularios y Filtros */
+        .filter-box { background-color: #1E293B; color: white; padding: 16px; border-radius: 16px; margin-bottom: 16px; }
+        .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
+        .form-label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
+        .form-select, .form-input {
+            width: 100%; padding: 14px; border: 1px solid var(--border-color); border-radius: 12px;
+            font-size: 13px; background-color: var(--surface); color: var(--text-main); outline: none; margin-bottom: 14px; font-weight: 600;
+        }
+        .form-input:focus, .form-select:focus { border-color: var(--primary); }
+        .filter-box .form-label { color: #94A3B8; }
+        .filter-box .form-select { background-color: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: white; }
+        .filter-box .form-select option { background-color: #1E293B; color: white; }
+
+        /* Chips y Calificaciones */
+        .chips-container { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+        .chip { padding: 4px 10px; border-radius: 10px; font-size: 10px; font-weight: 700; background-color: #E2E8F0; color: var(--text-muted); }
+        .chip.active { background-color: var(--primary); color: white; }
+        .stars-badge { background-color: rgba(245, 158, 11, 0.1); color: var(--warning); padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
+
+        /* Timeline de Transacción */
+        .timeline { display: flex; justify-content: space-between; position: relative; margin: 20px 0; }
+        .timeline::before { content: ''; position: absolute; top: 12px; left: 0; width: 100%; height: 2px; background-color: var(--border-color); z-index: 1; }
+        .step { display: flex; flex-direction: column; align-items: center; gap: 4px; z-index: 2; width: 33%; }
+        .step-circle { width: 26px; height: 26px; border-radius: 50%; background-color: var(--surface); border: 2px solid var(--border-color); display: flex; justify-content: center; align-items: center; font-size: 11px; font-weight: 700; color: var(--text-muted); }
+        .step.active .step-circle { background-color: var(--primary); border-color: var(--primary); color: white; }
+        .step.done .step-circle { background-color: var(--success); border-color: var(--success); color: white; }
+        .step-lbl { font-size: 10px; font-weight: 600; color: var(--text-muted); }
+
+        /* Zona de Carga OCR */
+        .upload-zone { border: 2px dashed var(--primary); background-color: rgba(0,172,193,0.04); padding: 24px; border-radius: 16px; text-align: center; cursor: pointer; margin-bottom: 16px; }
+        
+        /* Overlays de Carga */
+        .overlay { position: absolute; top:0; left:0; width:100%; height:100%; background-color: rgba(255,255,255,0.95); z-index: 200; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
+        .spinner { width: 50px; height: 50px; border: 4px solid var(--border-color); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 16px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Comprobante Final de Descarga */
+        .receipt-card { border: 2px solid var(--primary-light); background-color: rgba(0,172,193,0.02); }
+        .receipt-line { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 8px; color: var(--text-muted); }
+        .receipt-total { border-top: 1px dashed var(--border-color); margin-top: 10px; padding-top: 10px; color: var(--text-main); font-weight: 800; font-size: 14px; }
+
+        /* Opciones de Perfil */
+        .menu-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid var(--border-color); cursor: pointer; color: var(--text-main); font-size: 13px; font-weight: 600; }
+        .menu-item:last-child { border-bottom: none; }
+        
+        /* Contenedor del Panel Administrador integrado debajo */
+        .admin-integrated-box {
+            width: 100%; background-color: #1E293B; border-radius: 24px; padding: 24px;
+            color: white; border: 2px solid var(--primary); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+        .admin-stat { background-color: rgba(255,255,255,0.05); padding: 14px; border-radius: 14px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+        
+        <div class="phone-frame">
+            
+            <div class="status-bar">
+                <span id="clock">12:00</span>
+                <div class="notch"></div>
+                <div><i class="fas fa-signal"></i> <i class="fas fa-wifi"></i> <i class="fas fa-battery-full"></i></div>
+            </div>
+
+            <div class="ticker">
+                <span>🇺🇸 USD: S/ 3.780 <span class="up">▲</span></span>
+                <span>🇪🇺 EUR: S/ 4.110 <span class="down">▼</span></span>
+                <span>🇧🇷 BRL: S/ 0.740 <span class="up">▲</span></span>
+            </div>
+
+            <div class="phone-screen" id="main-screen">
+
+                <div id="view-auth" class="view">
+                    <div style="text-align: center; margin: 20px 0 30px;">
+                        <div style="width: 72px; height: 72px; background: linear-gradient(135deg, var(--primary), var(--primary-mint)); border-radius: 22px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; box-shadow: 0 10px 20px rgba(0,230,118,0.2);">
+                            <i class="fas fa-random" style="font-size: 32px; color: white;"></i>
+                        </div>
+                        <h3 style="font-weight: 800; font-size: 24px; color: var(--text-main);">Perú Exchange</h3>
+                        <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Red P2P Fiat Segura y Trazable</p>
+                    </div>
+
+                    <div class="card" style="padding: 20px;">
+                        <label class="form-label">Correo Electrónico</label>
+                        <input type="email" class="form-input" id="login-email" value="mendoza.c@gmail.com" placeholder="correo@ejemplo.com">
+                        
+                        <label class="form-label">Contraseña</label>
+                        <input type="password" class="form-input" value="12345678" placeholder="••••••••">
+
+                        <button class="btn" onclick="executeLoginFlow()">Iniciar Sesión</button>
+                    </div>
+                </div>
+
+                <div id="view-market" class="view hidden">
+                    
+                    <div class="visa-card">
+                        <div style="display:flex; justify-content:space-between; align-items:start;">
+                            <div>
+                                <span style="font-size: 10px; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; color: var(--primary-mint);">Nivel Mundial</span>
+                                <h4 style="font-weight: 800; font-size: 18px; margin-top: 2px;">Inicio Visa Activo</h4>
+                                <p style="font-size: 11px; opacity: 0.9; margin-top: 4px;">Transfiere fiat sin fronteras.</p>
+                            </div>
+                            <i class="fab fa-cc-visa" style="font-size: 40px; color: white;"></i>
+                        </div>
+                    </div>
+
+                    <div class="filter-box">
+                        <span style="font-size: 12px; font-weight: 700; color: white;"><i class="fas fa-sliders-h"></i> Filtrado Multidivisa</span>
+                        <div class="filter-grid">
+                            <div>
+                                <label class="form-label">Tengo</label>
+                                <select class="form-select" id="filter-from" onchange="loadMarketOffers()">
+                                    <option value="PEN">🇵🇪 Soles (PEN)</option>
+                                    <option value="USD">🇺🇸 Dólares (USD)</option>
+                                    <option value="EUR">🇪🇺 Euros (EUR)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label">Quiero</label>
+                                <select class="form-select" id="filter-to" onchange="loadMarketOffers()">
+                                    <option value="USD" selected>🇺🇸 Dólares (USD)</option>
+                                    <option value="PEN">🇵🇪 Soles (PEN)</option>
+                                    <option value="EUR">🇪🇺 Euros (EUR)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn" style="background: var(--text-main); margin-bottom: 16px;" onclick="triggerSmartMatching()">
+                        <i class="fas fa-bolt" style="color: var(--warning);"></i> Matching Automático Core
+                    </button>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="font-size: 12px; font-weight: 700; color: var(--text-muted);" id="lbl-results">Ofertas Disponibles:</span>
+                        <span style="font-size: 11px; color: var(--success); font-weight: 700;"><i class="fas fa-sort-amount-down"></i> Más económico primero</span>
+                    </div>
+
+                    <div id="dynamic-offers-list"></div>
+                </div>
+
+                <div id="view-publish" class="view hidden">
+                    <h4 style="font-weight: 800; margin-bottom: 14px; color: var(--text-main);">Publicar Anuncio P2P</h4>
+                    
+                    <div class="card">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px;">
+                            <div>
+                                <label class="form-label">Ofrezco</label>
+                                <select class="form-select" id="pub-from">
+                                    <option value="USD">🇺🇸 USD</option>
+                                    <option value="PEN">🇵🇪 PEN</option>
+                                    <option value="EUR">🇪🇺 EUR</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label">Recibo</label>
+                                <select class="form-select" id="pub-to">
+                                    <option value="PEN">🇵🇪 PEN</option>
+                                    <option value="USD">🇺🇸 USD</option>
+                                    <option value="EUR">🇪🇺 EUR</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <label class="form-label">Monto Disponible</label>
+                        <input type="number" class="form-input" id="pub-amount" placeholder="Ej. 500">
+
+                        <label class="form-label">Mi Tasa Personalizada</label>
+                        <input type="number" step="0.001" class="form-input" id="pub-rate" value="3.778">
+
+                        <label class="form-label">Banco de Recepción</label>
+                        <select class="form-select" id="pub-bank">
+                            <option value="bcp">BCP (Transferencia Inmediata)</option>
+                            <option value="interbank">Interbank</option>
+                            <option value="bbva">BBVA</option>
+                        </select>
+
+                        <button class="btn btn-success" onclick="publishOfferToDB()">Listar en el Mercado</button>
+                    </div>
+                </div>
+
+                <div id="view-tx" class="view hidden">
+                    <div style="background-color: #1E293B; color: white; padding: 14px; border-radius: 16px; text-align: center; margin-bottom: 16px;">
+                        <span style="font-size: 10px; font-weight: 800; color: var(--primary-mint);">ORDEN P2P EN CURSO</span>
+                        <h3 style="font-size: 24px; font-weight: 800; color: white; margin: 4px 0;" id="tx-timer">15:00</h3>
+                        <p style="font-size: 10px; opacity: 0.8;">Capital temporalmente en custodia.</p>
+                    </div>
+
+                    <div class="timeline">
+                        <div class="step active" id="st-1"><div class="step-circle">1</div><span class="step-lbl">Pagar</span></div>
+                        <div class="step" id="st-2"><div class="step-circle">2</div><span class="step-lbl">Subir Voucher</span></div>
+                        <div class="step" id="st-3"><div class="step-circle">3</div><span class="step-lbl">Liberado</span></div>
+                    </div>
+
+                    <div class="card" style="background-color: var(--bg-phone);">
+                        <span style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Cuenta Receptora</span>
+                        <p style="font-size: 12px; margin-top: 6px;">Vendedor: <strong id="lbl-tx-seller">---</strong></p>
+                        <p style="font-size: 12px; margin: 4px 0;">Banco: <strong style="color: var(--primary);" id="lbl-tx-bank">---</strong></p>
+                        <p style="font-size: 13px; font-weight: 700; background: white; padding: 8px; border-radius: 8px; margin-top: 6px; letter-spacing: 0.5px;">CCI: 002-191-0098765432-12</p>
+                    </div>
+
+                    <p style="font-size: 12px; text-align: center; margin-bottom: 12px;">Transfiere exactamente: <strong style="color: var(--success); font-size: 15px;" id="lbl-tx-total">---</strong></p>
+
+                    <div class="upload-zone" id="voucher-drop" onclick="simulateOCRScan()">
+                        <i class="fas fa-cloud-upload-alt" style="font-size: 32px; color: var(--primary); margin-bottom: 8px;"></i>
+                        <p style="font-size: 13px; font-weight: 700; color: var(--text-main);">Subir Comprobante de Pago</p>
+                        <p style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">IA OCR extraerá y validará el código de operación</p>
+                    </div>
+
+                    <div id="tx-actions" class="hidden">
+                        <button class="btn btn-success" style="margin-bottom: 8px;" onclick="completeTransactionDB()">Confirmar Recepción (Simula Vendedor)</button>
+                        <button class="btn btn-danger" onclick="launchDisputeToDB()">Iniciar Disputa Oficial</button>
+                    </div>
+                </div>
+
+                <div id="view-receipt" class="view hidden">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <i class="fas fa-check-circle" style="font-size: 48px; color: var(--success);"></i>
+                        <h3 style="font-weight: 800; margin-top: 10px; color: var(--text-main);">¡Intercambio Exitoso!</h3>
+                        <p style="font-size: 12px; color: var(--text-muted);">Los fondos ya están en tu billetera.</p>
+                    </div>
+
+                    <div class="card receipt-card" id="printable-receipt">
+                        <div style="text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 12px;">
+                            <strong style="font-size: 14px; color: var(--primary);">COMPROBANTE DE PAGO P2P</strong>
+                            <p style="font-size: 10px; color: var(--text-muted);">ID Operación: #TX-<span id="rcpt-id">9982</span></p>
+                        </div>
+                        <div class="receipt-line"><span>Comprador:</span><strong>Carlos Mendoza</strong></div>
+                        <div class="receipt-line"><span>Vendedor:</span><strong id="rcpt-seller">---</strong></div>
+                        <div class="receipt-line"><span>Tasa Aplicada:</span><strong id="rcpt-rate">---</strong></div>
+                        <div class="receipt-line"><span>Auditoría OCR:</span><strong style="color: var(--success);">#994812 (Auténtico)</strong></div>
+                        <div class="receipt-line receipt-total"><span>Monto Acreditado:</span><strong style="color: var(--success);" id="rcpt-received">---</strong></div>
+                    </div>
+
+                    <button class="btn" style="margin-bottom: 10px;" onclick="downloadReceiptPDF()"><i class="fas fa-file-download"></i> Descargar Comprobante PDF</button>
+                    <button class="btn-outline" onclick="navigateTo('view-market', document.querySelectorAll('.nav-item')[0])">Volver al Mercado</button>
+                </div>
+
+                <div id="view-profile" class="view hidden">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="width: 70px; height: 70px; border-radius: 50%; background: var(--primary); color: white; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: 700; margin: 0 auto 10px;">CM</div>
+                        <h4 style="font-weight: 800;">Carlos Mendoza</h4>
+                        
+                        <div style="margin-top: 6px;">
+                            <span class="stars-badge"><i class="fas fa-star"></i> 4.9 Promedio (180 operaciones)</span>
+                        </div>
+                    </div>
+
+                    <div class="card" style="padding: 0;">
+                        <div class="menu-item" onclick="navigateTo('view-manage-cards')">
+                            <div><i class="fas fa-credit-card" style="width: 20px; color: var(--primary); margin-right: 10px;"></i> Administrar Tarjetas y Cuentas</div>
+                            <i class="fas fa-chevron-right" style="color: var(--text-muted);"></i>
+                        </div>
+                        
+                        <div class="menu-item" onclick="alert('Mostrando historial persistente...');">
+                            <div><i class="fas fa-history" style="width: 20px; color: var(--primary); margin-right: 10px;"></i> Historial de Transacciones</div>
+                            <i class="fas fa-chevron-right" style="color: var(--text-muted);"></i>
+                        </div>
+                    </div>
+
+                    <button class="btn-outline" style="margin-top: 16px;" onclick="logoutFlow()">Cerrar Sesión</button>
+                </div>
+
+                <div id="view-manage-cards" class="view hidden">
+                    <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                        <i class="fas fa-chevron-left" style="cursor:pointer; padding: 10px; margin-left: -10px;" onclick="navigateTo('view-profile')"></i>
+                        <h4 style="font-weight: 700; margin-left: 5px;">Mis Tarjetas y Cuentas</h4>
+                    </div>
+
+                    <div id="cards-db-list"></div>
+
+                    <div class="card">
+                        <label class="form-label">Entidad Bancaria</label>
+                        <select class="form-select" id="new-card-bank">
+                            <option value="bbva">BBVA</option>
+                            <option value="interbank">Interbank</option>
+                            <option value="plin">Plin</option>
+                        </select>
+                        <label class="form-label">Número de Cuenta o Tarjeta</label>
+                        <input type="text" class="form-input" id="new-card-number" placeholder="Ej. 002-191-...">
+                        <button class="btn btn-outline" onclick="addCardToDB()">+ Agregar a mi Perfil</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="bottom-nav hidden" id="client-nav">
+                <div class="nav-item active" onclick="navigateTo('view-market', this)"><i class="fas fa-chart-line"></i><span>Mercado</span></div>
+                <div class="nav-item" onclick="navigateTo('view-publish', this)"><i class="fas fa-plus-circle" style="font-size: 24px; color: var(--primary);"></i><span style="color: var(--primary); font-weight: 800;">Publicar</span></div>
+                <div class="nav-item" onclick="navigateTo('view-profile', this)"><i class="fas fa-user-circle"></i><span>Mi Perfil</span></div>
+            </div>
+
+        </div>
+
+        <div class="admin-integrated-box" id="admin-panel-area">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h4 style="font-weight: 800; color: var(--primary-light);"><i class="fas fa-user-shield"></i> Control de Operaciones (ADM)</h4>
+                <span style="background-color: var(--success); color: white; font-size: 9px; font-weight: 700; padding: 4px 8px; border-radius: 6px;">MEMORIA LOCAL</span>
+            </div>
+
+            <div class="admin-grid">
+                <div class="admin-stat"><span style="font-size: 10px; color: #94A3B8; display: block;">Volumen Trazable</span><strong style="font-size: 16px;">$142,500</strong></div>
+                <div class="admin-stat"><span style="font-size: 10px; color: #94A3B8; display: block;">Disputas Activas</span><strong style="font-size: 16px; color: var(--danger);" id="lbl-admin-disputes">0</strong></div>
+            </div>
+
+            <h5 style="font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px;">Casos de Arbitraje en DB:</h5>
+            <div id="admin-dispute-container">
+                <div class="card" style="background: rgba(255,255,255,0.02); border: none; text-align: center; padding: 16px;"><p style="font-size: 12px; color: var(--text-muted);">No hay conflictos registrados en localStorage.</p></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Actualizador de reloj nativo
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('es-PE', {hour: '2-digit', minute:'2-digit'}); }, 1000);
+
+        let activeTxDetails = null;
+        let txTimer = null;
+
+        // 1. INICIALIZAR BASE DE DATOS EN LOCALSTORAGE (Si está vacía)
+        function initBrowserDB() {
+            if(!localStorage.getItem('p2p_offers_db')) {
+                const initialOffers = [
+                    { id: 1, seller: "Shirley Anaya", from: "PEN", to: "USD", rate: 3.775, amount: 1000, bank: "bcp", bankName: "BCP", stars: 5.0 },
+                    { id: 2, seller: "Andrés Quiliche", from: "PEN", to: "USD", rate: 3.780, amount: 500, bank: "interbank", bankName: "Interbank", stars: 4.8 },
+                    { id: 3, seller: "Lucía Alfaro", from: "PEN", to: "USD", rate: 3.785, amount: 1200, bank: "bbva", bankName: "BBVA", stars: 4.9 },
+                    { id: 4, seller: "Mateo Ortiz", from: "PEN", to: "EUR", rate: 4.110, amount: 600, bank: "bcp", bankName: "BCP", stars: 4.2 }
+                ];
+                localStorage.setItem('p2p_offers_db', JSON.stringify(initialOffers));
+            }
+
+            if(!localStorage.getItem('p2p_cards_db')) {
+                const initialCards = [
+                    { id: 101, bank: "bcp", number: "191-98765432-0-12" },
+                    { id: 102, bank: "yape", number: "987654321" }
+                ];
+                localStorage.setItem('p2p_cards_db', JSON.stringify(initialCards));
+            }
+
+            if(!localStorage.getItem('p2p_disputes_db')) {
+                localStorage.setItem('p2p_disputes_db', JSON.stringify([]));
+            }
+        }
+
+        // Ejecutar inicialización al cargar la página
+        initBrowserDB();
+
+        // NAVEGACIÓN GENERAL CLIQUEABLE
+        function navigateTo(viewId, navElem = null) {
+            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+            document.getElementById(viewId).classList.remove('hidden');
+            
+            if(navElem) {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                navElem.classList.add('active');
+            }
+            document.getElementById('main-screen').scrollTop = 0;
+            
+            if(viewId === 'view-market') loadMarketOffers();
+            if(viewId === 'view-manage-cards') loadUserCardsDB();
+        }
+
+        // FLUJO DE LOGIN (Habilita el menú inferior)
+        function executeLoginFlow() {
+            document.getElementById('client-nav').classList.remove('hidden');
+            navigateTo('view-market', document.querySelectorAll('.nav-item')[0]);
+            loadAdminDisputesDB(); // Refrescar panel inferior
+        }
+
+        function logoutFlow() {
+            document.getElementById('client-nav').classList.add('hidden');
+            navigateTo('view-auth');
+        }
+
+        // 3. CARGAR OFERTAS DESDE LOCALSTORAGE (Filtradas y ordenadas por menor tasa)
+        function loadMarketOffers() {
+            const fromCurr = document.getElementById('filter-from').value;
+            const toCurr = document.getElementById('filter-to').value;
+            document.getElementById('lbl-results').innerText = `Ofertas de ${fromCurr} a ${toCurr}:`;
+
+            const dbOffers = JSON.parse(localStorage.getItem('p2p_offers_db'));
+            let filtered = dbOffers.filter(o => o.from === fromCurr && o.to === toCurr);
+            
+            // ORDENAMIENTO ESTRICTO: Tasa más baja primero
+            filtered.sort((a, b) => a.rate - b.rate);
+
+            const container = document.getElementById('dynamic-offers-list');
+            container.innerHTML = '';
+
+            if(filtered.length === 0) {
+                container.innerHTML = `<div class="card" style="text-align:center; padding: 20px;"><p style="font-size:12px; color:var(--text-muted);">No hay ofertas en localStorage para este par.</p></div>`;
+                return;
+            }
+
+            filtered.forEach(o => {
+                container.innerHTML += `
+                    <div class="card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div style="width:32px; height:32px; border-radius:50%; background:#E2E8F0; display:flex; justify-content:center; align-items:center; font-size:12px; font-weight:700; color:#1E293B;">${o.seller.substring(0,2)}</div>
+                                <div><strong style="font-size:13px; display:block;">${o.seller}</strong><span class="stars-badge" style="margin-top:2px;"><i class="fas fa-star"></i> ${o.stars}</span></div>
+                            </div>
+                            <span class="chip ${o.bank}">${o.bankName}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                            <div><span style="font-size:11px; color:var(--text-muted); display:block;">Tasa Aplicada</span><strong style="font-size:18px; font-weight:800; color:var(--text-main);">S/ ${o.rate.toFixed(3)}</strong></div>
+                            <div style="text-align:right;"><span style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:4px;">Disponible: ${o.amount} ${o.to}</span><button class="btn btn-success" style="padding:8px 16px; width:auto;" onclick="startOrderFlow(${o.id})">Comprar</button></div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // 2. GUARDAR NUEVA OFERTA DIRECTO EN LOCALSTORAGE
+        function publishOfferToDB() {
+            const from = document.getElementById('pub-from').value;
+            const to = document.getElementById('pub-to').value;
+            const amount = parseFloat(document.getElementById('pub-amount').value);
+            const rate = parseFloat(document.getElementById('pub-rate').value);
+            const bank = document.getElementById('pub-bank').value;
+            const bankName = document.getElementById('pub-bank').options[document.getElementById('pub-bank').selectedIndex].text.split(' ')[0];
+
+            if(!amount || amount <= 0) { alert("Ingresa un monto válido."); return; }
+            if(from === to) { alert("Las monedas deben ser distintas."); return; }
+
+            const dbOffers = JSON.parse(localStorage.getItem('p2p_offers_db'));
+            const newOffer = { id: Date.now(), seller: "Carlos Mendoza (Tú)", from, to, rate, amount, bank, bankName, stars: 4.9 };
+            
+            dbOffers.push(newOffer);
+            localStorage.setItem('p2p_offers_db', JSON.stringify(dbOffers));
+
+            alert("✅ Oferta guardada exitosamente en la base de datos del navegador (localStorage).");
+            navigateTo('view-market', document.querySelectorAll('.nav-item')[0]);
+        }
+
+        // 4. MATCHING AUTOMÁTICO CORE (Conecta con el registro más barato de la DB)
+        function triggerSmartMatching() {
+            const fromCurr = document.getElementById('filter-from').value;
+            const toCurr = document.getElementById('filter-to').value;
+            
+            const dbOffers = JSON.parse(localStorage.getItem('p2p_offers_db'));
+            let filtered = dbOffers.filter(o => o.from === fromCurr && o.to === toCurr);
+            
+            if(filtered.length === 0) { alert("No hay contrapartes activas en la DB para ejecutar matching en este par."); return; }
+            filtered.sort((a, b) => a.rate - b.rate);
+            
+            startOrderFlow(filtered[0].id);
+        }
+
+        // 5. INICIAR TRANSACCIÓN
+        function startOrderFlow(orderId) {
+            const dbOffers = JSON.parse(localStorage.getItem('p2p_offers_db'));
+            activeTxDetails = dbOffers.find(o => o.id === orderId);
+            
+            document.getElementById('lbl-tx-seller').innerText = activeTxDetails.seller;
+            document.getElementById('lbl-tx-bank').innerText = activeTxDetails.bankName;
+            document.getElementById('lbl-tx-total').innerText = `${(activeTxDetails.amount * activeTxDetails.rate).toFixed(2)} ${activeTxDetails.from}`;
+            
+            // Reiniciar Timeline
+            document.getElementById('st-1').className = "step active";
+            document.getElementById('st-2').className = "step";
+            document.getElementById('st-3').className = "step";
+            document.getElementById('tx-actions').classList.add('hidden');
+            
+            const drop = document.getElementById('voucher-drop');
+            drop.style.pointerEvents = "auto";
+            drop.innerHTML = `<i class="fas fa-cloud-upload-alt" style="font-size: 32px; color: var(--primary); margin-bottom: 8px;"></i><p style="font-size: 13px; font-weight: 700;">Subir Comprobante de Pago</p><p style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">IA OCR extraerá y validará el código de operación</p>`;
+
+            clearInterval(txTimer);
+            let secs = 15 * 60;
+            document.getElementById('tx-timer').style.color = "white";
+            txTimer = setInterval(() => {
+                let m = Math.floor(secs / 60); let s = secs % 60;
+                document.getElementById('tx-timer').innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+                secs--;
+                if(secs < 0) { clearInterval(txTimer); document.getElementById('tx-timer').innerText = "EXPIRADO"; }
+            }, 1000);
+
+            navigateTo('view-tx');
+        }
+
+        // 8. SIMULACIÓN ESCANEO OCR
+        function simulateOCRScan() {
+            const drop = document.getElementById('voucher-drop');
+            drop.innerHTML = `<i class="fas fa-spinner fa-spin" style="font-size:28px; color:var(--primary);"></i><p style="font-size:12px; margin-top:8px;">IA OCR leyendo voucher en memoria...</p>`;
+            drop.style.pointerEvents = "none";
+
+            setTimeout(() => {
+                drop.innerHTML = `<i class="fas fa-check-circle" style="font-size:32px; color:var(--success); margin-bottom:8px;"></i><p style="font-size:13px; font-weight:700; color:var(--success);">Voucher_Validado.jpg</p><p style="font-size:11px; color:var(--text-muted); margin-top:4px;">Operación OCR: #994812</p>`;
+                
+                document.getElementById('st-1').className = "step done";
+                document.getElementById('st-2').className = "step active";
+                clearInterval(txTimer);
+                document.getElementById('tx-timer').innerText = "VOUCHER SUBIDO";
+                document.getElementById('tx-timer').style.color = "var(--primary-mint)";
+                document.getElementById('tx-actions').classList.remove('hidden');
+            }, 1500);
+        }
+
+        // 7. COMPLETAR TRANSACCIÓN Y MOSTRAR COMPROBANTE FINAL
+        function completeTransactionDB() {
+            document.getElementById('st-2').className = "step done";
+            document.getElementById('st-3').className = "step done";
+            
+            // Llenar recibo
+            document.getElementById('rcpt-id').innerText = Math.floor(Math.random() * 9000 + 1000);
+            document.getElementById('rcpt-seller').innerText = activeTxDetails.seller;
+            document.getElementById('rcpt-rate').innerText = `${activeTxDetails.rate.toFixed(3)} ${activeTxDetails.from}`;
+            document.getElementById('rcpt-received').innerText = `${activeTxDetails.amount.toFixed(2)} ${activeTxDetails.to}`;
+            
+            setTimeout(() => { navigateTo('view-receipt'); }, 400);
+        }
+
+        // PLUS: DESCARGA DE COMPROBANTE
+        function downloadReceiptPDF() {
+            const printArea = document.getElementById('printable-receipt').innerText;
+            alert("📥 INICIANDO DESCARGA DEL COMPROBANTE DE PAGO:\n\n" + printArea + "\n\nGuardado exitosamente como Comprobante_P2P.pdf");
+        }
+
+        // PLUS: ADMINISTRAR TARJETAS EN LOCALSTORAGE
+        function loadUserCardsDB() {
+            const cardsDb = JSON.parse(localStorage.getItem('p2p_cards_db'));
+            const container = document.getElementById('cards-db-list');
+            container.innerHTML = '';
+
+            cardsDb.forEach(c => {
+                container.innerHTML += `
+                    <div class="card" style="display:flex; justify-content:space-between; align-items:center; border-left: 4px solid var(--primary);">
+                        <div><strong style="text-transform:uppercase;">${c.bank}</strong><p style="font-size:12px; color:var(--text-muted); margin-top:2px;">${c.number}</p></div>
+                        <i class="fas fa-check-circle" style="color:var(--success);"></i>
+                    </div>
+                `;
+            });
+        }
+
+        function addCardToDB() {
+            const number = document.getElementById('new-card-number').value;
+            if(!number) { alert("Ingresa un número válido."); return; }
+            const bank = document.getElementById('new-card-bank').value;
+            
+            const cardsDb = JSON.parse(localStorage.getItem('p2p_cards_db'));
+            cardsDb.push({ id: Date.now(), bank, number });
+            localStorage.setItem('p2p_cards_db', JSON.stringify(cardsDb));
+
+            document.getElementById('new-card-number').value = '';
+            loadUserCardsDB();
+            alert("✅ Tarjeta almacenada exitosamente en localStorage.");
+        }
+
+        // 11 & 12. GESTIÓN DE DISPUTAS HACIA EL PANEL ADMIN DEBAJO
+        function launchDisputeToDB() {
+            alert("⚠️ ALERTA: Capital bloqueado. Guardando registro de disputa en la base de datos del navegador...");
+            
+            const disputesDb = JSON.parse(localStorage.getItem('p2p_disputes_db'));
+            const newDispute = {
+                id: Math.floor(Math.random() * 9000 + 1000),
+                seller: activeTxDetails.seller,
+                amount: activeTxDetails.amount,
+                curr: activeTxDetails.to
+            };
+            disputesDb.push(newDispute);
+            localStorage.setItem('p2p_disputes_db', JSON.stringify(disputesDb));
+
+            loadAdminDisputesDB();
+            
+            // Hacer scroll directo hacia el panel inferior para que lo resuelvan
+            document.getElementById('admin-panel-area').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function loadAdminDisputesDB() {
+            const disputesDb = JSON.parse(localStorage.getItem('p2p_disputes_db'));
+            document.getElementById('lbl-admin-disputes').innerText = disputesDb.length;
+            
+            const container = document.getElementById('admin-dispute-container');
+            container.innerHTML = '';
+
+            if(disputesDb.length === 0) {
+                container.innerHTML = `<div class="card" style="background: rgba(255,255,255,0.02); border: none; text-align: center; padding: 16px;"><p style="font-size: 12px; color: var(--text-muted);">No hay conflictos registrados en localStorage.</p></div>`;
+                return;
+            }
+
+            disputesDb.forEach(d => {
+                container.innerHTML += `
+                    <div class="card" style="background: rgba(255,255,255,0.05); border: 1px solid var(--danger); color: white;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                            <strong style="font-size:12px; color: var(--danger);">ORDEN #TX-${d.id}</strong>
+                            <span style="background:var(--danger); color:white; font-size:9px; font-weight:700; padding:2px 6px; border-radius:4px;">EN ARBITRAJE</span>
+                        </div>
+                        <p style="font-size:11px; margin-bottom:12px; color: #E2E8F0;">Vendedor (${d.seller}) no valida recepción de fondos. Comprador exige sus ${d.amount} ${d.curr}.</p>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn btn-success" style="padding:8px; font-size:11px;" onclick="resolveDisputeDB(${d.id}, true)">Forzar Liberación</button>
+                            <button class="btn btn-danger" style="padding:8px; font-size:11px;" onclick="resolveDisputeDB(${d.id}, false)">Revertir a Vendedor</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function resolveDisputeDB(disputeId, forceRelease) {
+            let disputesDb = JSON.parse(localStorage.getItem('p2p_disputes_db'));
+            disputesDb = disputesDb.filter(d => d.id !== disputeId);
+            localStorage.setItem('p2p_disputes_db', JSON.stringify(disputesDb));
+
+            loadAdminDisputesDB();
+            
+            if(forceRelease) alert("⚖️ DICTAMEN LOCALSTORAGE: Capital liberado al Comprador sustentado en el voucher OCR.");
+            else alert("⚖️ DICTAMEN LOCALSTORAGE: Transacción anulada. Capital devuelto al Vendedor.");
+        }
+    </script>
+</body>
+</html>
