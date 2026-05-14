@@ -13,14 +13,40 @@
 | ViewModel + StateFlow | Estado de pantalla |
 | Compose Navigation | Navegación entre pantallas |
 | Hilt | Inyección de dependencias |
-| Room | Cache local (ofertas, historial) |
-| DataStore (Preferences) | Almacenamiento seguro del JWT |
+| Room | Cache local (ofertas, historial, transacciones pausadas) |
+| DataStore (Preferences) | Almacenamiento seguro del JWT y datos de sesión |
 | Material 3 | Sistema de diseño y componentes |
 | Coil | Carga y caché de imágenes |
+| WorkManager | Tareas periódicas en background (sincronización OCR, notificaciones) |
 
 ---
 
-## Arquitectura de archivos
+## Nuevas características implementadas
+
+### 🔔 Notificación de Transacciones Pendientes
+- **Botón flotante** en esquina superior derecha mostrando cantidad de transacciones pendientes
+- Badge dinámico que se actualiza automáticamente
+- Modal deslizable desde abajo con acciones (Liberar/Disputar) directas
+
+### ⏸️ Persistencia de Transacciones
+- Las transacciones se guardan en Room cuando se inician
+- Si el usuario sale de una transacción, puede continuarla después
+- Banner visual en el mercado indicando transacción pausada con opción de continuar
+- Se limpia automáticamente al completar o disputar
+
+### 📋 Consolidación de Disputas en Perfil
+- Acceso centralizado a todas las disputas (como comprador y vendedor)
+- Indicador de rol en cada disputa
+- Bandeja unificada sin necesidad de cambiar de modo
+
+### 🏪 Vendor Inbox desde Perfil
+- Transacciones pendientes de confirmación accesibles desde el perfil
+- Botón directo "Transacciones Pendientes" en "Mi Actividad"
+- Notificaciones en tiempo real de nuevos vouchers
+
+---
+
+## Arquitectura de archivos mejorada
 
 ```
 android/
@@ -173,15 +199,19 @@ android/
 | Pantalla | Descripción |
 |---|---|
 | **SplashScreen** | Logo animado, barra de progreso, redirige automáticamente a Login |
-| **LoginScreen** | Email + contraseña, toggle a registro, enlace recuperar contraseña |
-| **RegisterScreen** | Nombre, email, contraseña, aceptar términos, validaciones en tiempo real |
-| **MarketScreen** | Ticker de tasas en vivo, filtros par de monedas (Tengo / Quiero), lista de ofertas por mejor tasa, indicador online/offline, badge verificado, % completadas, tiempo de respuesta, límites min/max, botón de matching automático |
-| **PublishScreen** | Publicar oferta: monedas, monto total, mínimo y máximo por operación, tasa propia, banco de recepción, tiempo límite de pago |
-| **TransactionScreen** | Temporizador regresivo, timeline 4 pasos (Pagar → Voucher → Confirmar → Liberado), datos de cuenta receptora con CCI, mini-chat con el vendedor, zona de subida de voucher con IA OCR, espera o disputa |
-| **VendorInboxScreen** | Bandeja del vendedor: transacciones con voucher validado por OCR, botones Liberar Fondos o Disputar |
-| **ReceiptScreen** | Comprobante con ID, partes, tasa, monto acreditado, resultado OCR, descarga PDF, acceso a calificar |
+| **LoginScreen** | Email + contraseña, toggle a registro, enlace recuperar contraseña, Google auth |
+| **RegisterScreen** | Nombre, email, contraseña, aceptar términos, validaciones en tiempo real, Google signup |
+| **MarketScreen** | **NEW:** Banner compacto con nivel y notificación de transacciones pendientes. Ticker de tasas, filtros (Tengo/Quiero), lista de ofertas, botón matching automático. **NEW:** Banner de transacción pausada con opción de continuar |
+| **PublishScreen** | Publicar oferta: monedas, monto total, mínimo y máximo, tasa propia, banco de recepción |
+| **TransactionScreen** | **NEW:** Botón back para pausar transacción. Temporizador, timeline 4 pasos, CCI, chat con vendedor, subida OCR, opción disputa. Persistencia automática |
+| **VendorInboxScreen** | **CONSOLIDADO EN PERFIL:** Transacciones pendientes, botones Liberar/Disputar |
+| **VendorNotificationModal** | **NEW:** Modal deslizable con transacciones pendientes, acciones directas, badge dinámico |
+| **DisputesProfileScreen** | **NEW:** Consolidado en perfil. Todas las disputas (comprador/vendedor) en un lugar |
+| **ReceiptScreen** | Comprobante con ID, partes, tasa, monto, OCR, descarga PDF, calificar |
 | **RatingScreen** | Calificación 1–5 estrellas con comentario opcional |
 | **HistoryScreen** | Historial filtrable: Todos / Completados / Pendientes / En disputa |
-| **ProfileScreen** | Avatar, calificación promedio, nivel, KYC badge, stats (operaciones, % completadas, tiempo respuesta), menú |
+| **ProfileScreen** | Avatar, calificación, nivel, KYC badge, stats. **NEW:** Acceso a Editar Perfil, Transacciones Pendientes, Mis Disputas |
+| **EditProfileScreen** | **NEW:** Editar nombre, teléfono, país, moneda, notificaciones |
 | **BankAccountsScreen** | Lista de cuentas (BCP, Interbank, BBVA, Yape, Plin), agregar nueva |
-| **AdminScreen** | Solo rol admin: stats globales, disputas activas con motivo, acciones Liberar o Revertir |
+| **LegalScreens** | **NEW:** Términos y Condiciones, Política de Privacidad, Acerca de, Ayuda |
+| **AdminScreen** | Solo rol admin: stats globales, disputas activas, acciones Liberar o Revertir |

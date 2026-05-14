@@ -151,8 +151,8 @@
         .auth-tab.active { background: white; color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
 
         /* ── Forms ── */
-        .filter-box { background: linear-gradient(135deg, #1E293B, #0F172A); padding: 16px; border-radius: 16px; margin-bottom: 14px; }
-        .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
+        .filter-box { background: linear-gradient(135deg, #1E293B, #0F172A); padding: 12px; border-radius: 16px; margin-bottom: 8px; }
+        .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
         .form-label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
         .form-select, .form-input {
             width: 100%; padding: 13px 14px; border: 1.5px solid var(--border-color); border-radius: 12px;
@@ -267,7 +267,7 @@
         .page-header h4 { font-weight: 800; font-size: 16px; color: var(--text-main); }
 
         /* ── Section title ── */
-        .section-title { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+        .section-title { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
 
         /* ── Mode bar ── */
         .mode-bar { background: white; border-bottom: 1px solid var(--border-color); padding: 7px 16px; display: flex; justify-content: center; align-items: center; gap: 10px; flex-shrink: 0; }
@@ -282,6 +282,62 @@
         .vendor-card.has-action { border-color: var(--warning); box-shadow: 0 4px 16px rgba(245,158,11,0.12); }
         .ocr-tag { background: rgba(16,185,129,0.1); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
         .waiting-box { background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.25); border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+
+        /* ── Vendor notification button ── */
+        .vendor-notif-btn {
+            position: absolute; top: 46px; right: 12px; z-index: 100;
+            width: 44px; height: 44px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--danger), #DC2626);
+            border: none; cursor: pointer; color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; box-shadow: 0 4px 16px rgba(239,68,68,0.35);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .vendor-notif-btn:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(239,68,68,0.45); }
+        .vendor-notif-btn:active { transform: scale(0.95); }
+        .notif-badge {
+            position: absolute; top: -6px; right: -6px;
+            background: var(--primary-mint); color: #0A1128;
+            font-size: 10px; font-weight: 800; padding: 2px 6px;
+            border-radius: 10px; min-width: 18px; text-align: center;
+            box-shadow: 0 2px 8px rgba(0,230,118,0.35);
+        }
+
+        /* ── Notification modal ── */
+        .notif-modal {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.5);
+            display: flex; align-items: flex-end; z-index: 200;
+            border-radius: 34px; overflow: hidden;
+        }
+        .notif-modal.hidden { display: none !important; }
+        .notif-modal-content {
+            background: white; width: 100%;
+            border-radius: 28px 28px 0 0; padding: 16px;
+            max-height: 60vh; display: flex; flex-direction: column;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .notif-modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-bottom: 12px; border-bottom: 1px solid var(--border-color);
+            margin-bottom: 12px;
+        }
+        .notif-modal-list {
+            flex: 1; overflow-y: auto; padding: 0;
+        }
+        .notif-tx-card {
+            background: #F8FAFC; border-radius: 14px; padding: 14px;
+            margin-bottom: 10px; border: 1px solid var(--border-color);
+        }
+        .notif-tx-card:last-child { margin-bottom: 0; }
+        .notif-tx-card.warning { border-color: var(--warning); background: rgba(245,158,11,0.04); }
+        .notif-tx-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .notif-tx-id { font-size: 12px; font-weight: 800; color: var(--text-main); }
+        .notif-tx-badge { background: var(--warning); color: white; font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 8px; }
+        .notif-tx-details { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; line-height: 1.5; }
+        .notif-tx-actions { display: flex; gap: 8px; }
+        .notif-tx-actions .btn-sm { flex: 1; padding: 8px 10px; font-size: 11px; }
 
         /* ── App label ── */
         .app-label { color: rgba(255,255,255,0.3); font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
@@ -331,6 +387,25 @@
             </div>
         </div>
 
+        <!-- ── VENDOR NOTIFICATION BUTTON ── -->
+        <button id="vendor-notif-btn" class="vendor-notif-btn hidden" onclick="toggleVendorNotifications()">
+            <i class="fas fa-inbox"></i>
+            <span id="vendor-notif-badge" class="notif-badge">0</span>
+        </button>
+
+        <!-- ── VENDOR NOTIFICATIONS MODAL ── -->
+        <div id="vendor-notif-modal" class="notif-modal hidden">
+            <div class="notif-modal-content">
+                <div class="notif-modal-header">
+                    <h3 style="font-size:14px; font-weight:800;">Transacciones Pendientes</h3>
+                    <button style="background:none; border:none; font-size:18px; cursor:pointer; color:var(--text-muted);" onclick="toggleVendorNotifications()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div id="vendor-notif-list" class="notif-modal-list"></div>
+            </div>
+        </div>
+
         <!-- ══════════════════════════════════════
              PHONE SCREEN (all views)
         ══════════════════════════════════════ -->
@@ -361,7 +436,15 @@
                             <i class="fas fa-eye input-icon" onclick="togglePass('login-pass',this)"></i>
                         </div>
                         <button class="btn" onclick="doLogin()" style="margin-top:4px;">Iniciar Sesión</button>
-                        <p style="text-align:center; font-size:11px; color:var(--primary); margin-top:12px; cursor:pointer;" onclick="showToast('info','Revisa tu correo para restablecer tu contraseña.')">¿Olvidaste tu contraseña?</p>
+                        <div style="display:flex; align-items:center; gap:8px; margin:16px 0; opacity:0.4;">
+                            <hr style="flex:1; border:none; border-top:1px solid var(--border-color);">
+                            <span style="font-size:11px; color:var(--text-muted); font-weight:600;">O continúa con</span>
+                            <hr style="flex:1; border:none; border-top:1px solid var(--border-color);">
+                        </div>
+                        <button class="btn btn-dark" onclick="doLoginGoogle()" style="margin-bottom:8px;">
+                            <i class="fab fa-google"></i> Google
+                        </button>
+                        <p style="text-align:center; font-size:11px; color:var(--primary); margin-top:12px; cursor:pointer;" onclick="navigateTo('view-forgot-pass')">¿Olvidaste tu contraseña?</p>
                     </div>
 
                     <!-- Register -->
@@ -376,9 +459,20 @@
                             <i class="fas fa-eye input-icon" onclick="togglePass('reg-pass',this)"></i>
                         </div>
                         <label style="display:flex; align-items:center; gap:8px; margin-bottom:14px; font-size:12px; color:var(--text-muted); cursor:pointer;">
-                            <input type="checkbox" id="reg-terms"> Acepto los <span style="color:var(--primary);">Términos de Uso</span>
+                            <input type="checkbox" id="reg-terms" onchange="updateTermsAccept()"> Acepto los 
+                            <span style="color:var(--primary); cursor:pointer;" onclick="event.stopPropagation(); navigateTo('view-terms')">Términos de Uso</span>
+                            y 
+                            <span style="color:var(--primary); cursor:pointer;" onclick="event.stopPropagation(); navigateTo('view-privacy')">Privacidad</span>
                         </label>
                         <button class="btn btn-success" onclick="doRegister()">Crear mi Cuenta</button>
+                        <div style="display:flex; align-items:center; gap:8px; margin:16px 0; opacity:0.4;">
+                            <hr style="flex:1; border:none; border-top:1px solid var(--border-color);">
+                            <span style="font-size:11px; color:var(--text-muted); font-weight:600;">O regístrate con</span>
+                            <hr style="flex:1; border:none; border-top:1px solid var(--border-color);">
+                        </div>
+                        <button class="btn btn-dark" onclick="doRegisterGoogle()">
+                            <i class="fab fa-google"></i> Google
+                        </button>
                     </div>
                 </div>
                 <p style="text-align:center; font-size:10px; color:var(--text-muted); margin-top:10px;">
@@ -388,28 +482,26 @@
 
             <!-- ── MARKET ── -->
             <div id="view-market" class="view hidden">
-                <div class="visa-card">
-                    <div style="position:relative; z-index:1;">
-                        <span style="font-size:10px; text-transform:uppercase; font-weight:800; letter-spacing:1px; color:var(--primary-mint);" id="mkt-level">Nivel · Experto</span>
-                        <h4 style="font-weight:800; font-size:18px; margin:4px 0;" id="mkt-greeting">Bienvenido, Carlos</h4>
-                        <p style="font-size:11px; opacity:0.8;">Transfiere fiat sin fronteras</p>
-                        <div style="display:flex; gap:8px; margin-top:10px;">
-                            <span style="background:rgba(255,255,255,0.15); color:white; padding:3px 10px; border-radius:20px; font-size:10px; font-weight:700;">
-                                <i class="fas fa-check-circle" style="color:var(--primary-mint);"></i> KYC Verificado
-                            </span>
-                            <span style="background:rgba(255,255,255,0.15); color:white; padding:3px 10px; border-radius:20px; font-size:10px; font-weight:700;">
-                                <i class="fas fa-star" style="color:var(--warning);"></i> 4.9
-                            </span>
+                <div style="display:flex; gap:12px; align-items:flex-start; margin-bottom:6px;">
+                    <div class="visa-card" style="flex:1; padding:8px 10px;">
+                        <div style="position:relative; z-index:1;">
+                            <span style="font-size:9px; text-transform:uppercase; font-weight:700; letter-spacing:0.8px; color:var(--primary-mint);" id="mkt-level">Experto</span>
+                            <h4 style="font-weight:800; font-size:14px; margin:2px 0;" id="mkt-greeting">Bienvenido</h4>
+                            <p style="font-size:9px; opacity:0.8; margin:1px 0;">P2P Seguro</p>
                         </div>
+                        <i class="fab fa-cc-visa" style="position:absolute; top:6px; right:10px; font-size:24px; color:white; opacity:0.7; z-index:1;"></i>
                     </div>
-                    <i class="fab fa-cc-visa" style="position:absolute; top:18px; right:20px; font-size:40px; color:white; opacity:0.85; z-index:1;"></i>
+                    <button id="vendor-notif-btn" class="vendor-notif-btn hidden" onclick="toggleVendorNotifications()" style="flex-shrink:0; margin-top:2px;">
+                        <i class="fas fa-inbox"></i>
+                        <span id="vendor-notif-badge" class="notif-badge">0</span>
+                    </button>
                 </div>
 
                 <div class="filter-box">
                     <span style="font-size:12px; font-weight:700; color:white;"><i class="fas fa-sliders-h" style="color:var(--primary-light);"></i> Filtrado Multidivisa</span>
                     <div class="filter-grid">
                         <div>
-                            <label class="form-label" style="margin-top:10px; color:#94A3B8;">Tengo</label>
+                            <label class="form-label" style="margin-top:6px; color:#94A3B8;">Tengo</label>
                             <select class="form-select" id="filter-from" onchange="loadMarket()">
                                 <option value="PEN">🇵🇪 Soles (PEN)</option>
                                 <option value="USD">🇺🇸 Dólares (USD)</option>
@@ -417,7 +509,7 @@
                             </select>
                         </div>
                         <div>
-                            <label class="form-label" style="margin-top:10px; color:#94A3B8;">Quiero</label>
+                            <label class="form-label" style="margin-top:6px; color:#94A3B8;">Quiero</label>
                             <select class="form-select" id="filter-to" onchange="loadMarket()">
                                 <option value="USD" selected>🇺🇸 Dólares (USD)</option>
                                 <option value="PEN">🇵🇪 Soles (PEN)</option>
@@ -427,11 +519,21 @@
                     </div>
                 </div>
 
-                <button class="btn btn-dark" style="margin-bottom:14px;" onclick="doMatching()">
+                <button class="btn btn-dark" style="margin-bottom:8px;" onclick="doMatching()">
                     <i class="fas fa-bolt" style="color:var(--warning);"></i>
                     Matching Automático
                     <span style="background:var(--primary); padding:2px 8px; border-radius:8px; font-size:10px;">CORE</span>
                 </button>
+
+                <!-- Notificación de transacción pausada -->
+                <div id="paused-tx-banner" class="hidden" style="background:linear-gradient(135deg,rgba(245,158,11,0.1),rgba(251,146,60,0.08)); border:1px solid rgba(245,158,11,0.3); border-radius:14px; padding:12px 14px; margin-bottom:8px; display:flex; align-items:center; gap:12px;">
+                    <i class="fas fa-pause-circle" style="font-size:24px; color:var(--warning); flex-shrink:0;"></i>
+                    <div style="flex:1;">
+                        <p style="font-size:12px; font-weight:700; color:var(--text-main);">Transacción pausada</p>
+                        <p style="font-size:10px; color:var(--text-muted); margin-top:2px;" id="paused-tx-info">Tienes una transacción en progreso</p>
+                    </div>
+                    <button class="btn btn-success btn-sm" style="flex-shrink:0;" onclick="resumeTransaction()">Continuar</button>
+                </div>
 
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                     <span class="section-title" id="lbl-results"><i class="fas fa-store"></i> Ofertas disponibles</span>
@@ -498,6 +600,14 @@
 
             <!-- ── TRANSACTION ── -->
             <div id="view-tx" class="view hidden">
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; margin-bottom:14px;">
+                    <button class="btn btn-ghost" style="flex:0 0 auto; width:40px; height:40px; padding:0;" onclick="goBackFromTx()">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <h4 style="flex:1; text-align:center; font-weight:800; font-size:14px;">Transacción P2P</h4>
+                    <div style="flex:0 0 auto; width:40px;"></div>
+                </div>
+
                 <div style="background:linear-gradient(135deg,#1E293B,#0F172A); color:white; padding:16px; border-radius:18px; text-align:center; margin-bottom:14px;">
                     <span style="font-size:10px; font-weight:800; color:var(--primary-mint); text-transform:uppercase; letter-spacing:1px;">Orden P2P en Curso</span>
                     <h3 style="font-size:30px; font-weight:800; margin:6px 0;" id="tx-timer">15:00</h3>
@@ -635,6 +745,7 @@
                 <div style="text-align:center; margin-bottom:16px;">
                     <div style="width:74px; height:74px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--primary-light)); color:white; display:flex; justify-content:center; align-items:center; font-size:24px; font-weight:800; margin:0 auto 10px; box-shadow:0 8px 22px rgba(0,172,193,0.3);" id="profile-avatar">CM</div>
                     <h4 style="font-weight:800; font-size:17px;" id="profile-name">Carlos Mendoza</h4>
+                    <p style="font-size:11px; color:var(--primary); font-weight:600; margin-bottom:8px;" id="profile-email">carlos@peru.com</p>
                     <div style="display:flex; justify-content:center; gap:6px; margin-top:8px; flex-wrap:wrap;">
                         <span class="stars-badge"><i class="fas fa-star"></i> 4.9</span>
                         <span class="level-experto">Experto</span>
@@ -674,7 +785,41 @@
                         <i class="fas fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
                     </div>
                 </div>
-                <button class="btn btn-ghost" style="margin-top:14px;" onclick="doLogout()">
+
+                <div class="section-title" style="margin-top:16px;"><i class="fas fa-shield-alt"></i> Legal y Privacidad</div>
+                <div class="card" style="padding:0;">
+                    <div class="menu-item" onclick="navigateTo('view-terms')">
+                        <div><i class="fas fa-file-contract" style="width:20px; color:var(--primary); margin-right:10px;"></i>Términos y Condiciones</div>
+                        <i class="fas fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
+                    </div>
+                    <div class="menu-item" onclick="navigateTo('view-privacy')">
+                        <div><i class="fas fa-lock" style="width:20px; color:var(--primary); margin-right:10px;"></i>Política de Privacidad</div>
+                        <i class="fas fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
+                    </div>
+                    <div class="menu-item" onclick="showToast('info','Versión 2.1.4 · Actualizado mayo 2026.')">
+                        <div><i class="fas fa-info-circle" style="width:20px; color:var(--primary); margin-right:10px;"></i>Acerca de Perú Exchange</div>
+                        <i class="fas fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
+                    </div>
+                    <div class="menu-item" onclick="showToast('success','Soporte: support@peruexchange.com')">
+                        <div><i class="fas fa-headset" style="width:20px; color:var(--primary); margin-right:10px;"></i>Centro de Ayuda</div>
+                        <i class="fas fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
+                    </div>
+                </div>
+
+                <div class="section-title" style="margin-top:16px;"><i class="fas fa-cogs"></i> Mi Actividad</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px;">
+                    <button class="btn btn-warning btn-sm" onclick="navigateTo('view-vendor-inbox',document.getElementById('nav-profile'))">
+                        <i class="fas fa-inbox"></i> Transac. Pendientes
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="navigateTo('view-disputes-profile',document.getElementById('nav-profile'))">
+                        <i class="fas fa-gavel"></i> Mis Disputas
+                    </button>
+                </div>
+
+                <button class="btn btn-outline" style="margin-bottom:8px;" onclick="navigateTo('view-edit-profile')">
+                    <i class="fas fa-edit"></i> Editar Perfil
+                </button>
+                <button class="btn btn-ghost" onclick="doLogout()">
                     <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
                 </button>
             </div>
@@ -750,6 +895,179 @@
                     </div>
                 </div>
                 <div id="vendor-list"></div>
+            </div>
+
+            <!-- ── FORGOT PASSWORD ── -->
+            <div id="view-forgot-pass" class="view hidden">
+                <div class="page-header">
+                    <div class="back-btn" onclick="navigateTo('view-auth')"><i class="fas fa-chevron-left"></i></div>
+                    <h4>Recuperar Contraseña</h4>
+                </div>
+                <div class="card" style="padding:20px;">
+                    <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">Ingresa tu correo para recibir un enlace de restablecimiento seguro.</p>
+                    <label class="form-label">Correo Electrónico</label>
+                    <input type="email" class="form-input" id="forgot-email" placeholder="tu@correo.com">
+                    <button class="btn" onclick="doForgotPassword()" style="margin-bottom:8px;">
+                        <i class="fas fa-paper-plane"></i> Enviar Enlace
+                    </button>
+                    <button class="btn btn-ghost" onclick="navigateTo('view-auth')">Cancelar</button>
+                    <p style="font-size:10px; color:var(--text-muted); margin-top:12px; text-align:center;">
+                        Recibirás un correo con instrucciones para restablecer tu contraseña en 5 minutos.
+                    </p>
+                </div>
+            </div>
+
+            <!-- ── TERMS & CONDITIONS ── -->
+            <div id="view-terms" class="view hidden">
+                <div class="page-header">
+                    <div class="back-btn" onclick="goBackFromLegal()"><i class="fas fa-chevron-left"></i></div>
+                    <h4>Términos y Condiciones</h4>
+                </div>
+                <div class="card" style="max-height:600px; overflow-y:auto; padding:16px;">
+                    <h5 style="font-weight:800; font-size:14px; color:var(--text-main); margin-bottom:12px;">Términos de Servicio</h5>
+                    
+                    <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px;"><strong>Última actualización:</strong> Mayo 2026</p>
+                    
+                    <h6 style="font-weight:700; font-size:12px; margin-top:14px; margin-bottom:6px; color:var(--text-main);">1. Aceptación de Términos</h6>
+                    <p style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:10px;">Al acceder y usar Perú Exchange, aceptas estar vinculado por estos términos. Si no estás de acuerdo, no uses nuestro servicio.</p>
+                    
+                    <h6 style="font-weight:700; font-size:12px; margin-top:14px; margin-bottom:6px; color:var(--text-main);">2. Descripción del Servicio</h6>
+                    <p style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:10px;">Perú Exchange es una plataforma P2P que facilita el intercambio de divisas entre usuarios. No somos un banco; actuamos como intermediario neutro. El dinero se mantiene en custodia de seguridad hasta que ambas partes confirmen.</p>
+                    
+                    <h6 style="font-weight:700; font-size:12px; margin-top:14px; margin-bottom:6px; color:var(--text-main);">3. Elegibilidad</h6>
+                    <p style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:10px;">Debes tener 18+ años y no estar en lista de sanciones OFAC o locales. Se requiere KYC (Know Your Customer) para operaciones mayores a $1,000 USD.</p>
+                    
+                    <h6 style="font-weight:700; font-size:12px; margin-top:14px; margin-bottom:6px; color:var(--text-main);">4. Responsabilidades del Usuario</h6>
+                    <p style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:10px;">Eres responsable de mantener confidencial tu contraseña, de todas las actividades en tu cuenta, y de cumplir con leyes locales de transferencias de dinero.</p>
+                    
+                    <h6 style="font-weight:700; font-size:12px; margin-top:14px; margin-bottom:6px; color:var(--text-main);">5. Limitación de Responsabilidad</h6>
+                    <p style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:10px;">Perú Exchange no es responsable de pérdidas indirectas. Nuestra responsabilidad se limita al monto en disputa. No garantizamos tasas de cambio fijas; varían según mercado.</p>
+                    
+                    <h6 style="font-weight:700; font-size:12px; margin-top:14px; margin-bottom:6px; color:var(--text-main);">6. Prohibiciones</h6>
+                    <p style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:10px;">Está prohibido: lavado de dinero, fraude, suplantación, interferencia en operaciones, y violación de leyes locales.</p>
+                    
+                    <h6 style="font-weight:700; font-size:12px; margin-top:14px; margin-bottom:6px; color:var(--text-main);">7. Resolución de Disputas</h6>
+                    <p style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:10px;">Las disputas se arbitran internamente por nuestro equipo dentro de 5 días hábiles. Ambas partes pueden apelar con evidencia. Si es necesario, se somete a corte local.</p>
+                    
+                    <h6 style="font-weight:700; font-size:12px; margin-top:14px; margin-bottom:6px; color:var(--text-main);">8. Cambios en Términos</h6>
+                    <p style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:10px;">Podemos actualizar estos términos con 15 días de notificación. El uso continuado significa aceptación.</p>
+                    
+                    <p style="font-size:10px; color:var(--primary); margin-top:16px; text-align:center;">
+                        Para preguntas: <strong>legal@peruexchange.com</strong>
+                    </p>
+                </div>
+            </div>
+
+            <!-- ── EDIT PROFILE ── -->
+            <div id="view-edit-profile" class="view hidden">
+                <div class="page-header">
+                    <div class="back-btn" onclick="navigateTo('view-profile',document.getElementById('nav-profile'))"><i class="fas fa-chevron-left"></i></div>
+                    <h4>Editar Perfil</h4>
+                </div>
+                <div class="card">
+                    <label class="form-label">Nombre Completo</label>
+                    <input type="text" class="form-input" id="edit-name" placeholder="Ej. Carlos Mendoza">
+                    
+                    <label class="form-label">Correo Electrónico</label>
+                    <input type="email" class="form-input" id="edit-email" placeholder="correo@ejemplo.com" disabled style="opacity:0.6; cursor:not-allowed;">
+                    <p style="font-size:10px; color:var(--text-muted); margin-top:4px;">El correo no se puede cambiar. Contáctanos para más información.</p>
+                    
+                    <label class="form-label">Teléfono</label>
+                    <input type="tel" class="form-input" id="edit-phone" placeholder="+51 999 123 456">
+                    
+                    <label class="form-label">País</label>
+                    <select class="form-select" id="edit-country">
+                        <option value="PE" selected>🇵🇪 Perú</option>
+                        <option value="CO">🇨🇴 Colombia</option>
+                        <option value="CL">🇨🇱 Chile</option>
+                        <option value="MX">🇲🇽 México</option>
+                        <option value="AR">🇦🇷 Argentina</option>
+                    </select>
+                    
+                    <label class="form-label">Moneda Preferida</label>
+                    <select class="form-select" id="edit-currency">
+                        <option value="PEN" selected>🇵🇪 Soles (PEN)</option>
+                        <option value="USD">🇺🇸 Dólares (USD)</option>
+                        <option value="EUR">🇪🇺 Euros (EUR)</option>
+                    </select>
+                    
+                    <label style="display:flex; align-items:center; gap:8px; margin-bottom:14px; margin-top:14px; font-size:12px; color:var(--text-muted); cursor:pointer;">
+                        <input type="checkbox" id="edit-notify"> Recibir notificaciones por correo
+                    </label>
+                    
+                    <button class="btn btn-success" onclick="doSaveProfile()">
+                        <i class="fas fa-save"></i> Guardar Cambios
+                    </button>
+                </div>
+                <div class="card" style="background:rgba(16,185,129,0.05); border:1px solid rgba(16,185,129,0.2); margin-top:14px;">
+                    <p style="font-size:11px; color:var(--success); font-weight:700; margin-bottom:6px;">✓ KYC Verificado</p>
+                    <p style="font-size:10px; color:var(--text-muted);">Tu identidad ha sido validada. Puedes operar sin restricciones hasta $10,000 USD por día.</p>
+                </div>
+            </div>
+
+            <!-- ── VENDOR INBOX (desde perfil) ── -->
+            <div id="view-vendor-inbox" class="view hidden">
+                <div class="page-header">
+                    <div class="back-btn" onclick="navigateTo('view-profile',document.getElementById('nav-profile'))"><i class="fas fa-chevron-left"></i></div>
+                    <h4>Transacciones Pendientes</h4>
+                </div>
+                <p style="font-size:11px; color:var(--text-muted); padding:0 16px; margin-bottom:14px;">Pagos que esperas confirmar como vendedor</p>
+                <div id="vendor-inbox-list"></div>
+            </div>
+
+            <!-- ── DISPUTES (desde perfil) ── -->
+            <div id="view-disputes-profile" class="view hidden">
+                <div class="page-header">
+                    <div class="back-btn" onclick="navigateTo('view-profile',document.getElementById('nav-profile'))"><i class="fas fa-chevron-left"></i></div>
+                    <h4>Mis Disputas</h4>
+                </div>
+                <div id="disputes-user-list" style="padding:16px;"></div>
+            </div>
+
+            <!-- ── PRIVACY POLICY ── -->
+            <div id="view-privacy" class="view hidden">
+                <div class="page-header">
+                    <div class="back-btn" onclick="goBackFromLegal()"><i class="fas fa-chevron-left"></i></div>
+                    <h4>Política de Privacidad</h4>
+                </div>
+                <div class="card" style="max-height:600px; overflow-y:auto; padding:16px;">
+                    <h5 style="font-weight:800; font-size:14px; color:var(--text-main); margin-bottom:12px;">Protección de Datos Personales</h5>
+                    
+                    <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px;"><strong>Última actualización:</strong> Mayo 2026</p>
+                    
+                    <h6 style="font-weight:700; font-size:12px; margin-top:14px; margin-bottom:6px; color:var(--text-main);">1. Información que Recopilamos</h6>
+                    <p style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:10px;">
+                        <strong>Datos de registro:</strong> nombre, correo, teléfono, DNI<br>
+                        <strong>Datos financieros:</strong> cuentas bancarias, historial de transacciones<br>
+                        <strong>Datos técnicos:</strong> IP, dispositivo, navegador<br>
+                        <strong>Documentos:</strong> fotos de DNI, comprobantes de domicilio
+                    </p>
+                    
+                    <h6 style="font-weight:700; font-size:12px; margin-top:14px; margin-bottom:6px; color:var(--text-main);">2. Cómo Usamos tus Datos</h6>
+                    <p style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:10px;">Procesamos datos para: facilitar transacciones, cumplir regulaciones KYC/AML, prevenir fraude, responder consultas, mejorar el servicio.</p>
+                    
+                    <h6 style="font-weight:700; font-size:12px; margin-top:14px; margin-bottom:6px; color:var(--text-main);">3. Seguridad de Datos</h6>
+                    <p style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:10px;">Usamos encriptación AES-256, almacenamiento redundante, auditorías de seguridad y cumplimos ISO 27001.</p>
+                    
+                    <h6 style="font-weight:700; font-size:12px; margin-top:14px; margin-bottom:6px; color:var(--text-main);">4. Compartición de Datos</h6>
+                    <p style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:10px;">Compartimos solo con: bancos asociados (para verificación), autoridades legales (si es requerido), proveedores de servicio (bajo contratos de confidencialidad).</p>
+                    
+                    <h6 style="font-weight:700; font-size:12px; margin-top:14px; margin-bottom:6px; color:var(--text-main);">5. Derechos del Usuario</h6>
+                    <p style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:10px;">Tienes derecho a: acceder tus datos, solicitar correcciones, solicitar eliminación (bajo ciertas condiciones), exportar datos, optar por no recibir marketing.</p>
+                    
+                    <h6 style="font-weight:700; font-size:12px; margin-top:14px; margin-bottom:6px; color:var(--text-main);">6. Retención de Datos</h6>
+                    <p style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:10px;">Retenemos datos de transacciones por 7 años (normativa financiera). Datos personales se eliminan 2 años tras cierre de cuenta, a menos que legalmente requerido.</p>
+                    
+                    <h6 style="font-weight:700; font-size:12px; margin-top:14px; margin-bottom:6px; color:var(--text-main);">7. Cookies y Rastreo</h6>
+                    <p style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:10px;">Usamos cookies para sesiones, preferencias y análisis. No hacemos seguimiento de terceros ni vendemos datos a anunciantes.</p>
+                    
+                    <h6 style="font-weight:700; font-size:12px; margin-top:14px; margin-bottom:6px; color:var(--text-main);">8. Contacto de Privacidad</h6>
+                    <p style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:10px;">Para solicitudes de privacidad: <strong>privacy@peruexchange.com</strong> (respuesta en 10 días hábiles)</p>
+                    
+                    <p style="font-size:10px; color:var(--primary); margin-top:16px; text-align:center;">
+                        Cumplimos con RGPD, CCPA y leyes peruanas de protección de datos.
+                    </p>
+                </div>
             </div>
 
         </div><!-- /phone-screen -->
@@ -872,17 +1190,16 @@ function doLogin() {
     const email = document.getElementById('login-email').value.trim();
     if (!email) { showToast('error', 'Ingresa tu correo.'); return; }
     const isAdmin = email === 'admin@p2p.com';
-    currentUser = { name: isAdmin ? 'Admin P2P' : 'Carlos Mendoza', isAdmin };
+    currentUser = { name: isAdmin ? 'Admin P2P' : 'Carlos Mendoza', email: email, isAdmin };
     const initials = currentUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
     document.getElementById('mkt-greeting').innerText   = `Bienvenido, ${currentUser.name.split(' ')[0]}`;
     document.getElementById('profile-name').innerText   = currentUser.name;
+    document.getElementById('profile-email').innerText  = currentUser.email;
     document.getElementById('profile-avatar').innerText = initials;
     document.getElementById('admin-menu-link').style.display = isAdmin ? 'flex' : 'none';
     document.getElementById('client-nav').classList.remove('hidden');
-    document.getElementById('mode-bar').classList.remove('hidden');
     appMode = 'buyer';
-    document.getElementById('mode-btn-buyer').classList.add('active');
-    document.getElementById('mode-btn-seller').classList.remove('active');
+    updateVendorNotifications();
     navigateTo('view-market', document.getElementById('nav-home'));
     showToast('success', isAdmin ? 'Sesión de administrador iniciada.' : `Bienvenido de vuelta, ${currentUser.name.split(' ')[0]}!`);
 }
@@ -895,12 +1212,183 @@ function doRegister() {
     showToast('success', `Cuenta creada para ${name}. ¡Bienvenido!`);
     setTimeout(() => { document.getElementById('login-email').value = email; switchTab('login'); }, 1600);
 }
+function doForgotPassword() {
+    const email = document.getElementById('forgot-email').value.trim();
+    if (!email) { showToast('error', 'Ingresa tu correo.'); return; }
+    const btn = event.target;
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner" style="width:16px; height:16px; border-width:2px; margin-right:6px;"></div> Enviando...';
+    setTimeout(() => {
+        showToast('success', `Enlace enviado a ${email}. Revisa tu bandeja de entrada.`);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Enlace';
+        document.getElementById('forgot-email').value = '';
+        setTimeout(() => navigateTo('view-auth'), 1800);
+    }, 1400);
+}
+let lastLegalOrigin = 'view-auth';
+function goBackFromLegal() {
+    navigateTo(lastLegalOrigin || 'view-auth');
+}
+function updateTermsAccept() {
+    lastLegalOrigin = 'view-reg';
+}
 function doLogout() {
     document.getElementById('client-nav').classList.add('hidden');
-    document.getElementById('mode-bar').classList.add('hidden');
+    document.getElementById('vendor-notif-btn').classList.add('hidden');
     appMode = 'buyer';
+    currentUser = null;
     navigateTo('view-auth');
     showToast('info', 'Sesión cerrada correctamente.');
+}
+function doLoginGoogle() {
+    const btn = event.target;
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner" style="width:16px; height:16px; border-width:2px; margin-right:6px;"></div> Conectando...';
+    setTimeout(() => {
+        currentUser = { name: 'Usuario Google', email: 'usuario@gmail.com', isAdmin: false };
+        const initials = 'UG';
+        document.getElementById('mkt-greeting').innerText   = 'Bienvenido, Usuario';
+        document.getElementById('profile-name').innerText   = currentUser.name;
+        document.getElementById('profile-email').innerText  = currentUser.email;
+        document.getElementById('profile-avatar').innerText = initials;
+        document.getElementById('admin-menu-link').style.display = 'none';
+        document.getElementById('client-nav').classList.remove('hidden');
+        appMode = 'buyer';
+        updateVendorNotifications();
+        navigateTo('view-market', document.getElementById('nav-home'));
+        showToast('success', 'Sesión iniciada con Google correctamente.');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fab fa-google"></i> Google';
+    }, 1500);
+}
+function doRegisterGoogle() {
+    const btn = event.target;
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner" style="width:16px; height:16px; border-width:2px; margin-right:6px;"></div> Creando cuenta...';
+    setTimeout(() => {
+        showToast('success', 'Cuenta creada con Google. ¡Bienvenido!');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fab fa-google"></i> Google';
+        setTimeout(() => {
+            currentUser = { name: 'Usuario Google', email: 'usuario@gmail.com', isAdmin: false };
+            const initials = 'UG';
+            document.getElementById('mkt-greeting').innerText   = 'Bienvenido, Usuario';
+            document.getElementById('profile-name').innerText   = currentUser.name;
+            document.getElementById('profile-email').innerText  = currentUser.email;
+            document.getElementById('profile-avatar').innerText = initials;
+            document.getElementById('admin-menu-link').style.display = 'none';
+            document.getElementById('client-nav').classList.remove('hidden');
+            updateVendorNotifications();
+            navigateTo('view-market', document.getElementById('nav-home'));
+        }, 1200);
+    }, 1500);
+}
+function doSaveProfile() {
+    const name    = document.getElementById('edit-name').value.trim();
+    const phone   = document.getElementById('edit-phone').value.trim();
+    const country = document.getElementById('edit-country').value;
+    const notify  = document.getElementById('edit-notify').checked;
+    
+    if (!name) { showToast('error', 'El nombre es requerido.'); return; }
+    
+    currentUser.name = name;
+    document.getElementById('profile-name').innerText = name;
+    document.getElementById('mkt-greeting').innerText = `Bienvenido, ${name.split(' ')[0]}`;
+    
+    showToast('success', 'Perfil actualizado correctamente.');
+    setTimeout(() => navigateTo('view-profile', document.getElementById('nav-profile')), 1500);
+}
+function loadEditProfile() {
+    document.getElementById('edit-name').value = currentUser.name;
+    document.getElementById('edit-email').value = currentUser.email;
+    document.getElementById('edit-phone').value = '';
+    document.getElementById('edit-country').value = 'PE';
+    document.getElementById('edit-currency').value = 'PEN';
+    document.getElementById('edit-notify').checked = true;
+}
+function loadVendorInbox() {
+    const pending = JSON.parse(localStorage.getItem('p2p_vendor_pending'));
+    const c = document.getElementById('vendor-inbox-list');
+    c.innerHTML = '';
+    if (!pending.length) {
+        c.innerHTML = `<div class="card" style="text-align:center; padding:28px; margin:0 14px;">
+            <i class="fas fa-inbox" style="font-size:32px; color:var(--border-color); display:block; margin-bottom:10px;"></i>
+            <p style="font-size:13px; font-weight:700; color:var(--text-main);">Sin transacciones pendientes</p>
+            <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">Cuando un comprador suba su voucher, aparecerá aquí.</p>
+        </div>`;
+        return;
+    }
+    c.innerHTML = '<div style="padding:0 14px;">';
+    pending.forEach(tx => {
+        c.innerHTML += `
+        <div class="vendor-card has-action" style="margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                <div>
+                    <span style="font-size:10px; font-weight:800; color:var(--warning); text-transform:uppercase; letter-spacing:0.8px;">Pago recibido · Confirmar</span>
+                    <p style="font-size:14px; font-weight:800; color:var(--text-main); margin-top:3px;">${tx.txId}</p>
+                </div>
+                <span style="background:rgba(245,158,11,0.12); color:var(--warning); padding:4px 10px; border-radius:10px; font-size:10px; font-weight:700;">PENDIENTE</span>
+            </div>
+            <div style="background:#F8FAFC; border-radius:12px; padding:12px; margin-bottom:12px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                    <span style="font-size:11px; color:var(--text-muted);">Comprador</span>
+                    <strong style="font-size:11px;">${tx.buyer}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                    <span style="font-size:11px; color:var(--text-muted);">Monto</span>
+                    <strong style="font-size:11px; color:var(--text-main);">${tx.amount} ${tx.to} · tasa ${tx.rate}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span style="font-size:11px; color:var(--text-muted);">Total recibido</span>
+                    <strong style="font-size:11px; color:var(--success);">${tx.total} ${tx.from}</strong>
+                </div>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button class="btn btn-success btn-sm" style="flex:1;" onclick="vendorConfirm(${tx.id})">
+                    <i class="fas fa-unlock"></i> Liberar Fondos
+                </button>
+                <button class="btn btn-danger btn-sm" style="flex:1;" onclick="vendorDispute(${tx.id})">
+                    <i class="fas fa-flag"></i> Disputar
+                </button>
+            </div>
+        </div>`;
+    });
+    c.innerHTML += '</div>';
+}
+function loadDisputesUser() {
+    const disputes = JSON.parse(localStorage.getItem('p2p_disputes'));
+    const userDisputes = disputes.filter(d => d.seller === currentUser.name || d.buyer === currentUser.name);
+    const c = document.getElementById('disputes-user-list');
+    c.innerHTML = '';
+    if (!userDisputes.length) {
+        c.innerHTML = `<div class="card" style="text-align:center; padding:28px;">
+            <i class="fas fa-check-circle" style="font-size:32px; color:var(--success); display:block; margin-bottom:10px;"></i>
+            <p style="font-size:13px; color:var(--text-muted);">No tienes disputas activas.</p>
+            <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">Todas tus transacciones se han completado correctamente.</p>
+        </div>`;
+        return;
+    }
+    userDisputes.forEach(d => {
+        const isMyDispute = d.seller === currentUser.name;
+        c.innerHTML += `
+        <div class="dispute-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <strong style="font-size:12px; color:var(--danger);">ORDEN #TX-${d.id}</strong>
+                <span style="background:var(--danger); color:white; font-size:9px; font-weight:700; padding:2px 8px; border-radius:10px;">EN ARBITRAJE</span>
+            </div>
+            <div style="background:rgba(239,68,68,0.05); border-radius:10px; padding:10px 12px; margin-bottom:12px;">
+                <p style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">🧑 Comprador: <strong>${d.buyer}</strong></p>
+                <p style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">🏪 Vendedor: <strong>${d.seller}</strong></p>
+                <p style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">💰 Monto: <strong>${d.amount} ${d.curr}</strong></p>
+                <p style="font-size:10px; color:var(--danger); margin-top:6px; font-style:italic;">${d.motivo || 'Sin detalle registrado.'}</p>
+            </div>
+            <div style="background:rgba(0,172,193,0.05); border:1px solid rgba(0,172,193,0.2); border-radius:10px; padding:10px 12px;">
+                <p style="font-size:10px; color:var(--primary); font-weight:700;">📋 Tu Rol: <strong>${isMyDispute ? '🏪 Vendedor' : '🧑 Comprador'}</strong></p>
+                <p style="font-size:10px; color:var(--text-muted); margin-top:4px;">El equipo de arbitraje revisará tu caso en 5 días hábiles.</p>
+            </div>
+        </div>`;
+    });
 }
 
 // ══════════════════════════════════════════
@@ -920,6 +1408,18 @@ function navigateTo(viewId, navElem = null) {
     if (viewId === 'view-cards')   loadCards();
     if (viewId === 'view-history') loadHistory('all');
     if (viewId === 'view-admin')   loadAdmin();
+    if (viewId === 'view-edit-profile') loadEditProfile();
+    if (viewId === 'view-vendor-inbox') loadVendorInbox();
+    if (viewId === 'view-disputes-profile') loadDisputesUser();
+    if (viewId === 'view-tx') {
+        // Intentar restaurar transacción guardada
+        if (!activeTx) {
+            if (!restoreTx()) {
+                // Si no hay transacción, volver al mercado
+                navigateTo('view-market', document.getElementById('nav-home'));
+            }
+        }
+    }
 }
 
 // ══════════════════════════════════════════
@@ -929,6 +1429,22 @@ function loadMarket() {
     const from = document.getElementById('filter-from').value;
     const to   = document.getElementById('filter-to').value;
     document.getElementById('lbl-results').innerHTML = `<i class="fas fa-store"></i> ${from} → ${to}`;
+    
+    // Mostrar/ocultar notificación de transacción pausada
+    const savedTx = localStorage.getItem('p2p_activeTx');
+    const banner = document.getElementById('paused-tx-banner');
+    if (savedTx) {
+        try {
+            const tx = JSON.parse(savedTx);
+            document.getElementById('paused-tx-info').innerText = `Con ${tx.seller} · ${tx.amount} ${tx.to}`;
+            banner.classList.remove('hidden');
+        } catch(e) {
+            banner.classList.add('hidden');
+        }
+    } else {
+        banner.classList.add('hidden');
+    }
+    
     const offers = JSON.parse(localStorage.getItem('p2p_offers'));
     const filtered = offers.filter(o => o.from === from && o.to === to).sort((a,b) => a.rate - b.rate);
     const c = document.getElementById('offers-list');
@@ -1020,6 +1536,8 @@ function doMatching() {
 function startTx(id) {
     const offers = JSON.parse(localStorage.getItem('p2p_offers'));
     activeTx = offers.find(o => o.id === id);
+    // Guardar la transacción activa para persistencia
+    localStorage.setItem('p2p_activeTx', JSON.stringify(activeTx));
     document.getElementById('tx-seller').innerText  = activeTx.seller;
     document.getElementById('tx-bank').innerText    = activeTx.bankName;
     document.getElementById('tx-total').innerText   = `${(activeTx.amount * activeTx.rate).toFixed(2)} ${activeTx.from}`;
@@ -1052,6 +1570,54 @@ function startTx(id) {
         if (secs < 0) { clearInterval(txTimer); document.getElementById('tx-timer').innerText = 'EXPIRADO'; }
     }, 1000);
     navigateTo('view-tx');
+}
+
+function goBackFromTx() {
+    // Guardar estado actual de la transacción por si vuelve
+    if (activeTx) {
+        localStorage.setItem('p2p_activeTx', JSON.stringify(activeTx));
+    }
+    clearInterval(txTimer);
+    navigateTo('view-market', document.getElementById('nav-home'));
+    showToast('info', 'Transacción pausada. Puedes continuarla después.');
+}
+
+function resumeTransaction() {
+    if (restoreTx()) {
+        clearInterval(txTimer);
+        let secs = 15 * 60;
+        document.getElementById('tx-timer').style.color = 'white';
+        txTimer = setInterval(() => {
+            let m = Math.floor(secs/60), s = secs%60;
+            document.getElementById('tx-timer').innerText = `${m<10?'0'+m:m}:${s<10?'0'+s:s}`;
+            if (secs < 120) document.getElementById('tx-timer').style.color = 'var(--danger)';
+            secs--;
+            if (secs < 0) { clearInterval(txTimer); document.getElementById('tx-timer').innerText = 'EXPIRADO'; }
+        }, 1000);
+        navigateTo('view-tx');
+        showToast('success', 'Transacción restaurada. Continúa con el pago.');
+    } else {
+        showToast('error', 'No se pudo restaurar la transacción.');
+    }
+}
+
+function restoreTx() {
+    const saved = localStorage.getItem('p2p_activeTx');
+    if (saved) {
+        try {
+            activeTx = JSON.parse(saved);
+            document.getElementById('tx-seller').innerText  = activeTx.seller;
+            document.getElementById('tx-bank').innerText    = activeTx.bankName;
+            document.getElementById('tx-total').innerText   = `${(activeTx.amount * activeTx.rate).toFixed(2)} ${activeTx.from}`;
+            document.getElementById('rating-name').innerText = activeTx.seller;
+            document.getElementById('tx-online-dot').className = activeTx.online ? 'online-dot' : 'offline-dot';
+            return true;
+        } catch(e) {
+            localStorage.removeItem('p2p_activeTx');
+            return false;
+        }
+    }
+    return false;
 }
 
 // ══════════════════════════════════════════
@@ -1128,6 +1694,9 @@ function doConfirm() {
     const h = JSON.parse(localStorage.getItem('p2p_history'));
     h.unshift({ id:'TX-'+Math.floor(Math.random()*9000+1000), seller:activeTx.seller, amount:activeTx.amount, currency:activeTx.to, rate:activeTx.rate, status:'completed', date:new Date().toISOString().split('T')[0] });
     localStorage.setItem('p2p_history', JSON.stringify(h));
+    // Limpiar transacción guardada
+    localStorage.removeItem('p2p_activeTx');
+    activeTx = null;
     setTimeout(() => navigateTo('view-receipt'), 400);
 }
 
@@ -1145,7 +1714,10 @@ function addDisputeAndHistory(seller, buyer, amount, currency, rate, motivo) {
 function doBuyerDispute() {
     if (!activeTx) { showToast('error','No hay transacción activa.'); return; }
     addDisputeAndHistory(activeTx.seller, currentUser.name, activeTx.amount, activeTx.to, activeTx.rate, 'Comprador: vendedor no liberó fondos.');
+    localStorage.removeItem('p2p_activeTx');
+    activeTx = null;
     showToast('error', 'Disputa abierta como comprador. Admin notificado.');
+    setTimeout(() => navigateTo('view-market', document.getElementById('nav-home')), 1500);
 }
 
 // ══════════════════════════════════════════
@@ -1240,6 +1812,7 @@ function vendorConfirm(id) {
     ['st-2','st-3','st-4'].forEach(s => document.getElementById(s).className = 'step done');
     document.getElementById('tl-fill').style.width = '100%';
     showToast('success', `Fondos liberados al comprador. TX ${tx.txId}`);
+    updateVendorNotifications();
     loadVendorPending();
     setTimeout(() => {
         setMode('buyer');
@@ -1255,6 +1828,7 @@ function vendorDispute(id) {
     localStorage.setItem('p2p_vendor_pending', JSON.stringify(pending));
     addDisputeAndHistory(tx.seller, tx.buyer, tx.amount, tx.to, tx.rate, 'Vendedor: voucher no corresponde al pago esperado.');
     showToast('error', 'Disputa registrada como vendedor. Admin notificado.');
+    updateVendorNotifications();
     loadVendorPending();
 }
 
@@ -1384,6 +1958,64 @@ function resolveDispute(id, release) {
     localStorage.setItem('p2p_disputes', JSON.stringify(d));
     loadAdmin();
     showToast('success', release ? 'Capital liberado al comprador.' : 'Transacción revertida al vendedor.');
+}
+
+// ══════════════════════════════════════════
+// VENDOR NOTIFICATIONS
+// ══════════════════════════════════════════
+function toggleVendorNotifications() {
+    const modal = document.getElementById('vendor-notif-modal');
+    modal.classList.toggle('hidden');
+    if (!modal.classList.contains('hidden')) {
+        updateVendorNotifications();
+    }
+}
+
+function updateVendorNotifications() {
+    if (!currentUser || currentUser.isAdmin) {
+        document.getElementById('vendor-notif-btn').classList.add('hidden');
+        return;
+    }
+    
+    const pending = JSON.parse(localStorage.getItem('p2p_vendor_pending') || '[]');
+    const count = pending.length;
+    const btn = document.getElementById('vendor-notif-btn');
+    const badge = document.getElementById('vendor-notif-badge');
+    const list = document.getElementById('vendor-notif-list');
+    
+    if (count === 0) {
+        btn.classList.add('hidden');
+        list.innerHTML = `<div style="text-align:center; padding:28px 0;">
+            <i class="fas fa-inbox" style="font-size:32px; color:var(--border-color); opacity:0.5; display:block; margin-bottom:10px;"></i>
+            <p style="font-size:13px; color:var(--text-muted);">Sin transacciones pendientes</p>
+        </div>`;
+    } else {
+        btn.classList.remove('hidden');
+        badge.innerText = count;
+        list.innerHTML = '';
+        pending.forEach(tx => {
+            list.innerHTML += `
+            <div class="notif-tx-card warning">
+                <div class="notif-tx-header">
+                    <div class="notif-tx-id">#TX-${tx.txId}</div>
+                    <span class="notif-tx-badge">⏳ PENDIENTE</span>
+                </div>
+                <div class="notif-tx-details">
+                    <strong>🧑 Comprador:</strong> ${tx.buyer}<br>
+                    <strong>💰 Monto:</strong> ${tx.amount} ${tx.to}<br>
+                    <strong>💵 Recibido:</strong> ${tx.total} ${tx.from}
+                </div>
+                <div class="notif-tx-actions">
+                    <button class="btn btn-success btn-sm" onclick="vendorConfirm(${tx.id}); updateVendorNotifications();">
+                        <i class="fas fa-unlock"></i> Liberar
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="vendorDispute(${tx.id}); updateVendorNotifications();">
+                        <i class="fas fa-flag"></i> Disputar
+                    </button>
+                </div>
+            </div>`;
+        });
+    }
 }
 </script>
 </body>

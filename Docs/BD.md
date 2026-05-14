@@ -6,9 +6,34 @@
 |---|---|
 | PostgreSQL 15+ | Motor relacional principal |
 | UUID (`gen_random_uuid()`) | Primary key de todas las tablas |
-| Redis | Cache de tasas de cambio y cola de tareas (OCR, notificaciones) |
-| Storage externo (S3 / local) | Archivos de vouchers y comprobantes (no se guardan en la BD) |
+| Redis | Cache de tasas, transacciones pausadas, cola de tareas |
+| Storage externo (S3 / local) | Vouchers y comprobantes (no en BD) |
 | Alembic | Versionado y migraciones del esquema |
+
+---
+
+## Nuevas características
+
+### 🔔 Notificaciones de Vendor
+- Tabla `vendor_notifications` para rastrear transacciones pendientes
+- Estado: `pending`, `confirmed`, `disputed`, `resolved`
+- Timestamp de expiración para limpiar notificaciones antiguas
+
+### ⏸️ Transacciones Pausadas
+- Estado `paused_in_progress` en tabla `transactions`
+- Timestamp `paused_at` y `resumed_at` para auditoría
+- Datos completos se cachean en Redis (TTL 24h) para recuperación rápida
+- Cliente sincroniza automáticamente al reanudar
+
+### 📋 Historial de Disputas
+- Tabla `disputes` con campos `status` y `resolved_by`
+- Auditoría completa: quién abrió, cuándo, motivación, resolución
+- Índices en `buyer_id`, `seller_id` para búsquedas rápidas
+
+### 💱 Historial de Tasas
+- Tabla `exchange_rates` con histórico diario
+- Índice compuesto `(from_currency, to_currency, captured_at)`
+- Rotación automática: mantener últimos 90 días
 
 ---
 
@@ -102,7 +127,7 @@
 | `created_at` | TIMESTAMPTZ DEFAULT NOW() | Inicio de la transacción |
 | `updated_at` | TIMESTAMPTZ DEFAULT NOW() | Última actualización |
 
-**Estados de `transactions.status`:** `pending_payment` → `voucher_uploaded` → `confirmed` → `completed` / `disputed` / `cancelled`
+**Estados de `transactions.status`:** `pending_payment` → [`paused_in_progress`] → `voucher_uploaded` → `confirmed` → `completed` / `disputed` / `cancelled` (Los brackets indican estados opcionales de pausa durante la transacción)
 
 ---
 

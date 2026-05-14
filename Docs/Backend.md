@@ -12,14 +12,15 @@
 | Flask-JWT-Extended | Autenticación y autorización con JWT |
 | bcrypt | Hashing de contraseñas |
 | Marshmallow | Validación y serialización de payloads |
-| Celery + Redis | Tareas asíncronas (OCR, notificaciones push) |
+| Celery + Redis | Tareas asíncronas (OCR, notificaciones push, procesamiento de tasas) |
 | Gunicorn | Servidor WSGI para producción |
 | Nginx | Reverse proxy y servicio de archivos estáticos |
 | Docker + Docker Compose | Contenedores del entorno local y producción |
 | PostgreSQL 15 | Base de datos principal |
-| Redis | Cache de tasas y cola de tareas |
+| Redis | Cache de tasas, cola de tareas, sesiones transacción pausada |
 
 ---
+
 
 ## Arquitectura de archivos
 
@@ -225,3 +226,29 @@ Prefijo base: `/api/v1`
 |---|---|---|---|
 | GET | `/exchange/rates` | Obtener tasa de cambio actual (con caché de 5 min) | Sí |
 | GET | `/exchange/rates/historical` | Histórico de tasas para análisis | Sí |
+
+
+### 🔔 Sistema de Notificaciones de Vendor
+- **GET /api/v1/transactions/pending** - Obtener transacciones pendientes como vendedor
+- **POST /api/v1/transactions/{id}/confirm** - Confirmar y liberar fondos
+- **POST /api/v1/transactions/{id}/dispute** - Abrir disputa como vendedor
+- Notificaciones en tiempo real mediante WebSocket o polling
+
+### ⏸️ Persistencia de Transacciones Pausadas
+- **POST /api/v1/transactions/{id}/pause** - Guardar estado de transacción en progreso
+- **GET /api/v1/transactions/{id}/resume** - Recuperar transacción pausada
+- Estado se guarda en Redis con TTL de 24 horas
+- Cliente restaura automáticamente al volver a la pantalla
+
+### 📋 Disputas Consolidadas
+- **GET /api/v1/disputes/my-disputes** - Obtener disputas del usuario (buyer + seller)
+- Filtrado por rol: comprador, vendedor o todas
+- Incluye información completa de la transacción original
+
+### 💱 Sistema de Tasas de Cambio
+- **GET /api/v1/exchange/rates** - Tasas actuales (caché Redis 5 min)
+- **GET /api/v1/exchange/rates/historical** - Histórico diario de tasas
+- Tarea Celery actualiza cada 5 minutos
+- Soporta ExchangeRate.host (MVP) y Open Exchange Rates (producción)
+
+---
