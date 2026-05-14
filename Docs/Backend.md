@@ -1,254 +1,207 @@
-# Arquitectura Backend Flask API
+# Backend · Flask API
 
-## Objetivo
+## Qué se usa
 
-El backend debe exponer una API real en Flask para soportar todo el flujo del proyecto P2P: autenticacion, ofertas, matching, transacciones, vouchers, OCR, disputas, calificaciones y panel administrativo.
+| Herramienta | Rol |
+|---|---|
+| Python 3.11+ | Lenguaje |
+| Flask 3.x | Framework web |
+| Flask-RESTX | Rutas versionadas y documentación Swagger automática |
+| SQLAlchemy 2.x | ORM |
+| Alembic | Migraciones de base de datos |
+| Flask-JWT-Extended | Autenticación y autorización con JWT |
+| bcrypt | Hashing de contraseñas |
+| Marshmallow | Validación y serialización de payloads |
+| Celery + Redis | Tareas asíncronas (OCR, notificaciones push) |
+| Gunicorn | Servidor WSGI para producción |
+| Nginx | Reverse proxy y servicio de archivos estáticos |
+| Docker + Docker Compose | Contenedores del entorno local y producción |
+| PostgreSQL 15 | Base de datos principal |
+| Redis | Cache de tasas y cola de tareas |
 
-## Stack recomendado
+---
 
-- Flask como Web API.
-- Flask-RESTX o Flask-Smorest para organizar rutas y documentacion.
-- SQLAlchemy como ORM.
-- Alembic para migraciones.
-- JWT para autenticacion y autorizacion.
-- Marshmallow o Pydantic para validacion.
-- Swagger u OpenAPI para documentacion.
+## Arquitectura de archivos
 
-## Infraestructura del backend
-
-Docker Compose forma parte de la arquitectura del backend porque define como se levanta y conecta el entorno local y la base reproducible de despliegue.
-
-### Servicios base
-
-- `backend`: API Flask.
-- `db`: PostgreSQL.
-- `redis`: cache o colas livianas.
-- `nginx`: reverse proxy opcional.
-
-### Objetivo de infraestructura
-
-- Levantar el backend con dependencias reproducibles.
-- Separar configuracion por entorno.
-- Facilitar desarrollo local y preproduccion.
-- Mantener alineada la arquitectura con el despliegue real.
-
-## Estructura real del backend
-
-La idea es dividir el backend en una API delgada, una capa core con reglas de negocio y una carpeta de pruebas separada. Una estructura base escalable seria:
-
-```text
+```
 backend/
+│
+├── .env.example                   # Variables requeridas (plantilla sin secretos)
+├── .env                           # Variables reales — NO commitear
+├── docker-compose.yml             # Entorno local: Flask + PostgreSQL + Redis + Nginx
+├── docker-compose.prod.yml        # Entorno producción
+├── Dockerfile                     # Imagen de la app Flask
+├── requirements.txt
+├── wsgi.py                        # Punto de entrada Gunicorn
+│
+├── docker/
+│   ├── nginx/
+│   │   └── nginx.conf             # Proxy a Gunicorn, headers, HTTPS
+│   └── postgres/
+│       └── init.sql               # Schema inicial y extensión uuid-ossp
+│
+├── migrations/                    # Alembic — versionado del esquema
+│   ├── env.py
+│   ├── script.py.mako
+│   └── versions/
+│       ├── 001_create_users.py
+│       ├── 002_create_offers.py
+│       ├── 003_create_transactions.py
+│       ├── 004_create_vouchers_ocr.py
+│       ├── 005_create_disputes.py
+│       └── 006_create_ratings_audit.py
+│
 ├── app/
+│   ├── __init__.py                # create_app(): registra blueprints y extensiones
+│   │
+│   ├── core/                      # Configuración y servicios base (solo backend)
+│   │   ├── __init__.py
+│   │   ├── config.py              # Clases DevelopmentConfig, ProductionConfig, TestingConfig
+│   │   ├── database.py            # SQLAlchemy init, session, BaseModel con UUID y timestamps
+│   │   ├── security.py            # JWT setup, hash_password, verify_password
+│   │   ├── exceptions.py          # Handlers globales: 400, 401, 403, 404, 422, 500
+│   │   └── constants.py           # Roles, estados de TX, códigos de moneda, bancos
+│   │
 │   ├── api/
-│   │   ├── v1/
-│   │   │   ├── auth/
-│   │   │   ├── users/
-│   │   │   ├── offers/
-│   │   │   ├── matching/
-│   │   │   ├── transactions/
-│   │   │   ├── vouchers/
-│   │   │   ├── ocr/
-│   │   │   ├── disputes/
-│   │   │   ├── ratings/
-│   │   │   └── admin/
-│   │   └── __init__.py
-│   ├── core/
-│   │   ├── config.py
-│   │   ├── extensions.py
-│   │   ├── security.py
-│   │   ├── exceptions.py
-│   │   └── constants.py
-│   ├── modules/
-│   │   ├── auth/
-│   │   ├── users/
-│   │   ├── offers/
-│   │   ├── matching/
-│   │   ├── transactions/
-│   │   ├── vouchers/
-│   │   ├── ocr/
-│   │   ├── disputes/
-│   │   ├── ratings/
-│   │   └── admin/
-│   ├── schemas/
-│   ├── models/
-│   ├── repositories/
-│   ├── services/
-│   ├── middleware/
-│   ├── utils/
-│   └── __init__.py
-├── migrations/
+│   │   └── v1/
+│   │       ├── __init__.py        # Blueprint v1, registra todos los namespaces RESTX
+│   │       ├── auth/
+│   │       │   ├── __init__.py
+│   │       │   ├── routes.py      # POST /register /login /refresh /logout, GET /me
+│   │       │   └── schemas.py     # RegisterSchema, LoginSchema, TokenSchema
+│   │       ├── offers/
+│   │       │   ├── __init__.py
+│   │       │   ├── routes.py      # GET POST PATCH DELETE /offers, POST /offers/match
+│   │       │   └── schemas.py
+│   │       ├── transactions/
+│   │       │   ├── __init__.py
+│   │       │   ├── routes.py      # POST GET PATCH /transactions, /voucher /confirm /dispute
+│   │       │   └── schemas.py
+│   │       ├── ratings/
+│   │       │   ├── __init__.py
+│   │       │   ├── routes.py      # POST /ratings
+│   │       │   └── schemas.py
+│   │       ├── bank_accounts/
+│   │       │   ├── __init__.py
+│   │       │   ├── routes.py      # GET POST DELETE /bank-accounts
+│   │       │   └── schemas.py
+│   │       └── admin/
+│   │           ├── __init__.py
+│   │           ├── routes.py      # GET /disputes, PATCH /disputes/{id}/resolve, GET /users
+│   │           └── schemas.py
+│   │
+│   ├── models/                    # Modelos SQLAlchemy — uno por tabla
+│   │   ├── __init__.py
+│   │   ├── user.py
+│   │   ├── bank_account.py
+│   │   ├── currency.py
+│   │   ├── exchange_rate.py
+│   │   ├── offer.py
+│   │   ├── transaction.py
+│   │   ├── transaction_status_history.py
+│   │   ├── voucher.py
+│   │   ├── ocr_result.py
+│   │   ├── dispute.py
+│   │   ├── rating.py
+│   │   └── audit_log.py
+│   │
+│   ├── repositories/              # Consultas encapsuladas por dominio
+│   │   ├── user_repository.py
+│   │   ├── offer_repository.py
+│   │   ├── transaction_repository.py
+│   │   ├── dispute_repository.py
+│   │   └── rating_repository.py
+│   │
+│   ├── services/                  # Lógica de negocio y casos de uso
+│   │   ├── auth_service.py
+│   │   ├── offer_service.py
+│   │   ├── matching_service.py
+│   │   ├── transaction_service.py
+│   │   ├── voucher_service.py
+│   │   ├── ocr_service.py
+│   │   ├── dispute_service.py
+│   │   └── rating_service.py
+│   │
+│   ├── middleware/                # Decoradores de autenticación, roles y auditoría
+│   │   ├── auth_required.py
+│   │   ├── role_required.py
+│   │   └── audit.py
+│   │
+│   └── utils/
+│       ├── pagination.py
+│       ├── response.py            # Formato estándar de respuesta JSON
+│       ├── storage.py             # Upload a S3 / storage local de vouchers
+│       └── validators.py
+│
 ├── tests/
 │   ├── unit/
+│   │   ├── test_auth_service.py
+│   │   ├── test_offer_service.py
+│   │   └── test_matching_service.py
 │   ├── integration/
+│   │   ├── test_auth_routes.py
+│   │   ├── test_offer_routes.py
+│   │   └── test_transaction_routes.py
 │   └── fixtures/
-├── scripts/
-├── requirements.txt
-├── pyproject.toml
-└── run.py
+│       ├── conftest.py
+│       └── factories.py
+│
+└── scripts/
+    ├── seed.py                    # Datos iniciales: monedas, tasas, usuario admin
+    └── wait_for_db.sh             # Espera a que PostgreSQL esté listo antes de levantar Flask
 ```
 
-## Responsabilidad de cada carpeta
+---
 
-- `app/api`: expone rutas HTTP, validaciones de entrada y respuesta.
-- `app/core`: configura la aplicacion, extensiones, seguridad, constantes y manejo global de errores.
-- `app/modules`: contiene la logica por dominio, separada por negocio.
-- `app/schemas`: define contratos de entrada y salida.
-- `app/models`: define el modelo de persistencia.
-- `app/repositories`: encapsula consultas a la base de datos.
-- `app/services`: contiene casos de uso y reglas de negocio.
-- `app/middleware`: filtros, autenticacion, control de roles y auditoria.
-- `tests`: pruebas unitarias, integracion y datos de apoyo.
+## Resumen de APIs
 
-## Flujo interno real
+Prefijo base: `/api/v1`
 
-1. La app Android llama a `app/api`.
-2. La API valida el request con `schemas`.
-3. El controlador delega la operacion a `services`.
-4. `services` aplica reglas de negocio y usa `repositories`.
-5. `repositories` interactua con `models` y la BD.
-6. La respuesta vuelve por la API con formato estable.
+### Autenticación
 
-## Division por dominio
+| Método | Endpoint | Descripción | Auth |
+|---|---|---|---|
+| POST | `/auth/register` | Registro de nuevo usuario | No |
+| POST | `/auth/login` | Login, devuelve access y refresh token | No |
+| POST | `/auth/refresh` | Renovar access token con refresh token | Refresh token |
+| POST | `/auth/logout` | Invalidar sesión actual | Sí |
+| GET | `/auth/me` | Datos del usuario autenticado | Sí |
 
-### auth
+### Ofertas
 
-- registro, login, refresh, logout y recuperacion.
+| Método | Endpoint | Descripción | Auth |
+|---|---|---|---|
+| GET | `/offers` | Listar ofertas con filtros (`from`, `to`, `bank`) y paginación | Sí |
+| POST | `/offers` | Publicar oferta (monedas, monto, tasa, banco, límites, tiempo) | Sí |
+| PATCH | `/offers/{id}` | Editar oferta propia | Sí |
+| DELETE | `/offers/{id}` | Cancelar oferta propia | Sí |
+| POST | `/offers/match` | Matching automático: devuelve la mejor oferta para el par | Sí |
 
-### users
+### Transacciones
 
-- perfil, roles, datos personales y medios asociados.
+| Método | Endpoint | Descripción | Auth |
+|---|---|---|---|
+| POST | `/transactions` | Iniciar transacción vinculada a una oferta | Sí |
+| GET | `/transactions` | Historial de transacciones del usuario | Sí |
+| GET | `/transactions/{id}` | Detalle completo de una transacción | Sí |
+| PATCH | `/transactions/{id}/status` | Cambiar estado de la transacción | Sí |
+| POST | `/transactions/{id}/voucher` | Subir comprobante (multipart), lanza tarea OCR | Sí |
+| POST | `/transactions/{id}/confirm` | Vendedor confirma recepción y libera fondos | Sí |
+| POST | `/transactions/{id}/dispute` | Abrir disputa (comprador o vendedor) | Sí |
 
-### offers
+### Calificaciones y cuentas
 
-- publicacion, listado, filtros, edicion y estado.
+| Método | Endpoint | Descripción | Auth |
+|---|---|---|---|
+| POST | `/ratings` | Calificar a la contraparte de una TX cerrada | Sí |
+| GET | `/bank-accounts` | Listar cuentas bancarias propias | Sí |
+| POST | `/bank-accounts` | Agregar cuenta o billetera | Sí |
+| DELETE | `/bank-accounts/{id}` | Eliminar cuenta propia | Sí |
 
-### matching
+### Administración (solo rol admin)
 
-- seleccion automatica de la mejor contraparte.
-
-### transactions
-
-- creacion, bloqueo de fondos logico, estados y cierre.
-
-### vouchers y ocr
-
-- subida de comprobante, lectura OCR y validacion.
-
-### disputes
-
-- apertura, evidencia, resolucion y trazabilidad.
-
-### ratings
-
-- calificacion de usuarios por operacion.
-
-### admin
-
-- supervision, arbitraje y control de casos.
-
-## Capas tecnicas recomendadas
-
-- `routes` o `resources`: capa HTTP.
-- `use_cases` o `services`: capa de negocio.
-- `repositories`: capa de datos.
-- `entities` o `models`: capa de dominio/persistencia.
-- `dtos` o `schemas`: capa de contrato.
-
-## Pruebas
-
-### tests/unit
-
-- pruebas de servicios, validaciones y reglas de negocio.
-
-### tests/integration
-
-- pruebas de endpoints, base de datos y flujos completos.
-
-### tests/fixtures
-
-- datos base, factories y mocks reutilizables.
-
-## Como se ve el backend en la practica
-
-- La carpeta `api` queda liviana y ordenada.
-- La logica pesada vive en `services`.
-- La persistencia vive en `repositories`.
-- Los errores se centralizan en `core`.
-- Las pruebas se ejecutan sin mezclar codigo de produccion.
-
-Esta division es la que hace escalable el backend cuando crezcan usuarios, ofertas, disputas y modulos administrativos.
-
-## API, seguridad y despliegue
-
-### Endpoints base
-
-- `POST /auth/register`
-- `POST /auth/login`
-- `POST /auth/refresh`
-- `GET /me`
-- `GET /offers`
-- `POST /offers`
-- `PATCH /offers/{id}`
-- `POST /offers/match`
-- `POST /transactions`
-- `GET /transactions/{id}`
-- `PATCH /transactions/{id}/status`
-- `PATCH /transactions/{id}/upload-voucher`
-- `POST /transactions/{id}/confirm-payment`
-- `POST /transactions/{id}/disputes`
-- `GET /admin/disputes`
-- `PATCH /admin/disputes/{id}/resolve`
-
-### Seguridad
-
-- JWT con expiracion.
-- Password hashing con bcrypt o argon2.
-- Proteccion de rutas por rol.
-- Logs de seguridad y auditoria.
-- Validacion estricta de payloads.
-
-### Persistencia y despliegue
-
-- PostgreSQL como base principal.
-- Archivos de vouchers en storage externo.
-- Docker para despliegue reproducible.
-- Nginx como reverse proxy opcional.
-- GitHub Actions para CI/CD.
-- Docker Compose como orquestacion local y base del entorno reproducible.
-
-### Escalabilidad y operacion
-
-- Versionar la API con prefijos como `v1` para evolucionar sin romper clientes.
-- Paginar listas de ofertas, transacciones y disputas.
-- Aplicar filtros y ordenamiento desde el backend, no desde la app.
-- Usar cache para tasas, catálogos y consultas de alta lectura.
-- Mover OCR, notificaciones y tareas pesadas a colas asincronas.
-- Mantener servicios sin estado para escalar horizontalmente.
-- Centralizar logs, metricas y trazas para monitoreo.
-- Implementar health checks y manejo consistente de errores.
-
-### Seguridad reforzada
-
-- Rotacion y expiracion de refresh tokens.
-- Rate limiting en login, registro y endpoints sensibles.
-- Validacion de origen y tamanio de archivos subidos.
-- Cifrado en transito con HTTPS/TLS.
-- Variables de entorno para secretos, nunca en el codigo.
-- Autorizacion por rol y por recurso, no solo por login.
-- Idempotencia en operaciones sensibles como confirmacion de pago.
-- Auditoria obligatoria en cambios de estado y resoluciones.
-
-### Alcance funcional cubierto
-
-El backend cubre el alcance completo del PDF:
-
-- registro e inicio de sesion;
-- ofertas y marketplace;
-- matching automatico;
-- transacciones P2P;
-- estados y confirmacion de pago;
-- voucher OCR;
-- calificaciones;
-- historial;
-- disputas;
-- panel administrativo.
+| Método | Endpoint | Descripción | Auth |
+|---|---|---|---|
+| GET | `/admin/disputes` | Listar disputas activas con detalle y motivo | Admin |
+| PATCH | `/admin/disputes/{id}/resolve` | Resolver: liberar al comprador o revertir al vendedor | Admin |
+| GET | `/admin/users` | Listar usuarios con rol, estado y estadísticas | Admin |

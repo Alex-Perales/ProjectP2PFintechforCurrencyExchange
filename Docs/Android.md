@@ -1,203 +1,187 @@
-# Arquitectura Android Kotlin
+# Android · Kotlin
 
-## Objetivo
+## Qué se usa
 
-La app Android debe consumir la Flask API y representar el flujo del proyecto P2P en pantallas reales, manteniendo el orden visual del maquetado pero con logica implementada en Kotlin.
+| Herramienta | Rol |
+|---|---|
+| Android Studio | IDE |
+| Kotlin | Lenguaje |
+| Jetpack Compose | UI declarativa |
+| MVVM + Clean Architecture | Patrón de arquitectura |
+| Retrofit 2 + OkHttp | Consumo de la Flask API |
+| Coroutines + Flow | Asincronía y streams reactivos |
+| ViewModel + StateFlow | Estado de pantalla |
+| Compose Navigation | Navegación entre pantallas |
+| Hilt | Inyección de dependencias |
+| Room | Cache local (ofertas, historial) |
+| DataStore (Preferences) | Almacenamiento seguro del JWT |
+| Material 3 | Sistema de diseño y componentes |
+| Coil | Carga y caché de imágenes |
 
-## Stack recomendado
+---
 
-- Android Studio.
-- Kotlin.
-- Arquitectura MVVM.
-- Retrofit para consumir la API.
-- Coroutines y Flow para asincronia.
-- ViewModel para estado de pantalla.
-- Room opcional para cache local.
-- Jetpack Navigation para navegacion.
+## Arquitectura de archivos
 
-## Estructura real de la app Android
-
-La app debe organizarse por capas y por feature para que escale sin volverse un proyecto monolitico. Una estructura base seria:
-
-```text
+```
 android/
-├── app/
-│   ├── src/main/java/com/proyectomobiles/
-│   │   ├── core/
-│   │   │   ├── network/
-│   │   │   ├── security/
-│   │   │   ├── ui/
-│   │   │   ├── theme/
-│   │   │   └── utils/
-│   │   ├── data/
-│   │   │   ├── remote/
-│   │   │   ├── local/
-│   │   │   ├── dto/
-│   │   │   ├── mapper/
-│   │   │   └── repository/
-│   │   ├── domain/
-│   │   │   ├── model/
-│   │   │   ├── repository/
-│   │   │   └── usecase/
-│   │   ├── presentation/
-│   │   │   ├── auth/
-│   │   │   ├── market/
-│   │   │   ├── offer/
-│   │   │   ├── transaction/
-│   │   │   ├── voucher/
-│   │   │   ├── dispute/
-│   │   │   ├── profile/
-│   │   │   └── admin/
-│   │   ├── navigation/
-│   │   └── di/
-│   └── res/
 ├── build.gradle.kts
-└── settings.gradle.kts
+├── settings.gradle.kts
+├── gradle.properties
+│
+└── app/
+    ├── build.gradle.kts
+    ├── proguard-rules.pro
+    │
+    └── src/
+        ├── main/
+        │   ├── AndroidManifest.xml
+        │   └── java/com/p2pexchange/app/
+        │       │
+        │       ├── P2PApplication.kt
+        │       ├── MainActivity.kt
+        │       │
+        │       ├── core/
+        │       │   ├── network/
+        │       │   │   ├── ApiClient.kt          # Retrofit + OkHttp builder
+        │       │   │   ├── AuthInterceptor.kt    # Adjunta el JWT a cada request
+        │       │   │   └── NetworkResult.kt      # Sealed class: Success, Error, Loading
+        │       │   ├── security/
+        │       │   │   └── TokenManager.kt       # DataStore: guardar y leer JWT
+        │       │   ├── ui/
+        │       │   │   ├── theme/
+        │       │   │   │   ├── Color.kt
+        │       │   │   │   ├── Theme.kt
+        │       │   │   │   └── Type.kt
+        │       │   │   └── components/           # Composables reutilizables
+        │       │   │       ├── OfferCard.kt
+        │       │   │       ├── StatusTimeline.kt
+        │       │   │       ├── OcrUploadZone.kt
+        │       │   │       └── LoadingOverlay.kt
+        │       │   └── utils/
+        │       │       ├── DateUtils.kt
+        │       │       └── CurrencyFormatter.kt
+        │       │
+        │       ├── data/
+        │       │   ├── remote/
+        │       │   │   ├── api/
+        │       │   │   │   ├── AuthApi.kt
+        │       │   │   │   ├── OfferApi.kt
+        │       │   │   │   ├── TransactionApi.kt
+        │       │   │   │   ├── RatingApi.kt
+        │       │   │   │   └── AdminApi.kt
+        │       │   │   └── dto/
+        │       │   │       ├── AuthDto.kt
+        │       │   │       ├── OfferDto.kt
+        │       │   │       ├── TransactionDto.kt
+        │       │   │       └── DisputeDto.kt
+        │       │   ├── local/
+        │       │   │   ├── db/
+        │       │   │   │   └── AppDatabase.kt
+        │       │   │   └── dao/
+        │       │   │       ├── OfferDao.kt
+        │       │   │       └── TransactionDao.kt
+        │       │   ├── mapper/
+        │       │   │   ├── OfferMapper.kt
+        │       │   │   └── TransactionMapper.kt
+        │       │   └── repository/
+        │       │       ├── AuthRepositoryImpl.kt
+        │       │       ├── OfferRepositoryImpl.kt
+        │       │       ├── TransactionRepositoryImpl.kt
+        │       │       └── AdminRepositoryImpl.kt
+        │       │
+        │       ├── domain/
+        │       │   ├── model/
+        │       │   │   ├── User.kt
+        │       │   │   ├── Offer.kt
+        │       │   │   ├── Transaction.kt
+        │       │   │   ├── Voucher.kt
+        │       │   │   ├── Dispute.kt
+        │       │   │   └── Rating.kt
+        │       │   ├── repository/
+        │       │   │   ├── AuthRepository.kt
+        │       │   │   ├── OfferRepository.kt
+        │       │   │   └── TransactionRepository.kt
+        │       │   └── usecase/
+        │       │       ├── LoginUseCase.kt
+        │       │       ├── RegisterUseCase.kt
+        │       │       ├── GetOffersUseCase.kt
+        │       │       ├── MatchOfferUseCase.kt
+        │       │       ├── StartTransactionUseCase.kt
+        │       │       ├── UploadVoucherUseCase.kt
+        │       │       ├── ConfirmPaymentUseCase.kt
+        │       │       ├── OpenDisputeUseCase.kt
+        │       │       └── RateUserUseCase.kt
+        │       │
+        │       ├── presentation/
+        │       │   ├── auth/
+        │       │   │   ├── LoginScreen.kt
+        │       │   │   ├── LoginViewModel.kt
+        │       │   │   ├── LoginUiState.kt
+        │       │   │   ├── RegisterScreen.kt
+        │       │   │   └── RegisterViewModel.kt
+        │       │   ├── market/
+        │       │   │   ├── MarketScreen.kt
+        │       │   │   ├── MarketViewModel.kt
+        │       │   │   └── MarketUiState.kt
+        │       │   ├── offer/
+        │       │   │   ├── PublishScreen.kt
+        │       │   │   └── PublishViewModel.kt
+        │       │   ├── transaction/
+        │       │   │   ├── TransactionScreen.kt
+        │       │   │   ├── TransactionViewModel.kt
+        │       │   │   ├── TransactionUiState.kt
+        │       │   │   └── VendorInboxScreen.kt
+        │       │   ├── receipt/
+        │       │   │   ├── ReceiptScreen.kt
+        │       │   │   └── ReceiptViewModel.kt
+        │       │   ├── rating/
+        │       │   │   ├── RatingScreen.kt
+        │       │   │   └── RatingViewModel.kt
+        │       │   ├── history/
+        │       │   │   ├── HistoryScreen.kt
+        │       │   │   └── HistoryViewModel.kt
+        │       │   ├── profile/
+        │       │   │   ├── ProfileScreen.kt
+        │       │   │   └── ProfileViewModel.kt
+        │       │   ├── cards/
+        │       │   │   ├── BankAccountsScreen.kt
+        │       │   │   └── BankAccountsViewModel.kt
+        │       │   └── admin/
+        │       │       ├── AdminScreen.kt
+        │       │       └── AdminViewModel.kt
+        │       │
+        │       ├── navigation/
+        │       │   ├── NavGraph.kt               # Define el grafo completo de navegación
+        │       │   └── Screen.kt                 # Sealed class con rutas y argumentos
+        │       │
+        │       └── di/
+        │           ├── NetworkModule.kt          # Provee Retrofit, OkHttp, ApiClient
+        │           ├── DatabaseModule.kt         # Provee Room, DAOs
+        │           └── RepositoryModule.kt       # Bindea interfaces con implementaciones
+        │
+        └── test/
+            ├── java/com/p2pexchange/app/
+            │   ├── presentation/                 # Tests de ViewModel
+            │   └── domain/                       # Tests de UseCases
+            └── androidTest/                      # Tests de UI con Compose
 ```
 
-## Responsabilidad de cada capa
+---
 
-- `core`: red, seguridad, tema visual, utilidades y componentes comunes.
-- `data`: acceso a API, base local, DTOs y mapeo.
-- `domain`: reglas puras de negocio y contratos.
-- `presentation`: pantallas, estado de UI y navegacion por feature.
-- `di`: inyeccion de dependencias.
+## Resumen de vistas
 
-## Estructura por feature
-
-Cada flujo importante debe vivir en su propio paquete:
-
-- `auth`: login, registro y manejo de sesion.
-- `market`: listado, filtros y ofertas disponibles.
-- `offer`: publicar y editar oferta.
-- `transaction`: detalle, estados y seguimiento.
-- `voucher`: carga de voucher y resultado OCR.
-- `dispute`: apertura y seguimiento del conflicto.
-- `profile`: tarjetas, cuentas e historial.
-- `admin`: vista de arbitraje y control.
-
-## Como se ve la app en la practica
-
-- La app abre en login.
-- Tras autenticarse, entra al mercado con filtros de moneda.
-- El usuario publica oferta o compra una disponible.
-- La transaccion avanza en una pantalla con timeline claro.
-- El voucher se sube desde una vista dedicada.
-- El comprobante final y el historial quedan separados.
-- Si el rol es admin, aparece la seccion de arbitraje.
-
-## Navegacion sugerida
-
-- `Splash -> Login -> Market -> Offer Detail -> Transaction -> Voucher -> Receipt -> History`
-- `Profile -> Bank Accounts`
-- `Admin -> Disputes -> Resolution`
-
-## State management
-
-- Cada feature debe tener su `ViewModel` o `StateHolder`.
-- Las pantallas no deben hablar directo con Retrofit.
-- Los repositorios devuelven estados claros: loading, success y error.
-
-## Escalabilidad
-
-- Agregar una nueva feature no debe romper las existentes.
-- Los componentes compartidos deben vivir en `core`.
-- Los contratos de dominio no deben depender de UI.
-- La app puede crecer hacia Compose sin cambiar la logica central.
-
-## Seguridad movil
-
-- Guardar tokens en almacenamiento seguro del sistema, no en texto plano.
-- Renovar sesion con refresh token y forzar logout ante expiracion.
-- Usar HTTPS siempre y, si el proyecto lo justifica, certificate pinning.
-- Validar respuestas del backend antes de pintarlas en UI.
-- No exponer secretos, claves ni URLs internas en el cliente.
-- Bloquear capturas o acciones sensibles si el caso de uso lo requiere.
-- Mantener cache local solo para datos no sensibles o cifrados.
-
-## Rendimiento movil
-
-- Cargar listas con paginacion o carga incremental.
-- Evitar hacer llamadas directas desde la vista.
-- Mantener estados livianos y recomposiciones controladas.
-- Manejar errores de red con reintentos y mensajes claros.
-- Reducir payloads y descargar solo lo necesario por pantalla.
-
-## Pruebas
-
-- pruebas de ViewModel.
-- pruebas de repositorios.
-- pruebas de mapeo de DTOs.
-- pruebas de pantallas criticas del flujo.
-
-Esta organizacion hace que la app quede ordenada, mantenible y lista para crecer con mas modulos sin reescribirla desde cero.
-
-## UI, maquetado y alcance
-
-### Pantallas principales
-
-- Login y registro.
-- Mercado de ofertas.
-- Publicacion de oferta.
-- Matching o seleccion manual de oferta.
-- Detalle de transaccion.
-- Carga de voucher.
-- Seguimiento de estados.
-- Comprobante final.
-- Perfil y medios de cobro.
-- Historial.
-- Vista admin si el rol lo permite.
-
-### Mapeo con el maquetado
-
-- Inicio y autenticacion.
-- Vista de mercado con filtros.
-- Vista de publicacion.
-- Vista de transaccion con timeline.
-- Vista de recibo final.
-- Vista de perfil y tarjetas.
-- Panel administrativo inferior.
-
-El archivo `Maquetado.html` solo sirve como referencia de interfaz y secuencia visual.
-
-### Capas de la app
-
-- Presentation: screens, composables o activities/fragments y manejo de estado.
-- ViewModel: orquesta llamadas a casos de uso o repositorios.
-- Domain: login, ofertas, transacciones, voucher, disputa y calificacion.
-- Data: repository, Retrofit service, DTOs, mapeadores y Room opcional.
-
-### Flujo funcional en la app
-
-1. El usuario inicia sesion.
-2. Ve el mercado y filtra por moneda.
-3. Publica una oferta o selecciona una disponible.
-4. La app crea la transaccion mediante la API.
-5. El usuario sube el voucher.
-6. La app muestra el estado de OCR y validacion.
-7. El flujo termina en comprobante o disputa.
-8. El usuario puede revisar historial y calificaciones.
-
-### Consideraciones de UI
-
-- Mantener una navegacion simple y clara.
-- Respetar el orden visual del prototipo.
-- Mostrar estados de transaccion con timeline.
-- Priorizar claridad en montos, tasas y moneda.
-- Diferenciar vista de usuario y vista admin por rol.
-
-### Alcance cubierto
-
-La app cubre todo lo pedido en el PDF:
-
-- login;
-- publicacion de ofertas;
-- busqueda y filtrado;
-- matching automatico;
-- transacciones;
-- confirmacion de pago;
-- voucher;
-- calificacion;
-- historial;
-- disputas;
-- admin.
+| Pantalla | Descripción |
+|---|---|
+| **SplashScreen** | Logo animado, barra de progreso, redirige automáticamente a Login |
+| **LoginScreen** | Email + contraseña, toggle a registro, enlace recuperar contraseña |
+| **RegisterScreen** | Nombre, email, contraseña, aceptar términos, validaciones en tiempo real |
+| **MarketScreen** | Ticker de tasas en vivo, filtros par de monedas (Tengo / Quiero), lista de ofertas por mejor tasa, indicador online/offline, badge verificado, % completadas, tiempo de respuesta, límites min/max, botón de matching automático |
+| **PublishScreen** | Publicar oferta: monedas, monto total, mínimo y máximo por operación, tasa propia, banco de recepción, tiempo límite de pago |
+| **TransactionScreen** | Temporizador regresivo, timeline 4 pasos (Pagar → Voucher → Confirmar → Liberado), datos de cuenta receptora con CCI, mini-chat con el vendedor, zona de subida de voucher con IA OCR, espera o disputa |
+| **VendorInboxScreen** | Bandeja del vendedor: transacciones con voucher validado por OCR, botones Liberar Fondos o Disputar |
+| **ReceiptScreen** | Comprobante con ID, partes, tasa, monto acreditado, resultado OCR, descarga PDF, acceso a calificar |
+| **RatingScreen** | Calificación 1–5 estrellas con comentario opcional |
+| **HistoryScreen** | Historial filtrable: Todos / Completados / Pendientes / En disputa |
+| **ProfileScreen** | Avatar, calificación promedio, nivel, KYC badge, stats (operaciones, % completadas, tiempo respuesta), menú |
+| **BankAccountsScreen** | Lista de cuentas (BCP, Interbank, BBVA, Yape, Plin), agregar nueva |
+| **AdminScreen** | Solo rol admin: stats globales, disputas activas con motivo, acciones Liberar o Revertir |
