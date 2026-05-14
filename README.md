@@ -8,6 +8,7 @@ Este proyecto toma como base el PDF del curso y usa `Maquetado.html` como refere
 - Backend Flask API: [Docs/Backend.md](Docs/Backend.md)
 - Android Kotlin: [Docs/Android.md](Docs/Android.md)
 - Indice general: [Docs/Arquitectura_BD_Backend_Mobile.md](Docs/Arquitectura_BD_Backend_Mobile.md)
+- Tasas de cambio y APIs: [Docs/Exchange_Rates_API.md](Docs/Exchange_Rates_API.md)
 - Documento base del proyecto: https://docs.google.com/document/d/17NVohPg2bjVlZ_WTKR1ElYv2Bw3S3ONzCkSl15gZHbk/edit?usp=sharing
 
 ## Stack
@@ -24,39 +25,6 @@ Este proyecto toma como base el PDF del curso y usa `Maquetado.html` como refere
 - Android Kotlin: [Docs/Android.md](Docs/Android.md)
 - Indice general: [Docs/Arquitectura_BD_Backend_Mobile.md](Docs/Arquitectura_BD_Backend_Mobile.md)
 
-## Backend en desarrollo
-
-- `app/api`: expone endpoints versionados por dominio.
-- `app/core`: configuracion, seguridad, excepciones y extensiones.
-- `app/modules`: logica de negocio por feature.
-- `app/repositories`: acceso a datos.
-- `app/services`: casos de uso y reglas de negocio.
-- `tests`: pruebas unitarias e integracion.
-
-## Backend en produccion
-
-- Flask ejecutado detras de Gunicorn o equivalente.
-- Nginx como reverse proxy.
-- PostgreSQL como base principal.
-- Redis opcional para cache y colas livianas.
-- Storage externo para vouchers y comprobantes.
-- Logs, monitoreo y backups automatizados.
-- Variables de entorno para secretos.
-- HTTPS/TLS obligatorio.
-
-## Infraestructura del backend
-
-Docker Compose forma parte de la arquitectura del backend porque permite definir el entorno local y la base de despliegue reproducible junto con Flask, PostgreSQL, Redis y Nginx.
-
-Flujo sugerido en local:
-
-1. Copiar variables de entorno.
-2. Levantar servicios con Docker Compose.
-3. Ejecutar migraciones.
-4. Cargar datos base si aplica.
-5. Probar la API y la app Android contra ese entorno.
-
-Para produccion, la idea es usar la misma arquitectura con imagen publicada, secretos inyectados por entorno y servicios endurecidos.
 
 ## Alcance
 
@@ -68,19 +36,6 @@ Para produccion, la idea es usar la misma arquitectura con imagen publicada, sec
 - Disputas y panel administrativo.
 - Historial y calificacion de usuarios.
 
-## Evaluacion del estado actual
-
-La arquitectura documental ya esta lista para avanzar al desarrollo porque separa bien datos, backend y mobile, y ya considera seguridad, escalabilidad, pruebas y despliegue.
-
-Lo que aun falta para decir que el proyecto esta listo al 100% es la implementacion real:
-
-- crear el backend Flask con sus rutas, modelos, servicios y pruebas;
-- crear la app Android con su navegacion, estados y consumo real de API;
-- definir migraciones y datos semilla;
-- configurar CI/CD, secretos y despliegue;
-- integrar OCR, notificaciones y almacenamiento de archivos.
-
-Con la estructura actual, si se puede proseguir con el proyecto sin rehacer la arquitectura.
 
 ## Nota
 

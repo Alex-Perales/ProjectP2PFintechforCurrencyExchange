@@ -49,7 +49,8 @@ backend/
 │       ├── 003_create_transactions.py
 │       ├── 004_create_vouchers_ocr.py
 │       ├── 005_create_disputes.py
-│       └── 006_create_ratings_audit.py
+│       ├── 006_create_ratings_audit.py
+│       └── 007_create_exchange_rate.py
 │
 ├── app/
 │   ├── __init__.py                # create_app(): registra blueprints y extensiones
@@ -84,6 +85,10 @@ backend/
 │   │       ├── bank_accounts/
 │   │       │   ├── __init__.py
 │   │       │   ├── routes.py      # GET POST DELETE /bank-accounts
+│   │       │   └── schemas.py
+│   │       ├── exchange/
+│   │       │   ├── __init__.py
+│   │       │   ├── routes.py      # GET /rates, GET /rates/historical
 │   │       │   └── schemas.py
 │   │       └── admin/
 │   │           ├── __init__.py
@@ -120,7 +125,15 @@ backend/
 │   │   ├── voucher_service.py
 │   │   ├── ocr_service.py
 │   │   ├── dispute_service.py
-│   │   └── rating_service.py
+│   │   ├── rating_service.py
+│   │   ├── exchange_rate_service.py
+│   │   ├── providers/
+│   │   │   ├── __init__.py
+│   │   │   ├── exchange_rate_provider.py  # Clase abstracta
+│   │   │   ├── exchangerate_host.py      # Proveedor gratis (MVP)
+│   │   │   └── open_exchange_rates.py    # Proveedor producción
+│   │   └── tasks/
+│   │       └── update_exchange_rates.py  # Celery task — actualización automática
 │   │
 │   ├── middleware/                # Decoradores de autenticación, roles y auditoría
 │   │   ├── auth_required.py
@@ -205,3 +218,10 @@ Prefijo base: `/api/v1`
 | GET | `/admin/disputes` | Listar disputas activas con detalle y motivo | Admin |
 | PATCH | `/admin/disputes/{id}/resolve` | Resolver: liberar al comprador o revertir al vendedor | Admin |
 | GET | `/admin/users` | Listar usuarios con rol, estado y estadísticas | Admin |
+
+### Tasas de Cambio
+
+| Método | Endpoint | Descripción | Auth |
+|---|---|---|---|
+| GET | `/exchange/rates` | Obtener tasa de cambio actual (con caché de 5 min) | Sí |
+| GET | `/exchange/rates/historical` | Histórico de tasas para análisis | Sí |
