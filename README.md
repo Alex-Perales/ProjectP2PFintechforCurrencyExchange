@@ -9,7 +9,7 @@ Este proyecto toma como base el PDF del curso y usa `Maquetado.html` como refere
 - Android Kotlin: [Docs/Android.md](Docs/Android.md)
 - Indice general: [Docs/Arquitectura_BD_Backend_Mobile.md](Docs/Arquitectura_BD_Backend_Mobile.md)
 - Tasas de cambio y APIs: [Docs/Exchange_Rates_API.md](Docs/Exchange_Rates_API.md)
-- Documento base del proyecto: https://docs.google.com/document/d/17NVohPg2bjVlZ_WTKR1ElYv2Bw3S3ONzCkSl15gZHbk/edit?usp=sharing
+- Documento Historias de usuario: https://docs.google.com/document/d/17NVohPg2bjVlZ_WTKR1ElYv2Bw3S3ONzCkSl15gZHbk/edit?usp=sharing
 
 ## Stack
 
