@@ -234,7 +234,6 @@
         .status-pill.pending   { background: rgba(245,158,11,0.1);  color: var(--warning); }
         .status-pill.disputed  { background: rgba(239,68,68,0.1);   color: var(--danger); }
         .status-pill.cancelled { background: rgba(100,116,139,0.1); color: var(--text-muted); }
-        .status-pill.open      { background: rgba(245,158,11,0.1); color: var(--warning); }
 
         /* ── Profile stats ── */
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
@@ -343,41 +342,137 @@
         /* ── App label ── */
         .app-label { color: rgba(255,255,255,0.3); font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
 
-        /* ── Offer management / contract / complaints ── */
-        .btn-warning { background: linear-gradient(135deg, var(--warning), #D97706); box-shadow: 0 4px 15px rgba(245,158,11,0.25); }
-        .offer-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 10px; }
-        .offer-actions .btn-sm { width: 100%; }
-        .offer-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .offer-detail-box { background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 12px; }
-        .offer-detail-lbl { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-        .offer-detail-val { font-size: 13px; font-weight: 800; color: var(--text-main); margin-top: 3px; }
-        .mini-hint { font-size: 10px; color: var(--text-muted); margin-top: -8px; margin-bottom: 12px; }
-        .dni-banner { background: linear-gradient(135deg, rgba(0,172,193,0.08), rgba(0,230,118,0.05)); border: 1px solid rgba(0,172,193,0.18); border-radius: 14px; padding: 12px 14px; display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
-        .contract-modal, .sheet-modal {
-            position: absolute; inset: 0; background: rgba(0,0,0,0.58);
-            display: flex; align-items: flex-end; justify-content: center; z-index: 300;
-            border-radius: 34px; overflow: hidden;
+        /* ══ DISPUTE STYLES (US-ADM-01 / US-ADM-02 / US-ADM-03 / US-USER-01 / US-USER-02) ══ */
+
+        /* Status pills extended */
+        .status-pill.en-revision { background: rgba(245,158,11,0.12); color: var(--warning); }
+        .status-pill.resuelta    { background: rgba(16,185,129,0.12); color: var(--success); }
+        .status-pill.pendiente   { background: rgba(100,116,139,0.1); color: var(--text-muted); }
+        .status-pill.arbitraje   { background: rgba(239,68,68,0.12);  color: var(--danger); }
+
+        /* Admin dispute list card (US-ADM-01) */
+        .adm-dispute-row {
+            background: white; border-radius: 14px; border: 1px solid var(--border-color);
+            padding: 14px; margin-bottom: 10px; cursor: pointer;
+            transition: all 0.2s; display: flex; justify-content: space-between; align-items: flex-start;
         }
-        .contract-modal.hidden, .sheet-modal.hidden { display: none !important; }
-        .contract-sheet, .sheet-content {
-            background: white; width: 100%; border-radius: 26px 26px 0 0;
-            padding: 18px; animation: slideUp 0.3s ease; max-height: 68vh; overflow-y: auto;
+        .adm-dispute-row:hover { border-color: var(--primary); box-shadow: 0 4px 16px rgba(0,172,193,0.1); transform: translateY(-1px); }
+        .adm-dispute-row.pendiente-row  { border-left: 4px solid var(--text-muted); }
+        .adm-dispute-row.revision-row   { border-left: 4px solid var(--warning); }
+        .adm-dispute-row.resuelta-row   { border-left: 4px solid var(--success); }
+        .adm-dispute-row.arbitraje-row  { border-left: 4px solid var(--danger); }
+
+        /* Admin tabs (US-ADM-01 filter) */
+        .adm-tabs { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 2px; }
+        .adm-tab  { flex-shrink: 0; padding: 5px 12px; border-radius: 20px; font-size: 10px; font-weight: 700;
+                    background: #F1F5F9; color: var(--text-muted); cursor: pointer; transition: all 0.2s; border: none; }
+        .adm-tab.active { background: var(--primary); color: white; }
+
+        /* Detail view blocks (US-ADM-02) */
+        .detail-block {
+            background: #F8FAFC; border-radius: 12px; padding: 12px 14px; margin-bottom: 10px;
+            border: 1px solid var(--border-color);
         }
-        .confirm-handle { width: 36px; height: 4px; background: #e5e7eb; border-radius: 2px; margin: 0 auto 16px; }
-        .contract-check { display: flex; gap: 10px; align-items: flex-start; margin: 14px 0; }
-        .contract-check input { margin-top: 3px; }
-        .detail-block { background: #F8FAFC; border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; border: 1px solid var(--border-color); }
         .detail-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 12px; }
         .detail-row:last-child { margin-bottom: 0; }
         .detail-label { color: var(--text-muted); font-weight: 600; }
         .detail-value { font-weight: 700; color: var(--text-main); text-align: right; max-width: 60%; }
-        .complaint-card { background: white; border: 1px solid var(--border-color); border-radius: 14px; padding: 14px; margin-bottom: 10px; }
-        .complaint-card.open { border-left: 4px solid var(--warning); }
-        .complaint-card.resolved { border-left: 4px solid var(--success); }
-        .complaint-card.review { border-left: 4px solid var(--primary); }
-        .offer-manage-card { background: white; border: 1px solid var(--border-color); border-radius: 16px; padding: 14px; margin-bottom: 10px; }
-        .offer-manage-card.mine { border-color: rgba(0,172,193,0.28); box-shadow: 0 6px 20px rgba(0,172,193,0.08); }
-        .offer-owner-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 8px; background: rgba(0,172,193,0.08); color: var(--primary); font-size: 10px; font-weight: 800; }
+
+        /* Evidence card (US-ADM-02) */
+        .evidence-card {
+            background: white; border: 1.5px dashed var(--border-color); border-radius: 12px;
+            padding: 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+            cursor: pointer; transition: border-color 0.2s;
+        }
+        .evidence-card:hover { border-color: var(--primary); }
+        .evidence-thumb { width: 40px; height: 40px; border-radius: 10px; object-fit: cover; flex-shrink: 0;
+                          background: linear-gradient(135deg, var(--primary), var(--primary-light));
+                          display: flex; align-items: center; justify-content: center; }
+
+        /* Resolution buttons (US-ADM-03) */
+        .resolution-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+        .res-option {
+            border: 2px solid var(--border-color); border-radius: 14px; padding: 12px 14px;
+            cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 10px;
+            background: white;
+        }
+        .res-option:hover { transform: translateY(-1px); }
+        .res-option.selected-buyer  { border-color: var(--success); background: rgba(16,185,129,0.06); }
+        .res-option.selected-seller { border-color: var(--danger);  background: rgba(239,68,68,0.06); }
+        .res-option.selected-review { border-color: var(--warning); background: rgba(245,158,11,0.06); }
+        .res-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center;
+                    justify-content: center; font-size: 16px; flex-shrink: 0; }
+
+        /* User dispute list (US-USER-02) */
+        .user-dispute-card {
+            background: white; border-radius: 14px; border: 1px solid var(--border-color);
+            padding: 14px; margin-bottom: 10px;
+        }
+        .user-dispute-card.pending  { border-left: 4px solid var(--text-muted); }
+        .user-dispute-card.revision { border-left: 4px solid var(--warning); }
+        .user-dispute-card.resolved { border-left: 4px solid var(--success); }
+        .dispute-status-badge {
+            font-size: 9px; font-weight: 800; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .dispute-status-badge.pendiente  { background: rgba(100,116,139,0.1); color: var(--text-muted); }
+        .dispute-status-badge.revision   { background: rgba(245,158,11,0.12); color: var(--warning); }
+        .dispute-status-badge.resuelta   { background: rgba(16,185,129,0.12); color: var(--success); }
+        .dispute-status-badge.arbitraje  { background: rgba(239,68,68,0.12);  color: var(--danger); }
+
+        /* Timeline dispute (US-USER-02 tracking) */
+        .dispute-timeline { display: flex; flex-direction: column; gap: 0; }
+        .dt-step { display: flex; gap: 10px; position: relative; }
+        .dt-step:not(:last-child)::before {
+            content: ''; position: absolute; left: 13px; top: 28px;
+            width: 2px; height: calc(100% + 4px); background: var(--border-color); z-index: 0;
+        }
+        .dt-step.done::before { background: var(--success); }
+        .dt-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border-color);
+                  background: white; display: flex; align-items: center; justify-content: center;
+                  font-size: 11px; z-index: 1; flex-shrink: 0; }
+        .dt-step.done .dt-dot { background: var(--success); border-color: var(--success); color: white; }
+        .dt-step.active .dt-dot { background: var(--warning); border-color: var(--warning); color: white; }
+        .dt-body { padding-bottom: 16px; flex: 1; }
+        .dt-title { font-size: 12px; font-weight: 700; color: var(--text-main); }
+        .dt-sub   { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+        /* Register dispute form (US-USER-01) */
+        .tx-select-card {
+            background: white; border: 2px solid var(--border-color); border-radius: 12px;
+            padding: 12px 14px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .tx-select-card:hover { border-color: var(--primary); }
+        .tx-select-card.selected { border-color: var(--primary); background: rgba(0,172,193,0.04); }
+        .tx-select-card .tx-check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border-color);
+                                     display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .tx-select-card.selected .tx-check { background: var(--primary); border-color: var(--primary); color: white; font-size: 10px; }
+
+        /* Evidence uploader (US-USER-01) */
+        .evidence-uploader { border: 2px dashed var(--border-color); border-radius: 14px; padding: 18px;
+                              text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 12px; }
+        .evidence-uploader:hover { border-color: var(--primary); background: rgba(0,172,193,0.03); }
+        .evidence-uploader.uploaded { border-color: var(--success); background: rgba(16,185,129,0.04); }
+
+        /* Confirm modal (US-ADM-03) */
+        .confirm-modal { position: absolute; inset: 0; background: rgba(0,0,0,0.55);
+                         display: flex; align-items: center; justify-content: center;
+                         z-index: 300; border-radius: 34px; padding: 20px; }
+        .confirm-modal.hidden { display: none !important; }
+        .confirm-modal-box { background: white; border-radius: 22px; padding: 22px; width: 100%;
+                             box-shadow: 0 20px 60px rgba(0,0,0,0.25); animation: popIn 0.25s ease; }
+        @keyframes popIn { from { opacity:0; transform: scale(0.92); } to { opacity:1; transform: scale(1); } }
+
+        /* Admin stats pills row */
+        .admin-pills-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+        .admin-pill { background: rgba(255,255,255,0.07); border-radius: 20px; padding: 4px 10px;
+                      font-size: 10px; font-weight: 700; color: #94A3B8; border: 1px solid rgba(255,255,255,0.1); }
+        .admin-pill.danger  { color: var(--danger); border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); }
+        .admin-pill.success { color: var(--primary-mint); border-color: rgba(0,230,118,0.25); background: rgba(0,230,118,0.07); }
+        .admin-pill.warning { color: var(--warning); border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.07); }
+
+        /* btn-warning */
+        .btn-warning { background: linear-gradient(135deg, var(--warning), #D97706); box-shadow: 0 4px 15px rgba(245,158,11,0.25); }
     </style>
 </head>
 <body>
@@ -443,11 +538,6 @@
             </div>
         </div>
 
-        <!-- ── SHEET MODAL ── -->
-        <div id="sheet-modal" class="sheet-modal hidden">
-            <div id="sheet-content" class="sheet-content"></div>
-        </div>
-
         <!-- ══════════════════════════════════════
              PHONE SCREEN (all views)
         ══════════════════════════════════════ -->
@@ -500,9 +590,6 @@
                             <input type="password" class="form-input" id="reg-pass" placeholder="Mínimo 8 caracteres">
                             <i class="fas fa-eye input-icon" onclick="togglePass('reg-pass',this)"></i>
                         </div>
-                        <label class="form-label">DNI / Documento demo</label>
-                        <input type="text" class="form-input" id="reg-dni" placeholder="Ej. 12345678" maxlength="8" inputmode="numeric">
-                        <p class="mini-hint">Solo demo: aquí se valida un DNI ficticio para mostrar el flujo KYC.</p>
                         <label style="display:flex; align-items:center; gap:8px; margin-bottom:14px; font-size:12px; color:var(--text-muted); cursor:pointer;">
                             <input type="checkbox" id="reg-terms" onchange="updateTermsAccept()"> Acepto los 
                             <span style="color:var(--primary); cursor:pointer;" onclick="event.stopPropagation(); navigateTo('view-terms')">Términos de Uso</span>
@@ -589,15 +676,8 @@
 
             <!-- ── PUBLISH ── -->
             <div id="view-publish" class="view hidden">
-                <h4 id="publish-title" style="font-weight:800; font-size:18px; color:var(--text-main); margin-bottom:14px;">Publicar Anuncio P2P</h4>
+                <h4 style="font-weight:800; font-size:18px; color:var(--text-main); margin-bottom:14px;">Publicar Anuncio P2P</h4>
                 <div class="card">
-                    <div class="dni-banner" style="margin-bottom:14px;">
-                        <i class="fas fa-file-signature" style="font-size:20px; color:var(--primary);"></i>
-                        <div>
-                            <p style="font-size:12px; font-weight:700; color:var(--text-main);">Contrato demo de oferta</p>
-                            <p style="font-size:10px; color:var(--text-muted);">La publicación queda asociada al DNI demo guardado en tu perfil.</p>
-                        </div>
-                    </div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:4px;">
                         <div>
                             <label class="form-label">Ofrezco</label>
@@ -644,10 +724,7 @@
                         <option value="30">30 minutos</option>
                         <option value="60">60 minutos</option>
                     </select>
-                    <button class="btn btn-outline" style="margin-bottom:10px;" onclick="openOfferContract()">
-                        <i class="fas fa-file-contract"></i> Ver contrato demo
-                    </button>
-                    <button class="btn btn-success" id="publish-submit-btn" onclick="doPublish()">
+                    <button class="btn btn-success" onclick="doPublish()">
                         <i class="fas fa-paper-plane"></i> Listar en el Mercado
                     </button>
                 </div>
@@ -801,7 +878,6 @@
                     <div style="width:74px; height:74px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--primary-light)); color:white; display:flex; justify-content:center; align-items:center; font-size:24px; font-weight:800; margin:0 auto 10px; box-shadow:0 8px 22px rgba(0,172,193,0.3);" id="profile-avatar">CM</div>
                     <h4 style="font-weight:800; font-size:17px;" id="profile-name">Carlos Mendoza</h4>
                     <p style="font-size:11px; color:var(--primary); font-weight:600; margin-bottom:8px;" id="profile-email">carlos@peru.com</p>
-                    <p style="font-size:10px; color:var(--text-muted); margin-bottom:8px;" id="profile-dni">DNI demo: 12345678</p>
                     <div style="display:flex; justify-content:center; gap:6px; margin-top:8px; flex-wrap:wrap;">
                         <span class="stars-badge"><i class="fas fa-star"></i> 4.9</span>
                         <span class="level-experto">Experto</span>
@@ -824,10 +900,6 @@
                 </div>
 
                 <div class="card" style="padding:0;">
-                    <div class="menu-item" onclick="navigateTo('view-my-offers')">
-                        <div><i class="fas fa-tags" style="width:20px; color:var(--primary); margin-right:10px;"></i>Mis Ofertas</div>
-                        <i class="fas fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
-                    </div>
                     <div class="menu-item" onclick="navigateTo('view-cards')">
                         <div><i class="fas fa-credit-card" style="width:20px; color:var(--primary); margin-right:10px;"></i>Tarjetas y Cuentas</div>
                         <i class="fas fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
@@ -868,9 +940,6 @@
 
                 <div class="section-title" style="margin-top:16px;"><i class="fas fa-cogs"></i> Mi Actividad</div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px;">
-                    <button class="btn btn-outline btn-sm" onclick="navigateTo('view-complaints')">
-                        <i class="fas fa-file-signature"></i> Reclamos
-                    </button>
                     <button class="btn btn-warning btn-sm" onclick="navigateTo('view-vendor-inbox',document.getElementById('nav-profile'))">
                         <i class="fas fa-inbox"></i> Transac. Pendientes
                     </button>
@@ -910,19 +979,19 @@
                 </div>
             </div>
 
-            <!-- ── ADMIN ── -->
+            <!-- ══ US-ADM-01: PANEL ADMIN – LISTADO DE DISPUTAS ══ -->
             <div id="view-admin" class="view hidden">
                 <div class="page-header">
                     <div class="back-btn" onclick="navigateTo('view-profile')"><i class="fas fa-chevron-left"></i></div>
                     <h4>Panel Administrador</h4>
                 </div>
                 <div class="admin-header">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                         <div>
                             <p style="font-size:10px; font-weight:700; color:var(--primary-light); text-transform:uppercase; letter-spacing:1px;">Control de Operaciones</p>
-                            <h4 style="font-size:15px; font-weight:800; margin-top:4px;">ADM · Perú Exchange</h4>
+                            <h4 style="font-size:15px; font-weight:800; margin-top:3px;">ADM · Perú Exchange</h4>
                         </div>
-                        <i class="fas fa-user-shield" style="font-size:28px; color:var(--primary-light); opacity:0.7;"></i>
+                        <i class="fas fa-user-shield" style="font-size:26px; color:var(--primary-light); opacity:0.7;"></i>
                     </div>
                     <div class="admin-stats">
                         <div class="admin-stat">
@@ -938,9 +1007,183 @@
                             <p style="font-size:16px; font-weight:800; color:var(--primary-mint);">284</p>
                         </div>
                     </div>
+                    <div class="admin-pills-row" style="margin-top:10px;">
+                        <span class="admin-pill danger" id="adm-pill-arbitraje">⚖️ 0 En arbitraje</span>
+                        <span class="admin-pill warning" id="adm-pill-revision">🔍 0 En revisión</span>
+                        <span class="admin-pill success" id="adm-pill-resuelta">✅ 0 Resueltas</span>
+                    </div>
                 </div>
-                <div class="section-title"><i class="fas fa-gavel"></i> Casos de Arbitraje</div>
+
+                <!-- Filtros por estado (US-ADM-01) -->
+                <div class="adm-tabs">
+                    <button class="adm-tab active" onclick="filterAdminDisputes('all', this)">Todas</button>
+                    <button class="adm-tab" onclick="filterAdminDisputes('arbitraje', this)">⚖️ Arbitraje</button>
+                    <button class="adm-tab" onclick="filterAdminDisputes('revision', this)">🔍 Revisión</button>
+                    <button class="adm-tab" onclick="filterAdminDisputes('resuelta', this)">✅ Resuelta</button>
+                </div>
+
                 <div id="admin-disputes"></div>
+
+                <!-- Reset demo -->
+                <div style="text-align:center; margin-top:14px; padding-top:10px; border-top:1px solid var(--border-color);">
+                    <button class="btn btn-ghost btn-sm" style="width:auto; font-size:10px;" onclick="resetDemoData()">
+                        <i class="fas fa-redo" style="font-size:10px;"></i> Restablecer datos demo
+                    </button>
+                </div>
+            </div>
+
+            <!-- ══ US-ADM-02: DETALLE DE DISPUTA ══ -->
+            <div id="view-dispute-detail" class="view hidden">
+                <div class="page-header">
+                    <div class="back-btn" onclick="navigateTo('view-admin')"><i class="fas fa-chevron-left"></i></div>
+                    <h4>Detalle de Disputa</h4>
+                    <span id="dd-status-badge" class="dispute-status-badge arbitraje" style="margin-left:auto;">EN ARBITRAJE</span>
+                </div>
+
+                <!-- Bloque ID y estado -->
+                <div class="detail-block" style="background:linear-gradient(135deg,rgba(239,68,68,0.04),white); border-color:rgba(239,68,68,0.2);">
+                    <div class="detail-row">
+                        <span class="detail-label">ID Disputa</span>
+                        <strong style="font-size:13px; color:var(--danger);" id="dd-id">#TX-0000</strong>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Fecha de apertura</span>
+                        <span class="detail-value" id="dd-date">—</span>
+                    </div>
+                    <div class="detail-row" style="margin-bottom:0;">
+                        <span class="detail-label">Moneda</span>
+                        <span class="detail-value" id="dd-curr">—</span>
+                    </div>
+                </div>
+
+                <!-- Usuarios involucrados -->
+                <p class="section-title" style="margin-bottom:6px;"><i class="fas fa-users"></i> Partes Involucradas</p>
+                <div class="detail-block">
+                    <div class="detail-row">
+                        <span class="detail-label">🧑 Comprador</span>
+                        <strong class="detail-value" id="dd-buyer">—</strong>
+                    </div>
+                    <div class="detail-row" style="margin-bottom:0;">
+                        <span class="detail-label">🏪 Vendedor</span>
+                        <strong class="detail-value" id="dd-seller">—</strong>
+                    </div>
+                </div>
+
+                <!-- Monto -->
+                <div class="detail-block" style="background:rgba(0,172,193,0.03); border-color:rgba(0,172,193,0.2);">
+                    <div class="detail-row" style="margin-bottom:0;">
+                        <span class="detail-label">💰 Monto en disputa</span>
+                        <strong style="font-size:16px; color:var(--primary);" id="dd-amount">—</strong>
+                    </div>
+                </div>
+
+                <!-- Motivo -->
+                <p class="section-title" style="margin-bottom:6px;"><i class="fas fa-exclamation-circle"></i> Motivo del Reclamo</p>
+                <div class="detail-block">
+                    <p style="font-size:12px; color:var(--text-muted); line-height:1.5; font-style:italic;" id="dd-motivo">—</p>
+                </div>
+
+                <!-- Evidencias simuladas (US-ADM-02) -->
+                <p class="section-title" style="margin-bottom:8px;"><i class="fas fa-paperclip"></i> Evidencias Adjuntas</p>
+                <div id="dd-evidencias">
+                    <div class="evidence-card" onclick="showToast('info','Visualizando evidencia: voucher_pago.jpg')">
+                        <div class="evidence-thumb"><i class="fas fa-image" style="color:white; font-size:16px;"></i></div>
+                        <div>
+                            <p style="font-size:12px; font-weight:700;">voucher_pago.jpg</p>
+                            <p style="font-size:10px; color:var(--text-muted);">Comprobante de transferencia · 124 KB</p>
+                        </div>
+                        <i class="fas fa-eye" style="margin-left:auto; color:var(--primary); font-size:14px;"></i>
+                    </div>
+                    <div class="evidence-card" onclick="showToast('info','Visualizando evidencia: captura_chat.png')">
+                        <div class="evidence-thumb" style="background:linear-gradient(135deg,#334155,#1E293B);">
+                            <i class="fas fa-comments" style="color:white; font-size:16px;"></i>
+                        </div>
+                        <div>
+                            <p style="font-size:12px; font-weight:700;">captura_chat.png</p>
+                            <p style="font-size:10px; color:var(--text-muted);">Conversación entre partes · 89 KB</p>
+                        </div>
+                        <i class="fas fa-eye" style="margin-left:auto; color:var(--primary); font-size:14px;"></i>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="goToResolution()" style="margin-top:6px;">
+                    <i class="fas fa-gavel"></i> Proceder a Resolución
+                </button>
+            </div>
+
+            <!-- ══ US-ADM-03: RESOLUCIÓN DE DISPUTA ══ -->
+            <div id="view-dispute-resolve" class="view hidden">
+                <div class="page-header">
+                    <div class="back-btn" onclick="navigateTo('view-dispute-detail')"><i class="fas fa-chevron-left"></i></div>
+                    <h4>Resolver Disputa</h4>
+                </div>
+
+                <div class="card" style="background:rgba(239,68,68,0.04); border-color:rgba(239,68,68,0.2); margin-bottom:14px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <p style="font-size:10px; font-weight:700; color:var(--danger); text-transform:uppercase; letter-spacing:0.5px;">Caso en Arbitraje</p>
+                            <p style="font-size:13px; font-weight:800; margin-top:3px;" id="res-id">#TX-0000</p>
+                        </div>
+                        <div style="text-align:right;">
+                            <p style="font-size:10px; color:var(--text-muted);">Monto</p>
+                            <p style="font-size:14px; font-weight:800; color:var(--primary);" id="res-amount">—</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Opciones de resolución (US-ADM-03) -->
+                <p class="section-title" style="margin-bottom:10px;"><i class="fas fa-balance-scale"></i> Decisión de Arbitraje</p>
+                <div class="resolution-options" id="resolution-options">
+                    <div class="res-option" id="res-opt-buyer" onclick="selectResolution('buyer')">
+                        <div class="res-icon" style="background:rgba(16,185,129,0.1);">🧑</div>
+                        <div style="flex:1;">
+                            <p style="font-size:13px; font-weight:700; color:var(--success);">Aprobar al Comprador</p>
+                            <p style="font-size:10px; color:var(--text-muted); margin-top:2px;">Libera fondos en favor del comprador. Transacción revertida al vendedor.</p>
+                        </div>
+                        <div id="chk-buyer" style="width:20px; height:20px; border-radius:50%; border:2px solid var(--border-color); flex-shrink:0;"></div>
+                    </div>
+                    <div class="res-option" id="res-opt-seller" onclick="selectResolution('seller')">
+                        <div class="res-icon" style="background:rgba(239,68,68,0.1);">🏪</div>
+                        <div style="flex:1;">
+                            <p style="font-size:13px; font-weight:700; color:var(--danger);">Aprobar al Vendedor</p>
+                            <p style="font-size:10px; color:var(--text-muted); margin-top:2px;">Confirma que el pago fue recibido. Fondos liberados al comprador en la cuenta destino.</p>
+                        </div>
+                        <div id="chk-seller" style="width:20px; height:20px; border-radius:50%; border:2px solid var(--border-color); flex-shrink:0;"></div>
+                    </div>
+                    <div class="res-option" id="res-opt-review" onclick="selectResolution('review')">
+                        <div class="res-icon" style="background:rgba(245,158,11,0.1);">🔍</div>
+                        <div style="flex:1;">
+                            <p style="font-size:13px; font-weight:700; color:var(--warning);">Mantener en Revisión</p>
+                            <p style="font-size:10px; color:var(--text-muted); margin-top:2px;">Solicitar más evidencias. El caso queda abierto para revisión adicional.</p>
+                        </div>
+                        <div id="chk-review" style="width:20px; height:20px; border-radius:50%; border:2px solid var(--border-color); flex-shrink:0;"></div>
+                    </div>
+                </div>
+
+                <!-- Comentario del admin (US-ADM-03) -->
+                <p class="section-title" style="margin-bottom:8px;"><i class="fas fa-comment-alt"></i> Justificación</p>
+                <textarea class="form-input" id="res-comment" rows="3"
+                    placeholder="Describe el motivo de la decisión tomada (ej. el voucher presentado es auténtico y corresponde al monto...)"></textarea>
+
+                <button class="btn btn-success" onclick="confirmResolution()" style="margin-bottom:8px;">
+                    <i class="fas fa-check-circle"></i> Confirmar Resolución
+                </button>
+                <button class="btn btn-ghost" onclick="navigateTo('view-dispute-detail')">Cancelar</button>
+            </div>
+
+            <!-- Modal de confirmación (US-ADM-03) -->
+            <div id="confirm-res-modal" class="confirm-modal hidden">
+                <div class="confirm-modal-box">
+                    <div style="text-align:center; margin-bottom:16px;">
+                        <div style="width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; font-size:24px;" id="confirm-modal-icon">⚖️</div>
+                        <h4 style="font-size:16px; font-weight:800; color:var(--text-main);" id="confirm-modal-title">¿Confirmar decisión?</h4>
+                        <p style="font-size:12px; color:var(--text-muted); margin-top:6px; line-height:1.5;" id="confirm-modal-body">Esta acción actualizará el estado de la disputa.</p>
+                    </div>
+                    <button class="btn btn-success" id="confirm-modal-yes" onclick="executeResolution()" style="margin-bottom:8px;">
+                        <i class="fas fa-check"></i> Sí, confirmar
+                    </button>
+                    <button class="btn btn-ghost" onclick="document.getElementById('confirm-res-modal').classList.add('hidden')">Cancelar</button>
+                </div>
             </div>
 
             <!-- ── VENDOR INBOX ── -->
@@ -1078,61 +1321,77 @@
                 <div id="vendor-inbox-list"></div>
             </div>
 
-            <!-- ── DISPUTES (desde perfil) ── -->
+            <!-- ══ US-USER-01: REGISTRAR DISPUTA (usuario) ══ -->
+            <div id="view-register-dispute" class="view hidden">
+                <div class="page-header">
+                    <div class="back-btn" onclick="navigateTo('view-disputes-profile', document.getElementById('nav-profile'))"><i class="fas fa-chevron-left"></i></div>
+                    <h4>Registrar Disputa</h4>
+                </div>
+                <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.2); border-radius:14px; padding:12px 14px; margin-bottom:14px; display:flex; gap:10px; align-items:flex-start;">
+                    <i class="fas fa-info-circle" style="color:var(--danger); font-size:16px; margin-top:1px; flex-shrink:0;"></i>
+                    <p style="font-size:11px; color:var(--text-muted); line-height:1.5;">Las disputas son revisadas por nuestro equipo en <strong>5 días hábiles</strong>. Solo abre una disputa si hay un problema real con la transacción.</p>
+                </div>
+
+                <!-- Selección de transacción (US-USER-01) -->
+                <p class="section-title" style="margin-bottom:8px;"><i class="fas fa-exchange-alt"></i> Selecciona la Transacción</p>
+                <div id="dispute-tx-list"></div>
+
+                <!-- Motivo (US-USER-01) -->
+                <p class="section-title" style="margin-bottom:8px; margin-top:4px;"><i class="fas fa-edit"></i> Motivo de la Disputa</p>
+                <select class="form-select" id="dispute-motivo-tipo" onchange="updateMotivoPlaceholder()">
+                    <option value="">Selecciona el tipo de problema...</option>
+                    <option value="no_libero">El vendedor no liberó los fondos</option>
+                    <option value="no_pago">El comprador no realizó el pago</option>
+                    <option value="monto_incorrecto">El monto recibido es incorrecto</option>
+                    <option value="voucher_falso">El voucher presentado parece falso</option>
+                    <option value="otro">Otro motivo</option>
+                </select>
+                <textarea class="form-input" id="dispute-motivo-detalle" rows="3"
+                    placeholder="Describe con detalle qué ocurrió en la transacción..."></textarea>
+
+                <!-- Evidencia (US-USER-01) -->
+                <p class="section-title" style="margin-bottom:8px;"><i class="fas fa-paperclip"></i> Adjuntar Evidencia</p>
+                <div class="evidence-uploader" id="dispute-uploader" onclick="simulateEvidenceUpload()">
+                    <i class="fas fa-cloud-upload-alt" style="font-size:28px; color:var(--text-muted); margin-bottom:8px; display:block;"></i>
+                    <p style="font-size:12px; font-weight:700; color:var(--text-main);">Toca para adjuntar archivo</p>
+                    <p style="font-size:10px; color:var(--text-muted); margin-top:3px;">Captura de pantalla, voucher o comprobante (PNG, JPG, PDF)</p>
+                </div>
+                <div id="dispute-evidence-preview" class="hidden" style="margin-bottom:12px;">
+                    <div class="evidence-card" style="border-style:solid; border-color:var(--success);">
+                        <div class="evidence-thumb" style="background:linear-gradient(135deg,var(--success),#059669);"><i class="fas fa-check" style="color:white; font-size:14px;"></i></div>
+                        <div>
+                            <p style="font-size:12px; font-weight:700; color:var(--success);">Evidencia adjuntada</p>
+                            <p style="font-size:10px; color:var(--text-muted);" id="dispute-evidence-name">captura_001.png · 94 KB</p>
+                        </div>
+                        <i class="fas fa-times" style="margin-left:auto; color:var(--text-muted); cursor:pointer;" onclick="removeEvidence()"></i>
+                    </div>
+                </div>
+
+                <button class="btn btn-danger" onclick="submitDisputeUser()">
+                    <i class="fas fa-paper-plane"></i> Enviar Disputa
+                </button>
+            </div>
+
+            <!-- ══ US-USER-02: MIS DISPUTAS (usuario) ══ -->
             <div id="view-disputes-profile" class="view hidden">
                 <div class="page-header">
                     <div class="back-btn" onclick="navigateTo('view-profile',document.getElementById('nav-profile'))"><i class="fas fa-chevron-left"></i></div>
                     <h4>Mis Disputas</h4>
                 </div>
-                <div id="disputes-user-list" style="padding:16px;"></div>
-            </div>
 
-            <!-- ── MY OFFERS ── -->
-            <div id="view-my-offers" class="view hidden">
-                <div class="page-header">
-                    <div class="back-btn" onclick="navigateTo('view-profile',document.getElementById('nav-profile'))"><i class="fas fa-chevron-left"></i></div>
-                    <h4>Mis Ofertas</h4>
-                </div>
-                <div class="dni-banner">
-                    <i class="fas fa-id-card" style="font-size:20px; color:var(--primary);"></i>
-                    <div>
-                        <p style="font-size:12px; font-weight:700; color:var(--text-main);">Oferta ligada a tu DNI demo</p>
-                        <p style="font-size:10px; color:var(--text-muted);">Se muestra solo la trazabilidad del documento, no se sube un DNI real.</p>
-                    </div>
-                </div>
-                <button class="btn btn-success" style="margin-bottom:10px;" onclick="navigateTo('view-publish')"><i class="fas fa-plus"></i> Crear Nueva Oferta</button>
-                <div id="my-offers-list"></div>
-            </div>
+                <button class="btn btn-danger" style="margin-bottom:14px;" onclick="navigateTo('view-register-dispute')">
+                    <i class="fas fa-plus"></i> Registrar nueva disputa
+                </button>
 
-            <!-- ── COMPLAINTS ── -->
-            <div id="view-complaints" class="view hidden">
-                <div class="page-header">
-                    <div class="back-btn" onclick="navigateTo('view-profile',document.getElementById('nav-profile'))"><i class="fas fa-chevron-left"></i></div>
-                    <h4>Reclamos por Problemas</h4>
+                <!-- Chips filtro (US-USER-02) -->
+                <div class="chips-container" id="user-dispute-chips">
+                    <span class="chip active" onclick="filterUserDisputes('all',this)">Todas</span>
+                    <span class="chip" onclick="filterUserDisputes('arbitraje',this)">⚖️ Arbitraje</span>
+                    <span class="chip" onclick="filterUserDisputes('revision',this)">🔍 Revisión</span>
+                    <span class="chip" onclick="filterUserDisputes('resuelta',this)">✅ Resuelta</span>
                 </div>
-                <div class="card" style="background:rgba(245,158,11,0.05); border:1px solid rgba(245,158,11,0.2);">
-                    <p style="font-size:12px; font-weight:700; color:var(--text-main); margin-bottom:4px;">Demo de reclamos</p>
-                    <p style="font-size:11px; color:var(--text-muted);">Aquí solo se demuestra cómo se reportaría un problema. No se envía información real de identidad.</p>
-                </div>
-                <div class="card">
-                    <p class="section-title"><i class="fas fa-flag"></i> Nuevo reclamo</p>
-                    <label class="form-label">Operación relacionada</label>
-                    <select class="form-select" id="complaint-tx"></select>
-                    <label class="form-label">Tipo de problema</label>
-                    <select class="form-select" id="complaint-type">
-                        <option value="Pago no reflejado">Pago no reflejado</option>
-                        <option value="Vendedor no responde">Vendedor no responde</option>
-                        <option value="Datos incorrectos">Datos incorrectos</option>
-                        <option value="Otro">Otro</option>
-                    </select>
-                    <label class="form-label">DNI demo</label>
-                    <input type="text" class="form-input" id="complaint-dni" readonly>
-                    <label class="form-label">Detalle</label>
-                    <textarea class="form-input" id="complaint-detail" rows="4" placeholder="Describe el problema"></textarea>
-                    <button class="btn btn-warning" onclick="submitComplaint()"><i class="fas fa-paper-plane"></i> Enviar Reclamo</button>
-                </div>
-                <div class="section-title" style="margin-top:12px;"><i class="fas fa-list"></i> Reclamos registrados</div>
-                <div id="complaints-list"></div>
+
+                <div id="disputes-user-list"></div>
             </div>
 
             <!-- ── PRIVACY POLICY ── -->
@@ -1228,12 +1487,8 @@ setInterval(() => {
 let activeTx  = null;
 let txTimer   = null;
 let currRating = 0;
-let currentUser = { name: 'Carlos Mendoza', email: 'carlos@peru.com', dni: '12345678', isAdmin: false };
+let currentUser = { name: 'Carlos Mendoza', isAdmin: false };
 let appMode = 'buyer';
-let publishMode = 'create';
-let editingOfferId = null;
-let pendingOfferContract = null;
-let pendingPublishAfterContract = false;
 
 // ══════════════════════════════════════════
 // INIT LOCAL DB
@@ -1254,8 +1509,18 @@ function initDB() {
             { id:102, bank:'yape', number:'987654321' }
         ]));
     }
-    if (!localStorage.getItem('p2p_disputes'))       localStorage.setItem('p2p_disputes',       JSON.stringify([]));
-    if (!localStorage.getItem('p2p_complaints'))     localStorage.setItem('p2p_complaints',     JSON.stringify([]));
+    if (!localStorage.getItem('p2p_disputes') || localStorage.getItem('p2p_disputes') === '[]') {
+        localStorage.setItem('p2p_disputes', JSON.stringify([
+            { id: 6621, buyer: 'Carlos Mendoza', seller: 'Mateo Ortiz',     amount: 100, curr: 'EUR', motivo: '[Vendedor no liberó fondos] Realicé el pago hace 3 horas y el vendedor no responde el chat ni libera mis fondos.',  date: '2026-05-05', estado: 'arbitraje', evidencia: true },
+            { id: 5501, buyer: 'Lucía Alfaro',    seller: 'Carlos Mendoza', amount: 250, curr: 'USD', motivo: '[Monto incorrecto] El comprador transfirió S/ 900 pero la operación era por S/ 950.',                             date: '2026-05-03', estado: 'revision',  evidencia: true },
+            { id: 4390, buyer: 'Andrés Quiliche', seller: 'Valeria Cruz',   amount: 180, curr: 'USD', motivo: '[Voucher posiblemente falso] El comprobante presentado tiene datos inconsistentes con una transferencia real.',  date: '2026-04-29', estado: 'resuelta',  evidencia: true, resolution: 'Fondos liberados al comprador', comment: 'El voucher fue validado como auténtico vía API bancaria.' },
+        ]));
+    } else {
+        // Migrate old disputes without estado field
+        const existing = JSON.parse(localStorage.getItem('p2p_disputes'));
+        const migrated = existing.map(d => ({ ...d, estado: d.estado || 'arbitraje', date: d.date || '2026-05-01' }));
+        localStorage.setItem('p2p_disputes', JSON.stringify(migrated));
+    }
     if (!localStorage.getItem('p2p_vendor_pending')) localStorage.setItem('p2p_vendor_pending', JSON.stringify([]));
     if (!localStorage.getItem('p2p_history')) {
         localStorage.setItem('p2p_history', JSON.stringify([
@@ -1306,13 +1571,11 @@ function doLogin() {
     const email = document.getElementById('login-email').value.trim();
     if (!email) { showToast('error', 'Ingresa tu correo.'); return; }
     const isAdmin = email === 'admin@p2p.com';
-    const currentDni = currentUser && currentUser.dni ? currentUser.dni : '12345678';
-    currentUser = { name: isAdmin ? 'Admin P2P' : 'Carlos Mendoza', email: email, dni: currentDni, isAdmin };
+    currentUser = { name: isAdmin ? 'Admin P2P' : 'Carlos Mendoza', email: email, isAdmin };
     const initials = currentUser.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
     document.getElementById('mkt-greeting').innerText   = `Bienvenido, ${currentUser.name.split(' ')[0]}`;
     document.getElementById('profile-name').innerText   = currentUser.name;
     document.getElementById('profile-email').innerText  = currentUser.email;
-    document.getElementById('profile-dni').innerText    = `DNI demo: ${currentUser.dni}`;
     document.getElementById('profile-avatar').innerText = initials;
     document.getElementById('admin-menu-link').style.display = isAdmin ? 'flex' : 'none';
     document.getElementById('client-nav').classList.remove('hidden');
@@ -1324,12 +1587,9 @@ function doLogin() {
 function doRegister() {
     const name  = document.getElementById('reg-name').value.trim();
     const email = document.getElementById('reg-email').value.trim();
-    const dni   = document.getElementById('reg-dni').value.trim();
     const terms = document.getElementById('reg-terms').checked;
     if (!name || !email) { showToast('error', 'Completa todos los campos.'); return; }
-    if (!/^\d{8}$/.test(dni)) { showToast('error', 'Ingresa un DNI demo válido de 8 dígitos.'); return; }
     if (!terms) { showToast('error', 'Acepta los términos de uso.'); return; }
-    currentUser = { name, email, dni, isAdmin: false };
     showToast('success', `Cuenta creada para ${name}. ¡Bienvenido!`);
     setTimeout(() => { document.getElementById('login-email').value = email; switchTab('login'); }, 1600);
 }
@@ -1358,10 +1618,6 @@ function doLogout() {
     document.getElementById('client-nav').classList.add('hidden');
     document.getElementById('vendor-notif-btn').classList.add('hidden');
     appMode = 'buyer';
-    publishMode = 'create';
-    editingOfferId = null;
-    pendingOfferContract = null;
-    pendingPublishAfterContract = false;
     currentUser = null;
     navigateTo('view-auth');
     showToast('info', 'Sesión cerrada correctamente.');
@@ -1371,12 +1627,11 @@ function doLoginGoogle() {
     btn.disabled = true;
     btn.innerHTML = '<div class="spinner" style="width:16px; height:16px; border-width:2px; margin-right:6px;"></div> Conectando...';
     setTimeout(() => {
-        currentUser = { name: 'Usuario Google', email: 'usuario@gmail.com', dni: '00000000', isAdmin: false };
+        currentUser = { name: 'Usuario Google', email: 'usuario@gmail.com', isAdmin: false };
         const initials = 'UG';
         document.getElementById('mkt-greeting').innerText   = 'Bienvenido, Usuario';
         document.getElementById('profile-name').innerText   = currentUser.name;
         document.getElementById('profile-email').innerText  = currentUser.email;
-        document.getElementById('profile-dni').innerText    = `DNI demo: ${currentUser.dni}`;
         document.getElementById('profile-avatar').innerText = initials;
         document.getElementById('admin-menu-link').style.display = 'none';
         document.getElementById('client-nav').classList.remove('hidden');
@@ -1397,12 +1652,11 @@ function doRegisterGoogle() {
         btn.disabled = false;
         btn.innerHTML = '<i class="fab fa-google"></i> Google';
         setTimeout(() => {
-            currentUser = { name: 'Usuario Google', email: 'usuario@gmail.com', dni: '00000000', isAdmin: false };
+            currentUser = { name: 'Usuario Google', email: 'usuario@gmail.com', isAdmin: false };
             const initials = 'UG';
             document.getElementById('mkt-greeting').innerText   = 'Bienvenido, Usuario';
             document.getElementById('profile-name').innerText   = currentUser.name;
             document.getElementById('profile-email').innerText  = currentUser.email;
-            document.getElementById('profile-dni').innerText    = `DNI demo: ${currentUser.dni}`;
             document.getElementById('profile-avatar').innerText = initials;
             document.getElementById('admin-menu-link').style.display = 'none';
             document.getElementById('client-nav').classList.remove('hidden');
@@ -1422,7 +1676,6 @@ function doSaveProfile() {
     currentUser.name = name;
     document.getElementById('profile-name').innerText = name;
     document.getElementById('mkt-greeting').innerText = `Bienvenido, ${name.split(' ')[0]}`;
-    document.getElementById('profile-dni').innerText = `DNI demo: ${currentUser.dni || '12345678'}`;
     
     showToast('success', 'Perfil actualizado correctamente.');
     setTimeout(() => navigateTo('view-profile', document.getElementById('nav-profile')), 1500);
@@ -1484,290 +1737,231 @@ function loadVendorInbox() {
     });
     c.innerHTML += '</div>';
 }
-    // OFFER HELPERS / CONTRACT / COMPLAINTS
-    // ══════════════════════════════════════════
-    function getAllOffers() {
-        return JSON.parse(localStorage.getItem('p2p_offers') || '[]');
-    }
+// ══════════════════════════════════════════
+// US-USER-01 — REGISTRAR DISPUTA (usuario)
+// ══════════════════════════════════════════
+let selectedTxForDispute = null;
+let disputeEvidenceUploaded = false;
 
-    function isMyOffer(offer) {
-        return Boolean(currentUser && offer && offer.ownerEmail && currentUser.email && offer.ownerEmail === currentUser.email);
-    }
-
-    function showSheet(html) {
-        document.getElementById('sheet-content').innerHTML = html;
-        document.getElementById('sheet-modal').classList.remove('hidden');
-    }
-
-    function closeSheet() {
-        document.getElementById('sheet-modal').classList.add('hidden');
-        document.getElementById('sheet-content').innerHTML = '';
-        pendingOfferContract = null;
-        pendingPublishAfterContract = false;
-    }
-
-    function openOfferContract() {
-        const dni = (currentUser && currentUser.dni) ? currentUser.dni : '12345678';
-        const html = `
-            <div class="contract-sheet">
-                <div class="confirm-handle"></div>
-                <div style="text-align:center; margin-bottom:14px;">
-                    <i class="fas fa-file-contract" style="font-size:34px; color:var(--primary); margin-bottom:10px;"></i>
-                    <h4 style="font-size:16px; font-weight:800; color:var(--text-main);">Contrato demo de oferta</h4>
-                    <p style="font-size:11px; color:var(--text-muted); margin-top:5px;">La operación queda vinculada al DNI demo ${dni}.</p>
-                </div>
-                <div class="detail-block">
-                    <div class="detail-row"><span class="detail-label">Alcance</span><span class="detail-value">Publicación P2P de demostración</span></div>
-                    <div class="detail-row"><span class="detail-label">Identidad</span><span class="detail-value">DNI demo verificado</span></div>
-                    <div class="detail-row"><span class="detail-label">Trazabilidad</span><span class="detail-value">Oferta con auditoría local</span></div>
-                    <div class="detail-row"><span class="detail-label">Privacidad</span><span class="detail-value">No se sube un DNI real</span></div>
-                </div>
-                <div class="contract-check">
-                    <input type="checkbox" id="contract-accept">
-                    <label for="contract-accept" style="font-size:12px; color:var(--text-main); line-height:1.45;">Acepto el contrato demo y autorizo que esta oferta quede asociada a mi DNI de prueba.</label>
-                </div>
-                <button class="btn btn-success" onclick="acceptOfferContract()"><i class="fas fa-check"></i> Aceptar contrato</button>
-                <button class="btn btn-ghost" style="margin-top:8px;" onclick="closeSheet()">Cerrar</button>
-            </div>`;
-        showSheet(html);
-    }
-
-    function acceptOfferContract() {
-        const accepted = document.getElementById('contract-accept') && document.getElementById('contract-accept').checked;
-        if (!accepted) {
-            showToast('error', 'Debes aceptar el contrato demo para continuar.');
-            return;
-        }
-        pendingOfferContract = {
-            dni: currentUser && currentUser.dni ? currentUser.dni : '12345678',
-            acceptedAt: new Date().toISOString()
-        };
-        closeSheet();
-        showToast('success', 'Contrato demo aceptado. Ya puedes publicar la oferta.');
-        if (pendingPublishAfterContract) {
-            pendingPublishAfterContract = false;
-            doPublish();
-        }
-    }
-
-    function preparePublishForm() {
-        const title = document.getElementById('publish-title');
-        const submitBtn = document.getElementById('publish-submit-btn');
-        const dniBanner = document.querySelectorAll('#view-publish .dni-banner p')[1];
-        if (title && submitBtn) {
-            if (publishMode === 'edit' && editingOfferId) {
-                title.innerText = 'Editar Oferta P2P';
-                submitBtn.innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
-            } else {
-                title.innerText = 'Publicar Anuncio P2P';
-                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Listar en el Mercado';
-            }
-        }
-        if (dniBanner && currentUser) {
-            dniBanner.innerText = `La publicación queda asociada al DNI demo ${currentUser.dni || '12345678'}.`;
-        }
-    }
-
-    function viewOfferDetails(id) {
-        const offer = getAllOffers().find(item => item.id === id);
-        if (!offer) return;
-        const html = `
-            <div class="contract-sheet">
-                <div class="confirm-handle"></div>
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-                    <div>
-                        <p style="font-size:10px; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:0.8px;">Detalle de oferta</p>
-                        <h4 style="font-size:16px; font-weight:800; color:var(--text-main); margin-top:4px;">${offer.seller}</h4>
-                    </div>
-                    <span class="offer-owner-badge"><i class="fas fa-id-card"></i> DNI demo</span>
-                </div>
-                <div class="offer-detail-grid">
-                    <div class="offer-detail-box"><div class="offer-detail-lbl">Tasa</div><div class="offer-detail-val">S/ ${offer.rate.toFixed(3)}</div></div>
-                    <div class="offer-detail-box"><div class="offer-detail-lbl">Monto</div><div class="offer-detail-val">${offer.amount} ${offer.from}</div></div>
-                    <div class="offer-detail-box"><div class="offer-detail-lbl">Mínimo</div><div class="offer-detail-val">${offer.min} ${offer.to}</div></div>
-                    <div class="offer-detail-box"><div class="offer-detail-lbl">Máximo</div><div class="offer-detail-val">${offer.max} ${offer.to}</div></div>
-                    <div class="offer-detail-box"><div class="offer-detail-lbl">Banco</div><div class="offer-detail-val">${offer.bankName}</div></div>
-                    <div class="offer-detail-box"><div class="offer-detail-lbl">Contrato</div><div class="offer-detail-val">${offer.contractDni || 'Demo'}</div></div>
-                </div>
-                <div style="margin-top:12px; display:flex; gap:8px;">
-                    <button class="btn btn-outline" onclick="closeSheet()">Cerrar</button>
-                    ${isMyOffer(offer) ? `<button class="btn btn-success" onclick="openOfferEditor(${offer.id})"><i class="fas fa-pen"></i> Editar</button>` : `<button class="btn btn-success" onclick="closeSheet(); startTx(${offer.id})"><i class="fas fa-bolt"></i> Comprar</button>`}
-                </div>
-            </div>`;
-        showSheet(html);
-    }
-
-    function openOfferEditor(id) {
-        const offer = getAllOffers().find(item => item.id === id);
-        if (!offer) return;
-        publishMode = 'edit';
-        editingOfferId = id;
-        pendingOfferContract = {
-            dni: offer.contractDni || (currentUser && currentUser.dni ? currentUser.dni : '12345678'),
-            acceptedAt: offer.contractAcceptedAt || new Date().toISOString()
-        };
-        document.getElementById('pub-from').value = offer.from;
-        document.getElementById('pub-to').value = offer.to;
-        document.getElementById('pub-amount').value = offer.amount;
-        document.getElementById('pub-min').value = offer.min;
-        document.getElementById('pub-max').value = offer.max;
-        document.getElementById('pub-rate').value = offer.rate;
-        document.getElementById('pub-bank').value = offer.bank;
-        document.getElementById('pub-timelimit').value = offer.timeLimit || '15';
-        closeSheet();
-        navigateTo('view-publish', document.getElementById('nav-publish'));
-        preparePublishForm();
-    }
-
-    function deleteOfferPrompt(id) {
-        const offer = getAllOffers().find(item => item.id === id);
-        if (!offer) return;
-        showSheet(`
-            <div class="contract-sheet">
-                <div class="confirm-handle"></div>
-                <div style="text-align:center; margin-bottom:16px;">
-                    <div style="width:52px;height:52px;background:rgba(239,68,68,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
-                        <i class="fas fa-trash" style="color:var(--danger);font-size:20px;"></i>
-                    </div>
-                    <h4 style="font-size:15px;font-weight:800;color:var(--text-main);">¿Eliminar oferta?</h4>
-                    <p style="font-size:12px;color:var(--text-muted);margin-top:6px;">${offer.from} → ${offer.to} · S/ ${offer.rate.toFixed(3)}</p>
-                </div>
-                <div style="display:flex;gap:10px;">
-                    <button class="btn btn-ghost" style="flex:1;" onclick="closeSheet()">Cancelar</button>
-                    <button class="btn btn-danger" style="flex:1;" onclick="deleteOfferConfirmed(${offer.id})"><i class="fas fa-trash"></i> Eliminar</button>
-                </div>
-            </div>`);
-    }
-
-    function deleteOfferConfirmed(id) {
-        const offers = getAllOffers().filter(offer => offer.id !== id);
-        localStorage.setItem('p2p_offers', JSON.stringify(offers));
-        closeSheet();
-        showToast('success', 'Oferta eliminada correctamente.');
-        loadMarket();
-        loadMyOffers();
-    }
-
-    function loadMyOffers() {
-        const offers = getAllOffers().filter(offer => isMyOffer(offer));
-        const c = document.getElementById('my-offers-list');
-        if (!c) return;
-        c.innerHTML = '';
-        if (!offers.length) {
-            c.innerHTML = `<div class="card" style="text-align:center; padding:24px;">
-                <i class="fas fa-tags" style="font-size:30px; color:var(--border-color); display:block; margin-bottom:10px;"></i>
-                <p style="font-size:13px; font-weight:700; color:var(--text-main);">No tienes ofertas publicadas</p>
-                <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">Publica una oferta demo para verla aquí.</p>
-            </div>`;
-            return;
-        }
-        offers.forEach(offer => {
-            c.innerHTML += `
-            <div class="offer-manage-card mine">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap:10px;">
-                    <div>
-                        <div style="font-size:14px; font-weight:800; color:var(--text-main);">${offer.from} → ${offer.to}</div>
-                        <div style="font-size:11px; color:var(--text-muted); margin-top:3px;">${offer.bankName} · ${offer.amount} ${offer.from}</div>
-                    </div>
-                    <span class="offer-owner-badge"><i class="fas fa-id-card"></i> ${offer.contractDni || 'Demo'}</span>
-                </div>
-                <div class="offer-detail-grid">
-                    <div class="offer-detail-box"><div class="offer-detail-lbl">Tasa</div><div class="offer-detail-val">S/ ${offer.rate.toFixed(3)}</div></div>
-                    <div class="offer-detail-box"><div class="offer-detail-lbl">Límites</div><div class="offer-detail-val">${offer.min} - ${offer.max}</div></div>
-                </div>
-                <div class="offer-actions">
-                    <button class="btn btn-outline btn-sm" onclick="viewOfferDetails(${offer.id})"><i class="fas fa-eye"></i> Ver</button>
-                    <button class="btn btn-success btn-sm" onclick="openOfferEditor(${offer.id})"><i class="fas fa-pen"></i> Editar</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteOfferPrompt(${offer.id})"><i class="fas fa-trash"></i> Eliminar</button>
-                </div>
-            </div>`;
-        });
-    }
-
-    function loadComplaints() {
-        const complaints = JSON.parse(localStorage.getItem('p2p_complaints') || '[]');
-        const allHistory = JSON.parse(localStorage.getItem('p2p_history') || '[]');
-        const txSelect = document.getElementById('complaint-tx');
-        const dniField = document.getElementById('complaint-dni');
-        const list = document.getElementById('complaints-list');
-        if (!txSelect || !dniField || !list) return;
-        dniField.value = currentUser && currentUser.dni ? currentUser.dni : '12345678';
-        txSelect.innerHTML = allHistory.length ? allHistory.map(item => `<option value="${item.id}">${item.id} · ${item.seller} · ${item.amount} ${item.currency}</option>`).join('') : '<option value="">No hay operaciones registradas</option>';
-        list.innerHTML = '';
-        if (!complaints.length) {
-            list.innerHTML = `<div class="card" style="text-align:center; padding:24px;">
-                <i class="fas fa-flag" style="font-size:28px; color:var(--border-color); display:block; margin-bottom:8px;"></i>
-                <p style="font-size:12px; color:var(--text-muted);">Sin reclamos todavía.</p></div>`;
-            return;
-        }
-        complaints.forEach(item => {
-            list.innerHTML += `
-            <div class="complaint-card ${item.status || 'open'}">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                    <strong style="font-size:12px; color:var(--text-main);">${item.txId}</strong>
-                    <span class="status-pill ${item.status || 'pending'}">${item.statusLabel || 'Pendiente'}</span>
-                </div>
-                <p style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:6px;">${item.problem}</p>
-                <p style="font-size:10px; color:var(--text-muted);">DNI demo: ${item.dni} · ${item.date}</p>
-            </div>`;
-        });
-    }
-
-    function submitComplaint() {
-        const txId = document.getElementById('complaint-tx').value;
-        const problemType = document.getElementById('complaint-type').value;
-        const dni = document.getElementById('complaint-dni').value.trim();
-        const detail = document.getElementById('complaint-detail').value.trim();
-        if (!txId || !detail) { showToast('error', 'Completa la operación y el detalle del reclamo.'); return; }
-        const complaints = JSON.parse(localStorage.getItem('p2p_complaints') || '[]');
-        complaints.unshift({
-            id: Date.now(),
-            txId,
-            problem: `${problemType}: ${detail}`,
-            dni,
-            status: 'open',
-            statusLabel: 'Abierto',
-            date: new Date().toISOString().split('T')[0]
-        });
-        localStorage.setItem('p2p_complaints', JSON.stringify(complaints));
-        document.getElementById('complaint-detail').value = '';
-        showToast('success', 'Reclamo registrado en modo demo.');
-        loadComplaints();
-    }
-
-function loadDisputesUser() {
-    const disputes = JSON.parse(localStorage.getItem('p2p_disputes'));
-    const userDisputes = disputes.filter(d => d.seller === currentUser.name || d.buyer === currentUser.name);
-    const c = document.getElementById('disputes-user-list');
+function loadRegisterDisputeView() {
+    selectedTxForDispute = null;
+    disputeEvidenceUploaded = false;
+    // Cargar transacciones del historial para seleccionar
+    const history = JSON.parse(localStorage.getItem('p2p_history'));
+    const c = document.getElementById('dispute-tx-list');
     c.innerHTML = '';
-    if (!userDisputes.length) {
-        c.innerHTML = `<div class="card" style="text-align:center; padding:28px;">
-            <i class="fas fa-check-circle" style="font-size:32px; color:var(--success); display:block; margin-bottom:10px;"></i>
-            <p style="font-size:13px; color:var(--text-muted);">No tienes disputas activas.</p>
-            <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">Todas tus transacciones se han completado correctamente.</p>
-        </div>`;
+    if (!history || !history.length) {
+        c.innerHTML = `<p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">No tienes transacciones previas para disputar.</p>`;
         return;
     }
-    userDisputes.forEach(d => {
-        const isMyDispute = d.seller === currentUser.name;
+    history.slice(0, 5).forEach(tx => {
+        const statusColors = { completed: 'var(--success)', pending: 'var(--warning)', disputed: 'var(--danger)', cancelled: 'var(--text-muted)' };
         c.innerHTML += `
-        <div class="dispute-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <strong style="font-size:12px; color:var(--danger);">ORDEN #TX-${d.id}</strong>
-                <span style="background:var(--danger); color:white; font-size:9px; font-weight:700; padding:2px 8px; border-radius:10px;">EN ARBITRAJE</span>
+        <div class="tx-select-card" id="tx-sel-${tx.id}" onclick="selectTxForDispute('${tx.id}')">
+            <div style="flex:1;">
+                <p style="font-size:12px; font-weight:700; color:var(--text-main);">${tx.id}</p>
+                <p style="font-size:10px; color:var(--text-muted); margin-top:2px;">${tx.seller} &nbsp;·&nbsp; ${tx.date}</p>
+                <p style="font-size:11px; font-weight:700; color:var(--primary); margin-top:2px;">${tx.amount} ${tx.currency}</p>
             </div>
-            <div style="background:rgba(239,68,68,0.05); border-radius:10px; padding:10px 12px; margin-bottom:12px;">
-                <p style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">🧑 Comprador: <strong>${d.buyer}</strong></p>
-                <p style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">🏪 Vendedor: <strong>${d.seller}</strong></p>
-                <p style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">💰 Monto: <strong>${d.amount} ${d.curr}</strong></p>
-                <p style="font-size:10px; color:var(--danger); margin-top:6px; font-style:italic;">${d.motivo || 'Sin detalle registrado.'}</p>
-            </div>
-            <div style="background:rgba(0,172,193,0.05); border:1px solid rgba(0,172,193,0.2); border-radius:10px; padding:10px 12px;">
-                <p style="font-size:10px; color:var(--primary); font-weight:700;">📋 Tu Rol: <strong>${isMyDispute ? '🏪 Vendedor' : '🧑 Comprador'}</strong></p>
-                <p style="font-size:10px; color:var(--text-muted); margin-top:4px;">El equipo de arbitraje revisará tu caso en 5 días hábiles.</p>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:9px; font-weight:700; color:${statusColors[tx.status] || 'var(--text-muted)'};">${tx.status.toUpperCase()}</span>
+                <div class="tx-check" id="chk-tx-${tx.id}"></div>
             </div>
         </div>`;
     });
+    // Reset fields
+    document.getElementById('dispute-motivo-tipo').value = '';
+    document.getElementById('dispute-motivo-detalle').value = '';
+    document.getElementById('dispute-uploader').className = 'evidence-uploader';
+    document.getElementById('dispute-evidence-preview').classList.add('hidden');
+}
+
+function selectTxForDispute(txId) {
+    selectedTxForDispute = txId;
+    document.querySelectorAll('.tx-select-card').forEach(el => {
+        el.classList.remove('selected');
+        const chk = el.querySelector('.tx-check');
+        if (chk) { chk.innerHTML = ''; chk.style.background = ''; chk.style.borderColor = ''; }
+    });
+    const card = document.getElementById(`tx-sel-${txId}`);
+    if (card) {
+        card.classList.add('selected');
+        const chk = document.getElementById(`chk-tx-${txId}`);
+        if (chk) { chk.innerHTML = '✓'; chk.style.background = 'var(--primary)'; chk.style.borderColor = 'var(--primary)'; chk.style.color = 'white'; chk.style.fontSize = '10px'; chk.style.display = 'flex'; chk.style.alignItems = 'center'; chk.style.justifyContent = 'center'; }
+    }
+}
+
+function updateMotivoPlaceholder() {
+    const val = document.getElementById('dispute-motivo-tipo').value;
+    const placeholders = {
+        no_libero: 'Ej. Realicé el pago hace 2 horas y el vendedor no ha liberado los fondos ni responde el chat...',
+        no_pago:   'Ej. El comprador indicó haber pagado pero no recibí transferencia en mi cuenta...',
+        monto_incorrecto: 'Ej. El comprador transfirió S/ 380 pero la operación era por S/ 400...',
+        voucher_falso: 'Ej. El voucher presentado tiene datos que no coinciden con una transferencia real...',
+        otro: 'Describe con detalle qué ocurrió en la transacción...',
+    };
+    document.getElementById('dispute-motivo-detalle').placeholder = placeholders[val] || 'Describe con detalle qué ocurrió...';
+}
+
+function simulateEvidenceUpload() {
+    const uploader = document.getElementById('dispute-uploader');
+    uploader.innerHTML = `<div style="width:24px;height:24px;border:3px solid var(--primary);border-top-color:transparent;border-radius:50%;animation:spin 0.75s linear infinite;margin:0 auto 8px;"></div><p style="font-size:12px; font-weight:700;">Subiendo...</p>`;
+    setTimeout(() => {
+        disputeEvidenceUploaded = true;
+        uploader.className = 'evidence-uploader uploaded';
+        uploader.innerHTML = `<i class="fas fa-check-circle" style="font-size:28px; color:var(--success); display:block; margin-bottom:6px;"></i><p style="font-size:12px; font-weight:700; color:var(--success);">Archivo listo</p>`;
+        const names = ['captura_voucher.png', 'comprobante.jpg', 'screenshot_chat.png', 'evidencia_001.pdf'];
+        const name = names[Math.floor(Math.random() * names.length)];
+        document.getElementById('dispute-evidence-name').innerText = `${name} · ${Math.floor(Math.random()*100+50)} KB`;
+        document.getElementById('dispute-evidence-preview').classList.remove('hidden');
+    }, 1400);
+}
+
+function removeEvidence() {
+    disputeEvidenceUploaded = false;
+    document.getElementById('dispute-uploader').className = 'evidence-uploader';
+    document.getElementById('dispute-uploader').innerHTML = `<i class="fas fa-cloud-upload-alt" style="font-size:28px; color:var(--text-muted); margin-bottom:8px; display:block;"></i><p style="font-size:12px; font-weight:700; color:var(--text-main);">Toca para adjuntar archivo</p><p style="font-size:10px; color:var(--text-muted); margin-top:3px;">Captura de pantalla, voucher o comprobante (PNG, JPG, PDF)</p>`;
+    document.getElementById('dispute-evidence-preview').classList.add('hidden');
+}
+
+function submitDisputeUser() {
+    if (!selectedTxForDispute) { showToast('error', 'Selecciona la transacción involucrada.'); return; }
+    const tipo   = document.getElementById('dispute-motivo-tipo').value;
+    const detalle = document.getElementById('dispute-motivo-detalle').value.trim();
+    if (!tipo)    { showToast('error', 'Selecciona el tipo de problema.'); return; }
+    if (!detalle) { showToast('error', 'Describe el motivo de la disputa.'); return; }
+
+    const history  = JSON.parse(localStorage.getItem('p2p_history'));
+    const tx       = history.find(h => h.id === selectedTxForDispute);
+    if (!tx) return;
+
+    const motiOptions = {
+        no_libero: 'Vendedor no liberó fondos',
+        no_pago:   'Comprador no realizó el pago',
+        monto_incorrecto: 'Monto recibido incorrecto',
+        voucher_falso: 'Voucher posiblemente falso',
+        otro: 'Otro motivo',
+    };
+    const disputes = JSON.parse(localStorage.getItem('p2p_disputes'));
+    const newId = Date.now();
+    disputes.push({
+        id: newId,
+        buyer:  currentUser.name,
+        seller: tx.seller,
+        amount: tx.amount,
+        curr:   tx.currency,
+        motivo: `[${motiOptions[tipo]}] ${detalle}`,
+        date:   new Date().toLocaleDateString('es-PE'),
+        estado: 'arbitraje',
+        evidencia: disputeEvidenceUploaded,
+    });
+    localStorage.setItem('p2p_disputes', JSON.stringify(disputes));
+
+    // Marcar tx en historial como disputed
+    const idx = history.findIndex(h => h.id === selectedTxForDispute);
+    if (idx >= 0) { history[idx].status = 'disputed'; localStorage.setItem('p2p_history', JSON.stringify(history)); }
+
+    showToast('success', '✅ Disputa registrada. El equipo revisará en 5 días hábiles.');
+    setTimeout(() => navigateTo('view-disputes-profile', document.getElementById('nav-profile')), 1400);
+}
+
+// ══════════════════════════════════════════
+// US-USER-02 — CONSULTA DE DISPUTAS (usuario)
+// ══════════════════════════════════════════
+function loadDisputesUser(filter = 'all') {
+    const disputes = JSON.parse(localStorage.getItem('p2p_disputes'));
+    const userDisputes = disputes.filter(d =>
+        d.seller === currentUser?.name || d.buyer === currentUser?.name
+    );
+    const filtered = filter === 'all' ? userDisputes : userDisputes.filter(d => d.estado === filter);
+    const c = document.getElementById('disputes-user-list');
+    c.innerHTML = '';
+
+    if (!filtered.length) {
+        const msgs = {
+            all:       '¡Sin disputas! Todas tus transacciones marchan bien.',
+            arbitraje: 'No tienes disputas en arbitraje activo.',
+            revision:  'No tienes disputas en revisión.',
+            resuelta:  'Aún no tienes disputas resueltas.',
+        };
+        c.innerHTML = `<div class="card" style="text-align:center; padding:28px;">
+            <i class="fas fa-check-circle" style="font-size:32px; color:var(--success); display:block; margin-bottom:10px;"></i>
+            <p style="font-size:13px; color:var(--text-muted);">${msgs[filter] || msgs.all}</p></div>`;
+        return;
+    }
+
+    const timelineSteps = {
+        arbitraje: [
+            { done: true,  active: false, title: 'Disputa enviada',     sub: 'Recibida por el sistema' },
+            { done: false, active: true,  title: 'En arbitraje',        sub: 'Revisión del equipo P2P' },
+            { done: false, active: false, title: 'Resolución pendiente', sub: 'A la espera de fallo' },
+        ],
+        revision: [
+            { done: true,  active: false, title: 'Disputa enviada',     sub: 'Recibida por el sistema' },
+            { done: true,  active: false, title: 'En arbitraje',        sub: 'Revisada por el equipo' },
+            { done: false, active: true,  title: 'En revisión',         sub: 'Solicitud de más evidencias' },
+        ],
+        resuelta: [
+            { done: true,  active: false, title: 'Disputa enviada',     sub: 'Recibida por el sistema' },
+            { done: true,  active: false, title: 'En arbitraje',        sub: 'Revisada por el equipo' },
+            { done: true,  active: false, title: 'Resuelta',            sub: 'Fallo emitido' },
+        ],
+    };
+
+    const badgeMap = {
+        arbitraje: { label: '⚖️ En Arbitraje', cls: 'arbitraje', lborder: 'var(--danger)' },
+        revision:  { label: '🔍 En Revisión',  cls: 'revision',  lborder: 'var(--warning)' },
+        resuelta:  { label: '✅ Resuelta',     cls: 'resuelta',  lborder: 'var(--success)' },
+        pendiente: { label: '⏳ Pendiente',    cls: 'pendiente', lborder: 'var(--text-muted)' },
+    };
+
+    filtered.forEach(d => {
+        const bm   = badgeMap[d.estado] || badgeMap.pendiente;
+        const isMe = d.buyer === currentUser?.name ? '🧑 Eres el comprador' : '🏪 Eres el vendedor';
+        const steps = timelineSteps[d.estado] || timelineSteps.arbitraje;
+
+        const stepsHtml = steps.map(s => `
+            <div class="dt-step ${s.done ? 'done' : ''} ${s.active ? 'active' : ''}">
+                <div class="dt-dot">${s.done ? '✓' : (s.active ? '●' : '')}</div>
+                <div class="dt-body">
+                    <p class="dt-title">${s.title}</p>
+                    <p class="dt-sub">${s.sub}</p>
+                </div>
+            </div>`).join('');
+
+        c.innerHTML += `
+        <div class="user-dispute-card ${d.estado === 'revision' ? 'revision' : d.estado === 'resuelta' ? 'resolved' : 'pending'}" style="border-left-color:${bm.lborder};">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                <div>
+                    <strong style="font-size:13px; color:var(--text-main);">#TX-${d.id}</strong>
+                    <p style="font-size:10px; color:var(--text-muted); margin-top:2px;">${isMe} &nbsp;·&nbsp; ${d.date || '—'}</p>
+                </div>
+                <span class="dispute-status-badge ${bm.cls}">${bm.label}</span>
+            </div>
+            <div style="background:#F8FAFC; border-radius:10px; padding:10px 12px; margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <span style="font-size:11px; color:var(--text-muted);">Monto</span>
+                    <strong style="font-size:12px; color:var(--primary);">${d.amount} ${d.curr}</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span style="font-size:11px; color:var(--text-muted);">Contraparte</span>
+                    <strong style="font-size:11px;">${d.buyer === currentUser?.name ? d.seller : d.buyer}</strong>
+                </div>
+                ${d.resolution ? `<div style="margin-top:6px; padding-top:6px; border-top:1px solid var(--border-color);"><span style="font-size:10px; color:var(--success); font-weight:700;">📋 Fallo: ${d.resolution}</span></div>` : ''}
+            </div>
+            <!-- Timeline de seguimiento (US-USER-02) -->
+            <div style="margin-top:4px;">
+                <p style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Seguimiento</p>
+                <div class="dispute-timeline">${stepsHtml}</div>
+            </div>
+        </div>`;
+    });
+}
+
+function filterUserDisputes(filter, el) {
+    document.querySelectorAll('#user-dispute-chips .chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    loadDisputesUser(filter);
 }
 
 // ══════════════════════════════════════════
@@ -1790,9 +1984,7 @@ function navigateTo(viewId, navElem = null) {
     if (viewId === 'view-edit-profile') loadEditProfile();
     if (viewId === 'view-vendor-inbox') loadVendorInbox();
     if (viewId === 'view-disputes-profile') loadDisputesUser();
-    if (viewId === 'view-my-offers') loadMyOffers();
-    if (viewId === 'view-complaints') loadComplaints();
-    if (viewId === 'view-publish') preparePublishForm();
+    if (viewId === 'view-register-dispute') loadRegisterDisputeView();
     if (viewId === 'view-tx') {
         // Intentar restaurar transacción guardada
         if (!activeTx) {
@@ -1838,10 +2030,10 @@ function loadMarket() {
         </div>`;
         return;
     }
+    const bankVar = { bcp:'--bcp', interbank:'--interbank', bbva:'--bbva', yape:'--yape', plin:'--plin' };
     filtered.forEach((o, i) => {
-        const mine = isMyOffer(o);
         c.innerHTML += `
-        <div class="offer-manage-card ${mine ? 'mine' : ''}" onclick="${mine ? `viewOfferDetails(${o.id})` : `startTx(${o.id})`}">
+        <div class="offer-card" onclick="startTx(${o.id})">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <div style="width:38px; height:38px; border-radius:13px; background:linear-gradient(135deg,var(--primary),var(--primary-light)); display:flex; justify-content:center; align-items:center; font-size:12px; font-weight:800; color:white; position:relative; flex-shrink:0;">
@@ -1859,7 +2051,6 @@ function loadMarket() {
                             <span class="stat-badge"><i class="fas fa-clock"></i> ${o.resp}</span>
                             <span class="stat-badge">${o.completion}%</span>
                         </div>
-                        ${mine ? '<div class="offer-owner-badge" style="margin-top:6px;"><i class="fas fa-id-card"></i> Tu oferta</div>' : ''}
                     </div>
                 </div>
                 <span class="chip ${o.bank}">${o.bankName}</span>
@@ -1871,11 +2062,7 @@ function loadMarket() {
                 </div>
                 <div style="text-align:right;">
                     <span style="font-size:10px; color:var(--text-muted); display:block;">Límites: ${o.min}–${o.max} ${o.to}</span>
-                    ${mine ? `<div class="offer-actions" style="grid-template-columns:repeat(3,1fr); margin-top:6px;">
-                        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation(); viewOfferDetails(${o.id})"><i class="fas fa-eye"></i></button>
-                        <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); openOfferEditor(${o.id})"><i class="fas fa-pen"></i></button>
-                        <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); deleteOfferPrompt(${o.id})"><i class="fas fa-trash"></i></button>
-                    </div>` : `<button class="btn btn-success btn-sm" style="margin-top:6px;" onclick="event.stopPropagation(); startTx(${o.id})">Comprar</button>`}
+                    <button class="btn btn-success btn-sm" style="margin-top:6px;" onclick="event.stopPropagation(); startTx(${o.id})">Comprar</button>
                 </div>
             </div>
             ${i === 0 ? '<div class="best-tag"><i class="fas fa-trophy"></i> Mejor tasa del mercado</div>' : ''}
@@ -1894,45 +2081,13 @@ function doPublish() {
     const bank   = document.getElementById('pub-bank').value;
     const min    = parseFloat(document.getElementById('pub-min').value) || 50;
     const max    = parseFloat(document.getElementById('pub-max').value) || amount;
-    const timeLimit = document.getElementById('pub-timelimit').value;
     const names  = { bcp:'BCP', interbank:'Interbank', bbva:'BBVA', yape:'Yape', plin:'Plin' };
     if (!amount || amount <= 0) { showToast('error', 'Ingresa un monto válido.'); return; }
     if (from === to)            { showToast('error', 'Las monedas deben ser distintas.'); return; }
-    if (!pendingOfferContract) { pendingPublishAfterContract = true; openOfferContract(); return; }
     const offers = JSON.parse(localStorage.getItem('p2p_offers'));
-    if (publishMode === 'edit' && editingOfferId) {
-        const index = offers.findIndex(offer => offer.id === editingOfferId);
-        if (index === -1) { showToast('error', 'No se encontró la oferta para editar.'); return; }
-        offers[index] = {
-            ...offers[index],
-            from, to, rate, amount, min, max, bank,
-            bankName: names[bank],
-            timeLimit,
-            ownerEmail: currentUser.email,
-            ownerName: currentUser.name,
-            contractDni: pendingOfferContract.dni,
-            contractAcceptedAt: pendingOfferContract.acceptedAt
-        };
-        showToast('success', 'Oferta actualizada correctamente.');
-    } else {
-        offers.push({
-            id: Date.now(),
-            seller: `${currentUser.name} (Tú)`,
-            from, to, rate, amount, min, max, bank,
-            bankName: names[bank],
-            stars: 4.9, trades: 180, completion: 98, resp: '~2m', verified: true, online: true,
-            ownerEmail: currentUser.email,
-            ownerName: currentUser.name,
-            contractDni: pendingOfferContract.dni,
-            contractAcceptedAt: pendingOfferContract.acceptedAt,
-            timeLimit
-        });
-        showToast('success', 'Oferta publicada en el mercado.');
-    }
+    offers.push({ id:Date.now(), seller: currentUser.name+' (Tú)', from, to, rate, amount, min, max, bank, bankName:names[bank], stars:4.9, trades:180, completion:98, resp:'~2m', verified:true, online:true });
     localStorage.setItem('p2p_offers', JSON.stringify(offers));
-    publishMode = 'create';
-    editingOfferId = null;
-    pendingOfferContract = null;
+    showToast('success', 'Oferta publicada en el mercado.');
     navigateTo('view-market', document.getElementById('nav-home'));
 }
 
@@ -2124,7 +2279,8 @@ function doConfirm() {
 // ══════════════════════════════════════════
 function addDisputeAndHistory(seller, buyer, amount, currency, rate, motivo) {
     const d = JSON.parse(localStorage.getItem('p2p_disputes'));
-    d.push({ id:Math.floor(Math.random()*9000+1000), seller, buyer, amount, curr:currency, motivo });
+    d.push({ id:Math.floor(Math.random()*9000+1000), seller, buyer, amount, curr:currency, motivo,
+             date: new Date().toLocaleDateString('es-PE'), estado: 'arbitraje', evidencia: false });
     localStorage.setItem('p2p_disputes', JSON.stringify(d));
     const h = JSON.parse(localStorage.getItem('p2p_history'));
     h.unshift({ id:'TX-'+Math.floor(Math.random()*9000+1000), seller, amount, currency, rate, status:'disputed', date:new Date().toISOString().split('T')[0] });
@@ -2338,42 +2494,203 @@ function addCard() {
 }
 
 // ══════════════════════════════════════════
-// ADMIN
+// ADMIN BACKOFFICE — US-ADM-01 / ADM-02 / ADM-03
 // ══════════════════════════════════════════
-function loadAdmin() {
+let currentDisputeId = null;  // disputa seleccionada
+let selectedResolution = null; // buyer | seller | review
+
+/* US-ADM-01 — Cargar y filtrar listado de disputas */
+function loadAdmin(filter = 'all') {
     const disputes = JSON.parse(localStorage.getItem('p2p_disputes'));
+
+    // Contar por estado para las pills
+    const cArbitraje = disputes.filter(d => d.estado === 'arbitraje').length;
+    const cRevision  = disputes.filter(d => d.estado === 'revision').length;
+    const cResuelta  = disputes.filter(d => d.estado === 'resuelta').length;
     document.getElementById('admin-count').innerText = disputes.length;
+    document.getElementById('adm-pill-arbitraje').innerText = `⚖️ ${cArbitraje} En arbitraje`;
+    document.getElementById('adm-pill-revision').innerText  = `🔍 ${cRevision} En revisión`;
+    document.getElementById('adm-pill-resuelta').innerText  = `✅ ${cResuelta} Resueltas`;
+
+    const filtered = filter === 'all' ? disputes : disputes.filter(d => d.estado === filter);
     const c = document.getElementById('admin-disputes');
     c.innerHTML = '';
-    if (!disputes.length) {
-        c.innerHTML = `<div class="card" style="text-align:center; padding:24px;">
-            <i class="fas fa-check-circle" style="font-size:28px; color:var(--success); display:block; margin-bottom:8px;"></i>
-            <p style="font-size:12px; color:var(--text-muted);">No hay disputas activas.</p></div>`;
+
+    if (!filtered.length) {
+        const msgs = {
+            all:      ['fa-check-circle', 'var(--success)', 'No hay disputas registradas.'],
+            arbitraje:['fa-gavel',        'var(--danger)',  'No hay casos en arbitraje activo.'],
+            revision: ['fa-search',       'var(--warning)', 'No hay disputas en revisión.'],
+            resuelta: ['fa-check-circle', 'var(--success)', 'No hay disputas resueltas aún.'],
+        };
+        const [ico, col, txt] = msgs[filter] || msgs.all;
+        c.innerHTML = `<div class="card" style="text-align:center; padding:28px;">
+            <i class="fas ${ico}" style="font-size:30px; color:${col}; display:block; margin-bottom:10px;"></i>
+            <p style="font-size:13px; color:var(--text-muted);">${txt}</p></div>`;
         return;
     }
-    disputes.forEach(d => {
+
+    const estadoMap = {
+        arbitraje: { label:'EN ARBITRAJE', badgeBg:'var(--danger)',  rowClass:'arbitraje-row',  pill:'arbitraje', pillLabel:'⚖️ Arbitraje' },
+        revision:  { label:'EN REVISIÓN',  badgeBg:'var(--warning)', rowClass:'revision-row',   pill:'revision',  pillLabel:'🔍 En revisión' },
+        resuelta:  { label:'RESUELTA',     badgeBg:'var(--success)', rowClass:'resuelta-row',   pill:'resuelta',  pillLabel:'✅ Resuelta' },
+        pendiente: { label:'PENDIENTE',    badgeBg:'var(--text-muted)', rowClass:'pendiente-row', pill:'pendiente', pillLabel:'⏳ Pendiente' },
+    };
+
+    filtered.forEach(d => {
+        const est = estadoMap[d.estado] || estadoMap.pendiente;
         c.innerHTML += `
-        <div class="dispute-card">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <strong style="font-size:12px; color:var(--danger);">ORDEN #TX-${d.id}</strong>
-                <span style="background:var(--danger); color:white; font-size:9px; font-weight:700; padding:2px 8px; border-radius:10px;">EN ARBITRAJE</span>
+        <div class="adm-dispute-row ${est.rowClass}" onclick="openDisputeDetail(${d.id})">
+            <div style="flex:1; min-width:0;">
+                <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+                    <strong style="font-size:12px; color:var(--text-main);">#TX-${d.id}</strong>
+                    <span style="background:${est.badgeBg}; color:white; font-size:9px; font-weight:700; padding:2px 7px; border-radius:10px;">${est.label}</span>
+                </div>
+                <p style="font-size:11px; color:var(--text-muted); margin-bottom:2px;">🧑 <strong>${d.buyer}</strong> &nbsp;↔&nbsp; 🏪 <strong>${d.seller}</strong></p>
+                <p style="font-size:11px; color:var(--text-muted);">💰 ${d.amount} ${d.curr} &nbsp;·&nbsp; ${d.date || '—'}</p>
+                ${d.resolution ? `<p style="font-size:10px; color:var(--success); margin-top:4px; font-weight:600;">✓ ${d.resolution}</p>` : ''}
             </div>
-            <div style="background:rgba(239,68,68,0.05); border-radius:10px; padding:10px 12px; margin-bottom:12px;">
-                <p style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">🧑 Comprador: <strong>${d.buyer}</strong></p>
-                <p style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">🏪 Vendedor: <strong>${d.seller}</strong></p>
-                <p style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">💰 Monto: <strong>${d.amount} ${d.curr}</strong></p>
-                <p style="font-size:10px; color:var(--danger); margin-top:6px; font-style:italic;">${d.motivo || 'Sin detalle registrado.'}</p>
-            </div>
-            <div style="display:flex; gap:8px;">
-                <button class="btn btn-success btn-sm" style="flex:1;" onclick="resolveDispute(${d.id},true)"><i class="fas fa-check"></i> Liberar Comprador</button>
-                <button class="btn btn-danger btn-sm"  style="flex:1;" onclick="resolveDispute(${d.id},false)"><i class="fas fa-times"></i> Revertir Vendedor</button>
-            </div>
+            <i class="fas fa-chevron-right" style="color:var(--text-muted); font-size:12px; flex-shrink:0; margin-left:8px;"></i>
         </div>`;
     });
 }
+
+function filterAdminDisputes(filter, el) {
+    document.querySelectorAll('.adm-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    loadAdmin(filter);
+}
+
+/* US-ADM-02 — Abrir detalle de disputa */
+function openDisputeDetail(id) {
+    const disputes = JSON.parse(localStorage.getItem('p2p_disputes'));
+    const d = disputes.find(x => x.id === id);
+    if (!d) return;
+    currentDisputeId = id;
+
+    const estadoMap = {
+        arbitraje: { label: 'EN ARBITRAJE', cls: 'arbitraje' },
+        revision:  { label: 'EN REVISIÓN',  cls: 'revision'  },
+        resuelta:  { label: 'RESUELTA',     cls: 'resuelta'  },
+        pendiente: { label: 'PENDIENTE',    cls: 'pendiente' },
+    };
+    const est = estadoMap[d.estado] || estadoMap.pendiente;
+
+    document.getElementById('dd-id').innerText     = `#TX-${d.id}`;
+    document.getElementById('dd-date').innerText   = d.date || '—';
+    document.getElementById('dd-curr').innerText   = `${d.curr} / PEN`;
+    document.getElementById('dd-buyer').innerText  = d.buyer;
+    document.getElementById('dd-seller').innerText = d.seller;
+    document.getElementById('dd-amount').innerText = `${d.amount} ${d.curr}`;
+    document.getElementById('dd-motivo').innerText = d.motivo || 'Sin detalle registrado.';
+
+    const badge = document.getElementById('dd-status-badge');
+    badge.innerText   = est.label;
+    badge.className   = `dispute-status-badge ${est.cls}`;
+
+    // Mostrar/ocultar botón resolver según estado
+    const resolveBtn = document.querySelector('#view-dispute-detail .btn');
+    if (resolveBtn) {
+        resolveBtn.style.display = d.estado === 'resuelta' ? 'none' : 'flex';
+    }
+
+    navigateTo('view-dispute-detail');
+}
+
+/* US-ADM-03 — Ir a pantalla resolución */
+function goToResolution() {
+    const disputes = JSON.parse(localStorage.getItem('p2p_disputes'));
+    const d = disputes.find(x => x.id === currentDisputeId);
+    if (!d) return;
+    selectedResolution = null;
+    // Reset UI
+    ['buyer','seller','review'].forEach(k => {
+        document.getElementById(`res-opt-${k}`).className = 'res-option';
+        document.getElementById(`chk-${k}`).style.cssText = 'width:20px;height:20px;border-radius:50%;border:2px solid var(--border-color);flex-shrink:0;';
+    });
+    document.getElementById('res-id').innerText     = `#TX-${d.id}`;
+    document.getElementById('res-amount').innerText = `${d.amount} ${d.curr}`;
+    document.getElementById('res-comment').value    = '';
+    navigateTo('view-dispute-resolve');
+}
+
+/* US-ADM-03 — Seleccionar opción de resolución */
+function selectResolution(option) {
+    selectedResolution = option;
+    const colorMap = { buyer: 'selected-buyer', seller: 'selected-seller', review: 'selected-review' };
+    const checkColor = { buyer: 'var(--success)', seller: 'var(--danger)', review: 'var(--warning)' };
+    ['buyer','seller','review'].forEach(k => {
+        const opt = document.getElementById(`res-opt-${k}`);
+        const chk = document.getElementById(`chk-${k}`);
+        if (k === option) {
+            opt.className = `res-option ${colorMap[k]}`;
+            chk.style.cssText = `width:20px;height:20px;border-radius:50%;border:2px solid ${checkColor[k]};flex-shrink:0;background:${checkColor[k]};display:flex;align-items:center;justify-content:center;font-size:10px;color:white;`;
+            chk.innerHTML = '✓';
+        } else {
+            opt.className = 'res-option';
+            chk.style.cssText = 'width:20px;height:20px;border-radius:50%;border:2px solid var(--border-color);flex-shrink:0;';
+            chk.innerHTML = '';
+        }
+    });
+}
+
+/* US-ADM-03 — Mostrar modal de confirmación */
+function confirmResolution() {
+    if (!selectedResolution) { showToast('error', 'Selecciona una decisión de arbitraje.'); return; }
+    const comment = document.getElementById('res-comment').value.trim();
+    if (!comment) { showToast('error', 'Ingresa una justificación para la decisión.'); return; }
+
+    const messages = {
+        buyer:  { icon:'🧑', title:'Aprobar al Comprador', body:'Los fondos serán liberados en favor del comprador. El caso quedará marcado como Resuelto.' },
+        seller: { icon:'🏪', title:'Aprobar al Vendedor',  body:'Se confirma que el pago fue legítimo. El caso quedará marcado como Resuelto.' },
+        review: { icon:'🔍', title:'Mantener en Revisión', body:'Se solicitarán más evidencias. El caso quedará "En revisión" hasta nueva decisión.' },
+    };
+    const m = messages[selectedResolution];
+    document.getElementById('confirm-modal-icon').innerText = m.icon;
+    document.getElementById('confirm-modal-title').innerText = m.title;
+    document.getElementById('confirm-modal-body').innerText  = m.body;
+    document.getElementById('confirm-res-modal').classList.remove('hidden');
+}
+
+/* US-ADM-03 — Ejecutar resolución */
+function executeResolution() {
+    document.getElementById('confirm-res-modal').classList.add('hidden');
+    const disputes = JSON.parse(localStorage.getItem('p2p_disputes'));
+    const idx = disputes.findIndex(x => x.id === currentDisputeId);
+    if (idx < 0) return;
+
+    const comment = document.getElementById('res-comment').value.trim();
+    const resLabels = {
+        buyer:  'Fondos liberados al comprador',
+        seller: 'Transacción aprobada al vendedor',
+        review: 'En revisión — se solicitaron más evidencias',
+    };
+    const toastMsgs = {
+        buyer:  'Disputa resuelta: fondos liberados al comprador.',
+        seller: 'Disputa resuelta: aprobado en favor del vendedor.',
+        review: 'Disputa marcada "En revisión". Admin notificado.',
+    };
+
+    disputes[idx].estado     = selectedResolution === 'review' ? 'revision' : 'resuelta';
+    disputes[idx].resolution = resLabels[selectedResolution];
+    disputes[idx].comment    = comment;
+    localStorage.setItem('p2p_disputes', JSON.stringify(disputes));
+
+    showToast('success', toastMsgs[selectedResolution]);
+    setTimeout(() => {
+        navigateTo('view-admin');
+        loadAdmin();
+    }, 1000);
+}
+
+/* Legacy resolveDispute still works for vendor modal */
 function resolveDispute(id, release) {
     let d = JSON.parse(localStorage.getItem('p2p_disputes'));
-    d = d.filter(x => x.id !== id);
+    const idx = d.findIndex(x => x.id === id);
+    if (idx >= 0) {
+        d[idx].estado     = 'resuelta';
+        d[idx].resolution = release ? 'Fondos liberados al comprador' : 'Transacción revertida al vendedor';
+    }
     localStorage.setItem('p2p_disputes', JSON.stringify(d));
     loadAdmin();
     showToast('success', release ? 'Capital liberado al comprador.' : 'Transacción revertida al vendedor.');
@@ -2435,6 +2752,13 @@ function updateVendorNotifications() {
             </div>`;
         });
     }
+}
+function resetDemoData() {
+    localStorage.removeItem('p2p_disputes');
+    localStorage.removeItem('p2p_history');
+    initDB();
+    loadAdmin();
+    showToast('success', 'Datos de demo restablecidos.');
 }
 </script>
 </body>

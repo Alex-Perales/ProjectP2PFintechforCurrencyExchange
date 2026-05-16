@@ -1,0 +1,1868 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perú Exchange P2P - Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-page: #0A1128;
+            --bg-phone: #F8FAFC;
+            --surface: #FFFFFF;
+            --primary: #00ACC1;
+            --primary-light: #26C6DA;
+            --primary-mint: #00E676;
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --text-main: #1E293B;
+            --text-muted: #64748B;
+            --border-color: #E2E8F0;
+            --bcp: #FF7A00; --interbank: #00B14F; --bbva: #072146; --yape: #742284; --plin: #00C3DA;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body {
+            background-color: var(--bg-page);
+            min-height: 100vh;
+            display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
+            padding: 30px 20px;
+        }
+        .hidden { display: none !important; }
+
+        /* Buttons */
+        .btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white; border: none; padding: 14px 20px; border-radius: 14px;
+            font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s;
+            width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px;
+            box-shadow: 0 4px 15px rgba(0,172,193,0.3);
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,172,193,0.45); }
+        .btn-success { background: linear-gradient(135deg, var(--success), #059669); box-shadow: 0 4px 15px rgba(16,185,129,0.25); }
+        .btn-danger  { background: linear-gradient(135deg, var(--danger), #DC2626);  box-shadow: 0 4px 15px rgba(239,68,68,0.25); }
+        .btn-dark    { background: linear-gradient(135deg, #1E293B, #334155); box-shadow: none; }
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); box-shadow: none; }
+        .btn-outline:hover { background: rgba(0,172,193,0.05); transform: none; }
+        .btn-ghost   { background: transparent; border: 2px solid var(--border-color); color: var(--text-muted); box-shadow: none; }
+        .btn-ghost:hover { background: rgba(0,0,0,0.02); transform: none; }
+        .btn-sm { padding: 8px 14px; font-size: 12px; width: auto; border-radius: 10px; }
+
+        /* Phone frame */
+        .app-wrapper { width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+        .phone-frame {
+            width: 100%; height: 820px;
+            background-color: var(--bg-phone);
+            border-radius: 44px; border: 10px solid #1E293B;
+            box-shadow: 0 30px 70px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06);
+            position: relative; display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        /* Splash */
+        .splash-screen {
+            position: absolute; inset: 0;
+            background: linear-gradient(160deg, #0A1128 0%, #0D2847 60%, #005662 100%);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 999; border-radius: 34px;
+        }
+        .splash-logo {
+            width: 84px; height: 84px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-mint));
+            border-radius: 28px; display: flex; align-items: center; justify-content: center;
+            margin-bottom: 22px; box-shadow: 0 16px 40px rgba(0,172,193,0.45);
+            animation: splashPulse 1.6s ease-in-out infinite;
+        }
+        @keyframes splashPulse { 0%,100% { box-shadow: 0 16px 40px rgba(0,172,193,0.45); } 50% { box-shadow: 0 16px 60px rgba(0,172,193,0.75); } }
+        .splash-bar-wrap { width: 140px; height: 4px; background: rgba(255,255,255,0.12); border-radius: 2px; margin-top: 26px; overflow: hidden; }
+        .splash-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--primary-mint)); border-radius: 2px; animation: loadBar 2.2s ease forwards; }
+        @keyframes loadBar { to { width: 100%; } }
+
+        /* Toast */
+        .toast-container { position: absolute; top: 52px; left: 0; right: 0; padding: 0 12px; z-index: 500; pointer-events: none; }
+        .toast {
+            background: #1E293B; color: white; padding: 11px 14px; border-radius: 14px;
+            font-size: 12px; font-weight: 600; margin-bottom: 6px;
+            display: flex; align-items: center; gap: 10px;
+            animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+        }
+        .toast.success { border-left: 4px solid var(--success); }
+        .toast.error   { border-left: 4px solid var(--danger); }
+        .toast.info    { border-left: 4px solid var(--primary); }
+        @keyframes toastIn  { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
+
+        /* Status bar */
+        .status-bar {
+            height: 40px; background: var(--surface); flex-shrink: 0;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 24px; font-size: 12px; font-weight: 700; color: var(--text-main);
+            border-bottom: 1px solid var(--border-color); z-index: 10;
+        }
+        .notch { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 90px; height: 16px; background: #1E293B; border-radius: 10px; }
+
+        /* Ticker */
+        .ticker {
+            background: #1E293B; color: white; padding: 7px 10px; flex-shrink: 0;
+            display: flex; justify-content: space-around; font-size: 10px; font-weight: 600;
+            border-bottom: 1px solid #334155;
+        }
+        .up { color: var(--primary-mint); } .down { color: var(--danger); }
+
+        /* Scrollable content */
+        .phone-screen { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 90px; scrollbar-width: none; }
+        .phone-screen::-webkit-scrollbar { display: none; }
+
+        /* Bottom nav */
+        .bottom-nav {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 72px;
+            background: var(--surface); border-top: 1px solid var(--border-color);
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 100; box-shadow: 0 -4px 15px rgba(0,0,0,0.04);
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-muted); font-size: 10px; font-weight: 600; cursor: pointer; }
+        .nav-item.active { color: var(--primary); font-weight: 800; }
+        .nav-item i { font-size: 20px; }
+        .nav-fab {
+            width: 48px; height: 48px; background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 16px; display: flex; align-items: center; justify-content: center;
+            margin-top: -18px; box-shadow: 0 6px 18px rgba(0,172,193,0.45); cursor: pointer;
+        }
+
+        /* Views */
+        .view { animation: viewIn 0.22s ease; }
+        @keyframes viewIn { from { opacity: 0; transform: scale(0.985); } to { opacity: 1; transform: scale(1); } }
+
+        /* Cards */
+        .card { background: var(--surface); border-radius: 16px; padding: 16px; margin-bottom: 14px; border: 1px solid var(--border-color); box-shadow: 0 2px 8px rgba(0,0,0,0.025); }
+        .visa-card {
+            background: linear-gradient(135deg, #0A1128 0%, #1E3A5F 60%, #005662 100%);
+            color: white; padding: 20px; border-radius: 20px; margin-bottom: 16px;
+            position: relative; overflow: hidden; box-shadow: 0 12px 32px rgba(0,172,193,0.28);
+        }
+
+        /* Auth tabs */
+        .auth-tabs { display: flex; background: #F1F5F9; border-radius: 14px; padding: 4px; margin-bottom: 20px; }
+        .auth-tab { flex: 1; padding: 10px; text-align: center; font-size: 13px; font-weight: 700; border-radius: 11px; cursor: pointer; color: var(--text-muted); transition: all 0.2s; }
+        .auth-tab.active { background: white; color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+
+        /* Forms */
+        .filter-box { background: linear-gradient(135deg, #1E293B, #0F172A); padding: 12px; border-radius: 16px; margin-bottom: 8px; }
+        .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+        .form-label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-select, .form-input {
+            width: 100%; padding: 13px 14px; border: 1.5px solid var(--border-color); border-radius: 12px;
+            font-size: 13px; background: var(--surface); color: var(--text-main); outline: none;
+            margin-bottom: 12px; font-weight: 600; transition: border-color 0.2s;
+        }
+        .form-input:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,172,193,0.1); }
+        .filter-box .form-label { color: #94A3B8; }
+        .filter-box .form-select { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: white; padding: 10px 12px; margin-bottom: 0; }
+        .filter-box .form-select option { background: #1E293B; }
+        .input-group { position: relative; margin-bottom: 12px; }
+        .input-group .form-input { margin-bottom: 0; padding-right: 42px; }
+        .input-icon { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; cursor: pointer; }
+        textarea.form-input { resize: none; font-family: inherit; }
+
+        /* Badges */
+        .chip { padding: 4px 10px; border-radius: 10px; font-size: 10px; font-weight: 700; background: #E2E8F0; color: var(--text-muted); display: inline-block; cursor: pointer; }
+        .chip.active  { background: var(--primary); color: white; }
+        .chip.bcp     { background: rgba(255,122,0,0.12); color: var(--bcp); }
+        .chip.interbank { background: rgba(0,177,79,0.12); color: var(--interbank); }
+        .chip.bbva    { background: rgba(7,33,70,0.1); color: var(--bbva); }
+        .chip.yape    { background: rgba(116,34,132,0.12); color: var(--yape); }
+        .chip.plin    { background: rgba(0,195,218,0.12); color: var(--plin); }
+        .chips-container { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+        .stars-badge { background: rgba(245,158,11,0.1); color: var(--warning); padding: 3px 8px; border-radius: 8px; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
+        .verified-badge { background: rgba(0,172,193,0.1); color: var(--primary); padding: 3px 8px; border-radius: 8px; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
+        .stat-badge { background: rgba(0,0,0,0.04); padding: 3px 8px; border-radius: 8px; font-size: 10px; font-weight: 600; color: var(--text-muted); display: inline-flex; align-items: center; gap: 3px; }
+        .level-experto { background: rgba(0,172,193,0.1); color: var(--primary); padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 800; }
+        .online-dot  { width: 9px; height: 9px; border-radius: 50%; background: var(--success); display: inline-block; box-shadow: 0 0 7px rgba(16,185,129,0.7); }
+        .offline-dot { width: 9px; height: 9px; border-radius: 50%; background: #94A3B8; display: inline-block; }
+
+        /* Timeline */
+        .timeline { display: flex; justify-content: space-between; position: relative; margin: 20px 0; }
+        .timeline-track { position: absolute; top: 13px; left: 0; width: 100%; height: 2px; background: var(--border-color); z-index: 1; }
+        .timeline-fill  { position: absolute; top: 13px; left: 0; height: 2px; background: linear-gradient(90deg, var(--primary), var(--primary-light)); z-index: 2; transition: width 0.6s ease; }
+        .step { display: flex; flex-direction: column; align-items: center; gap: 5px; z-index: 3; width: 25%; }
+        .step-circle { width: 28px; height: 28px; border-radius: 50%; background: var(--surface); border: 2px solid var(--border-color); display: flex; justify-content: center; align-items: center; font-size: 11px; font-weight: 700; color: var(--text-muted); transition: all 0.3s; }
+        .step.active .step-circle { background: linear-gradient(135deg, var(--primary), var(--primary-light)); border-color: var(--primary); color: white; box-shadow: 0 3px 10px rgba(0,172,193,0.45); }
+        .step.done   .step-circle { background: var(--success); border-color: var(--success); color: white; }
+        .step-lbl { font-size: 9px; font-weight: 600; color: var(--text-muted); text-align: center; }
+        .step.active .step-lbl { color: var(--primary); font-weight: 700; }
+        .step.done   .step-lbl { color: var(--success); }
+
+        /* Upload zone */
+        .upload-zone { border: 2px dashed var(--primary); background: rgba(0,172,193,0.03); padding: 22px; border-radius: 16px; text-align: center; cursor: pointer; margin-bottom: 14px; transition: all 0.2s; }
+        .upload-zone:hover { background: rgba(0,172,193,0.07); }
+
+        /* Spinner */
+        .spinner { width: 40px; height: 40px; border: 4px solid var(--border-color); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.75s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Receipt */
+        .receipt-card { border: 2px solid var(--primary-light); background: linear-gradient(135deg, rgba(0,172,193,0.03), rgba(0,230,118,0.02)); }
+        .receipt-line { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 8px; color: var(--text-muted); }
+        .receipt-total { border-top: 1px dashed var(--border-color); margin-top: 10px; padding-top: 10px; color: var(--text-main); font-weight: 800; font-size: 14px; }
+
+        /* Chat */
+        .chat-box { background: #F1F5F9; border-radius: 14px; padding: 12px; max-height: 140px; overflow-y: auto; margin-bottom: 10px; }
+        .chat-msg { font-size: 11px; padding: 7px 11px; border-radius: 12px; margin-bottom: 6px; max-width: 82%; line-height: 1.4; }
+        .chat-msg.recv { background: white; color: var(--text-main); border: 1px solid var(--border-color); border-radius: 12px 12px 12px 3px; }
+        .chat-msg.sent { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; margin-left: auto; border-radius: 12px 12px 3px 12px; }
+        .msg-meta { font-size: 9px; opacity: 0.65; margin-top: 3px; }
+        .chat-row { display: flex; gap: 8px; }
+        .chat-row input { flex: 1; padding: 9px 12px; border: 1.5px solid var(--border-color); border-radius: 10px; font-size: 12px; outline: none; }
+        .chat-row input:focus { border-color: var(--primary); }
+        .chat-row button { background: var(--primary); color: white; border: none; padding: 9px 14px; border-radius: 10px; cursor: pointer; font-size: 13px; }
+
+        /* Rating stars */
+        .stars-row { display: flex; justify-content: center; gap: 10px; margin: 14px 0; }
+        .star { font-size: 38px; cursor: pointer; transition: transform 0.15s; opacity: 0.3; filter: grayscale(1); }
+        .star.lit { opacity: 1; filter: none; transform: scale(1.15); }
+
+        /* History */
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background 0.15s; }
+        .history-item:hover { background: rgba(0,172,193,0.03); border-radius: 8px; padding-left: 6px; padding-right: 6px; }
+        .history-item:last-child { border-bottom: none; }
+        .status-pill { padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; }
+        .status-pill.completed { background: rgba(16,185,129,0.1); color: var(--success); }
+        .status-pill.pending   { background: rgba(245,158,11,0.1);  color: var(--warning); }
+        .status-pill.disputed  { background: rgba(239,68,68,0.1);   color: var(--danger); }
+        .status-pill.cancelled { background: rgba(100,116,139,0.1); color: var(--text-muted); }
+
+        /* Profile stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+        .stat-box { background: #F8FAFC; border: 1px solid var(--border-color); border-radius: 14px; padding: 12px; text-align: center; }
+        .stat-val { font-size: 18px; font-weight: 800; color: var(--text-main); }
+        .stat-lbl { font-size: 10px; color: var(--text-muted); font-weight: 600; margin-top: 2px; }
+
+        /* KYC banner */
+        .kyc-banner { background: linear-gradient(135deg, rgba(16,185,129,0.07), rgba(5,150,105,0.04)); border: 1px solid rgba(16,185,129,0.2); border-radius: 14px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+
+        /* Menu items */
+        .menu-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--border-color); cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-main); transition: background 0.15s; }
+        .menu-item:hover { background: rgba(0,172,193,0.03); }
+        .menu-item:last-child { border-bottom: none; }
+
+        /* Admin */
+        .admin-header { background: linear-gradient(135deg, #1E293B, #0F172A); border-radius: 18px; padding: 16px; margin-bottom: 14px; color: white; }
+        .admin-stats  { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+        .admin-stat   { background: rgba(255,255,255,0.06); border-radius: 12px; padding: 10px; text-align: center; }
+        .dispute-card { background: rgba(239,68,68,0.04); border: 1px solid rgba(239,68,68,0.2); border-radius: 14px; padding: 14px; margin-bottom: 10px; }
+
+        /* Offer cards */
+        .offer-card { background: white; border-radius: 16px; padding: 14px; margin-bottom: 10px; border: 1px solid var(--border-color); cursor: pointer; transition: all 0.2s; }
+        .offer-card:hover { border-color: var(--primary); box-shadow: 0 4px 16px rgba(0,172,193,0.1); transform: translateY(-1px); }
+        .seller-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+        .best-tag { background: rgba(0,172,193,0.08); border-radius: 8px; padding: 4px 10px; font-size: 10px; font-weight: 700; color: var(--primary); text-align: center; margin-top: 8px; }
+
+        /* Page header */
+        .page-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+        .back-btn { width: 34px; height: 34px; border-radius: 10px; background: var(--bg-phone); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-main); flex-shrink: 0; }
+        .page-header h4 { font-weight: 800; font-size: 16px; color: var(--text-main); }
+
+        /* Section title */
+        .section-title { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+
+        /* Mode bar */
+        .mode-bar { background: white; border-bottom: 1px solid var(--border-color); padding: 7px 16px; display: flex; justify-content: center; align-items: center; gap: 10px; flex-shrink: 0; }
+        .mode-toggle { background: #F1F5F9; border-radius: 20px; padding: 3px; display: flex; }
+        .mode-opt { padding: 6px 16px; border-radius: 18px; font-size: 11px; font-weight: 700; cursor: pointer; color: var(--text-muted); transition: all 0.2s; user-select: none; }
+        .mode-opt.buyer.active  { background: var(--primary); color: white; box-shadow: 0 2px 8px rgba(0,172,193,0.35); }
+        .mode-opt.seller.active { background: var(--warning); color: white; box-shadow: 0 2px 8px rgba(245,158,11,0.35); }
+        .mode-label { font-size: 10px; font-weight: 700; color: var(--text-muted); }
+
+        /* Vendor */
+        .vendor-card { background: white; border-radius: 16px; border: 1.5px solid var(--border-color); padding: 16px; margin-bottom: 12px; }
+        .vendor-card.has-action { border-color: var(--warning); box-shadow: 0 4px 16px rgba(245,158,11,0.12); }
+        .ocr-tag { background: rgba(16,185,129,0.1); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
+        .waiting-box { background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.25); border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+
+        /* Notification button */
+        .vendor-notif-btn {
+            position: absolute; top: 46px; right: 12px; z-index: 100;
+            width: 44px; height: 44px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--danger), #DC2626);
+            border: none; cursor: pointer; color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; box-shadow: 0 4px 16px rgba(239,68,68,0.35);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .notif-badge {
+            position: absolute; top: -6px; right: -6px;
+            background: var(--primary-mint); color: #0A1128;
+            font-size: 10px; font-weight: 800; padding: 2px 6px;
+            border-radius: 10px; min-width: 18px; text-align: center;
+        }
+
+        /* Confirm modal overlay */
+        .confirm-overlay {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.55);
+            display: flex; align-items: flex-end; z-index: 300;
+            border-radius: 34px; overflow: hidden;
+        }
+        .confirm-sheet {
+            background: white; width: 100%; border-radius: 24px 24px 0 0;
+            padding: 20px; animation: slideUp 0.3s ease;
+        }
+        .confirm-handle { width: 36px; height: 4px; background: #e5e7eb; border-radius: 2px; margin: 0 auto 16px; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        /* Notif modal */
+        .notif-modal {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.5);
+            display: flex; align-items: flex-end; z-index: 200;
+            border-radius: 34px; overflow: hidden;
+        }
+        .notif-modal-content {
+            background: white; width: 100%;
+            border-radius: 28px 28px 0 0; padding: 16px;
+            max-height: 60vh; display: flex; flex-direction: column;
+            animation: slideUp 0.3s ease;
+        }
+        .notif-modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-bottom: 12px; border-bottom: 1px solid var(--border-color); margin-bottom: 12px;
+        }
+        .notif-modal-list { flex: 1; overflow-y: auto; }
+
+        /* App label */
+        .app-label { color: rgba(255,255,255,0.3); font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
+
+        /* Payment card styles — US-011 mejoras */
+        .payment-section-header {
+            font-size: 10px; font-weight: 800; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.8px;
+            padding: 10px 0 6px; display: flex; align-items: center; gap: 6px;
+        }
+        .payment-card-item {
+            background: white; border-radius: 14px; border: 1.5px solid var(--border-color);
+            padding: 12px 14px; margin-bottom: 8px;
+            display: flex; align-items: center; gap: 12px;
+            transition: border-color 0.2s;
+        }
+        .payment-card-item.is-default { border-color: var(--primary); }
+        .bank-logo-circle {
+            width: 38px; height: 38px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: 800; color: white; flex-shrink: 0;
+        }
+        .payment-card-info { flex: 1; min-width: 0; }
+        .payment-card-name { font-size: 13px; font-weight: 700; color: var(--text-main); }
+        .payment-card-num  { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+        .payment-card-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .default-badge { background: rgba(0,172,193,0.1); color: var(--primary); font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 8px; }
+        .delete-btn { width: 28px; height: 28px; border-radius: 8px; background: rgba(239,68,68,0.08); border: none; cursor: pointer; color: var(--danger); font-size: 12px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+        .delete-btn:hover { background: rgba(239,68,68,0.16); }
+        .set-default-btn { width: 28px; height: 28px; border-radius: 8px; background: rgba(0,172,193,0.08); border: none; cursor: pointer; color: var(--primary); font-size: 12px; display: flex; align-items: center; justify-content: center; }
+        .add-method-box { border: 2px dashed var(--border-color); border-radius: 14px; padding: 14px; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 8px; }
+        .add-method-box:hover { border-color: var(--primary); background: rgba(0,172,193,0.03); }
+
+        /* History detail view */
+        .tx-detail-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-color); font-size: 12px; }
+        .tx-detail-row:last-child { border-bottom: none; }
+        .tx-detail-label { color: var(--text-muted); font-weight: 600; }
+        .tx-detail-value { font-weight: 700; color: var(--text-main); }
+
+        /* Reviews list */
+        .review-item { padding: 12px 0; border-bottom: 1px solid var(--border-color); }
+        .review-item:last-child { border-bottom: none; }
+        .review-stars { color: var(--warning); font-size: 12px; }
+        .review-comment { font-size: 12px; color: var(--text-muted); margin-top: 4px; line-height: 1.5; }
+        .review-meta { font-size: 10px; color: #94A3B8; margin-top: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="app-wrapper">
+<div class="phone-frame">
+
+    <!-- SPLASH -->
+    <div id="view-splash" class="splash-screen">
+        <div class="splash-logo">
+            <i class="fas fa-random" style="font-size:38px; color:white;"></i>
+        </div>
+        <h2 style="color:white; font-weight:800; font-size:23px;">Perú Exchange</h2>
+        <p style="color:rgba(255,255,255,0.55); font-size:12px; margin-top:5px;">Red P2P Fiat · Segura y Trazable</p>
+        <div class="splash-bar-wrap"><div class="splash-bar"></div></div>
+    </div>
+
+    <!-- TOASTS -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- CONFIRM OVERLAY (eliminación de tarjeta) -->
+    <div id="confirm-overlay" class="confirm-overlay hidden">
+        <div class="confirm-sheet">
+            <div class="confirm-handle"></div>
+            <div style="text-align:center; margin-bottom:16px;">
+                <div style="width:52px;height:52px;background:rgba(239,68,68,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+                    <i class="fas fa-trash" style="color:var(--danger);font-size:20px;"></i>
+                </div>
+                <h4 style="font-size:15px;font-weight:800;color:var(--text-main);">¿Eliminar método de pago?</h4>
+                <p style="font-size:12px;color:var(--text-muted);margin-top:6px;" id="confirm-subtitle">Esta acción no se puede deshacer.</p>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button class="btn btn-ghost" style="flex:1;" onclick="closeConfirm()">Cancelar</button>
+                <button class="btn btn-danger" style="flex:1;" onclick="confirmDeleteCard()"><i class="fas fa-trash"></i> Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONFIRM OVERLAY calificacion -->
+    <div id="rating-confirm-overlay" class="confirm-overlay hidden">
+        <div class="confirm-sheet">
+            <div class="confirm-handle"></div>
+            <div style="text-align:center; margin-bottom:16px;">
+                <div style="width:52px;height:52px;background:rgba(245,158,11,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+                    <i class="fas fa-star" style="color:var(--warning);font-size:20px;"></i>
+                </div>
+                <h4 style="font-size:15px;font-weight:800;color:var(--text-main);">¿Enviar calificación?</h4>
+                <p style="font-size:12px;color:var(--text-muted);margin-top:6px;">Una vez enviada <strong>no podrás modificarla</strong>.</p>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button class="btn btn-ghost" style="flex:1;" onclick="closeRatingConfirm()">Revisar</button>
+                <button class="btn" style="flex:1;" onclick="finalSubmitRating()"><i class="fas fa-check"></i> Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATUS BAR -->
+    <div class="status-bar">
+        <span id="clock">12:00</span>
+        <div class="notch"></div>
+        <div style="display:flex; gap:6px; align-items:center; font-size:13px;">
+            <i class="fas fa-signal"></i><i class="fas fa-wifi"></i><i class="fas fa-battery-full"></i>
+        </div>
+    </div>
+
+    <!-- TICKER -->
+    <div class="ticker">
+        <span>🇺🇸 USD <span id="tick-usd">S/ 3.780</span> <span class="up">▲</span></span>
+        <span>🇪🇺 EUR <span id="tick-eur">S/ 4.110</span> <span class="down">▼</span></span>
+        <span>🇧🇷 BRL <span id="tick-brl">S/ 0.740</span> <span class="up">▲</span></span>
+    </div>
+
+    <!-- MODE BAR -->
+    <div class="mode-bar hidden" id="mode-bar">
+        <span class="mode-label">Simular como:</span>
+        <div class="mode-toggle">
+            <span class="mode-opt buyer active" id="mode-btn-buyer" onclick="setMode('buyer')">👤 Comprador</span>
+            <span class="mode-opt seller" id="mode-btn-seller" onclick="setMode('seller')">🏪 Vendedor</span>
+        </div>
+    </div>
+
+    <!-- VENDOR NOTIF BUTTON -->
+    <button id="vendor-notif-btn" class="vendor-notif-btn hidden" onclick="toggleVendorNotifications()">
+        <i class="fas fa-inbox"></i>
+        <span id="vendor-notif-badge" class="notif-badge">0</span>
+    </button>
+
+    <!-- VENDOR NOTIF MODAL -->
+    <div id="vendor-notif-modal" class="notif-modal hidden">
+        <div class="notif-modal-content">
+            <div class="notif-modal-header">
+                <h3 style="font-size:14px; font-weight:800;">Transacciones Pendientes</h3>
+                <button style="background:none; border:none; font-size:18px; cursor:pointer; color:var(--text-muted);" onclick="toggleVendorNotifications()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="vendor-notif-list" class="notif-modal-list"></div>
+        </div>
+    </div>
+
+    <!-- PHONE SCREEN -->
+    <div class="phone-screen" id="main-screen">
+
+        <!-- AUTH -->
+        <div id="view-auth" class="view hidden">
+            <div style="text-align:center; margin: 8px 0 22px;">
+                <div style="width:64px; height:64px; background:linear-gradient(135deg,var(--primary),var(--primary-mint)); border-radius:20px; display:flex; align-items:center; justify-content:center; margin:0 auto 14px; box-shadow:0 10px 24px rgba(0,172,193,0.28);">
+                    <i class="fas fa-random" style="font-size:28px; color:white;"></i>
+                </div>
+                <h3 style="font-weight:800; font-size:22px; color:var(--text-main);">Perú Exchange</h3>
+                <p style="font-size:11px; color:var(--text-muted); margin-top:3px;">Red P2P Fiat Segura y Trazable</p>
+            </div>
+            <div class="card" style="padding:20px;">
+                <div class="auth-tabs">
+                    <div class="auth-tab active" id="tab-login" onclick="switchTab('login')">Iniciar Sesión</div>
+                    <div class="auth-tab" id="tab-reg" onclick="switchTab('reg')">Crear Cuenta</div>
+                </div>
+                <div id="form-login">
+                    <label class="form-label">Correo Electrónico</label>
+                    <input type="email" class="form-input" id="login-email" value="carlos@peru.com" placeholder="correo@ejemplo.com">
+                    <label class="form-label">Contraseña</label>
+                    <div class="input-group">
+                        <input type="password" class="form-input" id="login-pass" value="123456" placeholder="••••••••">
+                        <i class="fas fa-eye input-icon" onclick="togglePass('login-pass',this)"></i>
+                    </div>
+                    <button class="btn" onclick="doLogin()" style="margin-top:4px;">Iniciar Sesión</button>
+                    <div style="display:flex; align-items:center; gap:8px; margin:16px 0; opacity:0.4;">
+                        <hr style="flex:1; border:none; border-top:1px solid var(--border-color);">
+                        <span style="font-size:11px; color:var(--text-muted); font-weight:600;">O continúa con</span>
+                        <hr style="flex:1; border:none; border-top:1px solid var(--border-color);">
+                    </div>
+                    <button class="btn btn-dark" onclick="doLoginGoogle()" style="margin-bottom:8px;">
+                        <i class="fab fa-google"></i> Google
+                    </button>
+                    <p style="text-align:center; font-size:11px; color:var(--primary); margin-top:12px; cursor:pointer;" onclick="navigateTo('view-forgot-pass')">¿Olvidaste tu contraseña?</p>
+                </div>
+                <div id="form-reg" class="hidden">
+                    <label class="form-label">Nombre Completo</label>
+                    <input type="text" class="form-input" id="reg-name" placeholder="Ej. Carlos Mendoza">
+                    <label class="form-label">Correo Electrónico</label>
+                    <input type="email" class="form-input" id="reg-email" placeholder="correo@ejemplo.com">
+                    <label class="form-label">Contraseña</label>
+                    <div class="input-group">
+                        <input type="password" class="form-input" id="reg-pass" placeholder="Mínimo 8 caracteres">
+                        <i class="fas fa-eye input-icon" onclick="togglePass('reg-pass',this)"></i>
+                    </div>
+                    <label style="display:flex; align-items:center; gap:8px; margin-bottom:14px; font-size:12px; color:var(--text-muted); cursor:pointer;">
+                        <input type="checkbox" id="reg-terms"> Acepto los
+                        <span style="color:var(--primary); cursor:pointer;" onclick="event.stopPropagation(); navigateTo('view-terms')">Términos</span>
+                        y <span style="color:var(--primary); cursor:pointer;" onclick="event.stopPropagation(); navigateTo('view-privacy')">Privacidad</span>
+                    </label>
+                    <button class="btn btn-success" onclick="doRegister()">Crear mi Cuenta</button>
+                    <button class="btn btn-dark" onclick="doRegisterGoogle()" style="margin-top:8px;"><i class="fab fa-google"></i> Google</button>
+                </div>
+            </div>
+            <p style="text-align:center; font-size:10px; color:var(--text-muted); margin-top:10px;">Modo admin: <strong>admin@p2p.com</strong></p>
+        </div>
+
+        <!-- MARKET -->
+        <div id="view-market" class="view hidden">
+            <div class="visa-card">
+                <div style="position:relative; z-index:1;">
+                    <span style="font-size:9px; text-transform:uppercase; font-weight:700; letter-spacing:0.8px; color:var(--primary-mint);" id="mkt-level">Experto</span>
+                    <h4 style="font-weight:800; font-size:14px; margin:2px 0;" id="mkt-greeting">Bienvenido</h4>
+                    <p style="font-size:9px; opacity:0.8;">P2P Seguro</p>
+                </div>
+                <i class="fab fa-cc-visa" style="position:absolute; top:16px; right:16px; font-size:24px; color:white; opacity:0.7;"></i>
+            </div>
+            <div class="filter-box">
+                <span style="font-size:12px; font-weight:700; color:white;"><i class="fas fa-sliders-h" style="color:var(--primary-light);"></i> Filtrado Multidivisa</span>
+                <div class="filter-grid">
+                    <div>
+                        <label class="form-label" style="margin-top:6px;">Tengo</label>
+                        <select class="form-select" id="filter-from" onchange="loadMarket()">
+                            <option value="PEN">🇵🇪 Soles (PEN)</option>
+                            <option value="USD">🇺🇸 Dólares (USD)</option>
+                            <option value="EUR">🇪🇺 Euros (EUR)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label" style="margin-top:6px;">Quiero</label>
+                        <select class="form-select" id="filter-to" onchange="loadMarket()">
+                            <option value="USD" selected>🇺🇸 Dólares (USD)</option>
+                            <option value="PEN">🇵🇪 Soles (PEN)</option>
+                            <option value="EUR">🇪🇺 Euros (EUR)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-dark" style="margin-bottom:8px;" onclick="doMatching()">
+                <i class="fas fa-bolt" style="color:var(--warning);"></i> Matching Automático
+                <span style="background:var(--primary); padding:2px 8px; border-radius:8px; font-size:10px;">CORE</span>
+            </button>
+            <div id="paused-tx-banner" class="hidden" style="background:linear-gradient(135deg,rgba(245,158,11,0.1),rgba(251,146,60,0.08)); border:1px solid rgba(245,158,11,0.3); border-radius:14px; padding:12px 14px; margin-bottom:8px; display:flex; align-items:center; gap:12px;">
+                <i class="fas fa-pause-circle" style="font-size:24px; color:var(--warning); flex-shrink:0;"></i>
+                <div style="flex:1;">
+                    <p style="font-size:12px; font-weight:700;">Transacción pausada</p>
+                    <p style="font-size:10px; color:var(--text-muted); margin-top:2px;" id="paused-tx-info">Tienes una transacción en progreso</p>
+                </div>
+                <button class="btn btn-success btn-sm" style="flex-shrink:0;" onclick="resumeTransaction()">Continuar</button>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <span class="section-title" id="lbl-results"><i class="fas fa-store"></i> Ofertas disponibles</span>
+                <span style="font-size:10px; color:var(--success); font-weight:700;"><i class="fas fa-sort-amount-down"></i> Mejor tasa</span>
+            </div>
+            <div id="offers-list"></div>
+        </div>
+
+        <!-- PUBLISH -->
+        <div id="view-publish" class="view hidden">
+            <h4 style="font-weight:800; font-size:18px; color:var(--text-main); margin-bottom:14px;">Publicar Anuncio P2P</h4>
+            <div class="card">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:4px;">
+                    <div>
+                        <label class="form-label">Ofrezco</label>
+                        <select class="form-select" id="pub-from"><option value="USD">🇺🇸 USD</option><option value="PEN">🇵🇪 PEN</option><option value="EUR">🇪🇺 EUR</option></select>
+                    </div>
+                    <div>
+                        <label class="form-label">Recibo</label>
+                        <select class="form-select" id="pub-to"><option value="PEN">🇵🇪 PEN</option><option value="USD">🇺🇸 USD</option><option value="EUR">🇪🇺 EUR</option></select>
+                    </div>
+                </div>
+                <label class="form-label">Monto Total Disponible</label>
+                <input type="number" class="form-input" id="pub-amount" placeholder="Ej. 500">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <div><label class="form-label">Mín. por op.</label><input type="number" class="form-input" id="pub-min" placeholder="Ej. 50"></div>
+                    <div><label class="form-label">Máx. por op.</label><input type="number" class="form-input" id="pub-max" placeholder="Ej. 500"></div>
+                </div>
+                <label class="form-label">Mi Tasa</label>
+                <input type="number" step="0.001" class="form-input" id="pub-rate" value="3.778">
+                <label class="form-label">Banco de Recepción</label>
+                <select class="form-select" id="pub-bank">
+                    <option value="bcp">BCP</option><option value="interbank">Interbank</option>
+                    <option value="bbva">BBVA</option><option value="yape">Yape</option><option value="plin">Plin</option>
+                </select>
+                <label class="form-label">Tiempo límite de pago</label>
+                <select class="form-select" id="pub-timelimit" style="margin-bottom:16px;">
+                    <option value="15">15 minutos</option><option value="30">30 minutos</option><option value="60">60 minutos</option>
+                </select>
+                <button class="btn btn-success" onclick="doPublish()"><i class="fas fa-paper-plane"></i> Listar en el Mercado</button>
+            </div>
+        </div>
+
+        <!-- TRANSACTION -->
+        <div id="view-tx" class="view hidden">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; margin-bottom:14px;">
+                <button class="btn btn-ghost" style="flex:0 0 auto; width:40px; height:40px; padding:0;" onclick="goBackFromTx()"><i class="fas fa-chevron-left"></i></button>
+                <h4 style="flex:1; text-align:center; font-weight:800; font-size:14px;">Transacción P2P</h4>
+                <div style="flex:0 0 auto; width:40px;"></div>
+            </div>
+            <div style="background:linear-gradient(135deg,#1E293B,#0F172A); color:white; padding:16px; border-radius:18px; text-align:center; margin-bottom:14px;">
+                <span style="font-size:10px; font-weight:800; color:var(--primary-mint); text-transform:uppercase; letter-spacing:1px;">Orden P2P en Curso</span>
+                <h3 style="font-size:30px; font-weight:800; margin:6px 0;" id="tx-timer">15:00</h3>
+                <p style="font-size:10px; opacity:0.55;">Capital en custodia · Operación segura</p>
+            </div>
+            <div class="timeline">
+                <div class="timeline-track"></div>
+                <div class="timeline-fill" id="tl-fill" style="width:0%"></div>
+                <div class="step active" id="st-1"><div class="step-circle">1</div><span class="step-lbl">Pagar</span></div>
+                <div class="step" id="st-2"><div class="step-circle">2</div><span class="step-lbl">Voucher</span></div>
+                <div class="step" id="st-3"><div class="step-circle">3</div><span class="step-lbl">Confirmar</span></div>
+                <div class="step" id="st-4"><div class="step-circle">4</div><span class="step-lbl">Liberado</span></div>
+            </div>
+            <div class="card" style="background:linear-gradient(135deg,#F8FAFC,#F0F9FF);">
+                <span style="font-size:10px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Cuenta Receptora</span>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                    <div>
+                        <p style="font-size:12px;">Vendedor: <strong id="tx-seller">---</strong></p>
+                        <p style="font-size:12px; margin-top:3px;">Banco: <strong style="color:var(--primary);" id="tx-bank">---</strong></p>
+                    </div>
+                    <span id="tx-online-dot" class="online-dot"></span>
+                </div>
+                <div style="background:white; padding:10px 12px; border-radius:10px; margin-top:10px; border:1px solid var(--border-color);">
+                    <p style="font-size:10px; color:var(--text-muted); font-weight:600;">CCI</p>
+                    <p style="font-size:13px; font-weight:700; letter-spacing:0.5px; margin-top:2px;" id="tx-cci">002-191-0098765432-12</p>
+                </div>
+            </div>
+            <p style="font-size:12px; text-align:center; margin-bottom:14px; color:var(--text-muted);">
+                Transfiere exactamente: <strong style="color:var(--success); font-size:16px;" id="tx-total">---</strong>
+            </p>
+            <div class="section-title"><i class="fas fa-comments"></i> Chat con Vendedor</div>
+            <div class="chat-box" id="chat-msgs">
+                <div class="chat-msg recv">Hola, en cuanto vea la transferencia libero 👍<div class="msg-meta">Vendedor · ahora</div></div>
+            </div>
+            <div class="chat-row" style="margin-bottom:14px;">
+                <input type="text" id="chat-input" placeholder="Escribe un mensaje..." onkeydown="if(event.key==='Enter')sendMsg()">
+                <button onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+            <div class="upload-zone" id="voucher-zone" onclick="doOCR()">
+                <i class="fas fa-cloud-upload-alt" style="font-size:30px; color:var(--primary); margin-bottom:8px; display:block;"></i>
+                <p style="font-size:13px; font-weight:700; color:var(--text-main);">Subir Comprobante de Pago</p>
+                <p style="font-size:10px; color:var(--text-muted); margin-top:4px;">IA OCR · Validación automática en segundos</p>
+            </div>
+            <div id="tx-actions" class="hidden">
+                <div class="waiting-box">
+                    <i class="fas fa-clock" style="font-size:22px; color:var(--warning); flex-shrink:0;"></i>
+                    <div>
+                        <p style="font-size:12px; font-weight:700;">Esperando al vendedor...</p>
+                        <p style="font-size:10px; color:var(--text-muted); margin-top:2px;">Cambia a <strong>modo Vendedor</strong> para simular la confirmación.</p>
+                    </div>
+                </div>
+                <button class="btn btn-danger" onclick="doBuyerDispute()"><i class="fas fa-exclamation-triangle"></i> Abrir Disputa</button>
+            </div>
+        </div>
+
+        <!-- RECEIPT -->
+        <div id="view-receipt" class="view hidden">
+            <div style="text-align:center; margin-bottom:20px;">
+                <div style="width:72px; height:72px; background:linear-gradient(135deg,var(--success),#059669); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 14px; box-shadow:0 10px 28px rgba(16,185,129,0.32);">
+                    <i class="fas fa-check" style="font-size:28px; color:white;"></i>
+                </div>
+                <h3 style="font-weight:800; font-size:20px; color:var(--text-main);">¡Intercambio Exitoso!</h3>
+                <p style="font-size:12px; color:var(--text-muted); margin-top:4px;">Los fondos ya están en tu billetera.</p>
+            </div>
+            <div class="card receipt-card" id="receipt-card">
+                <div style="text-align:center; border-bottom:1px solid var(--border-color); padding-bottom:12px; margin-bottom:12px;">
+                    <strong style="font-size:13px; color:var(--primary);">COMPROBANTE P2P</strong>
+                    <p style="font-size:10px; color:var(--text-muted); margin-top:3px;">ID: <strong>#TX-<span id="rcpt-id">9982</span></strong></p>
+                </div>
+                <div class="receipt-line"><span>Comprador:</span><strong id="rcpt-buyer">---</strong></div>
+                <div class="receipt-line"><span>Vendedor:</span><strong id="rcpt-seller">---</strong></div>
+                <div class="receipt-line"><span>Tasa Aplicada:</span><strong id="rcpt-rate">---</strong></div>
+                <div class="receipt-line"><span>Auditoría OCR:</span><strong style="color:var(--success);">#994812 ✓ Auténtico</strong></div>
+                <div class="receipt-line receipt-total"><span>Monto Acreditado:</span><strong style="color:var(--success);" id="rcpt-received">---</strong></div>
+            </div>
+            <button class="btn" style="margin-bottom:8px;" onclick="showToast('success','Comprobante PDF descargado.')">
+                <i class="fas fa-file-download"></i> Descargar Comprobante PDF
+            </button>
+            <!-- US-005: calificación bilateral — ambas partes pueden calificar -->
+            <button class="btn btn-outline" style="margin-bottom:8px;" onclick="navigateTo('view-rating')">
+                <i class="fas fa-star"></i> Calificar a la Contraparte
+            </button>
+            <button class="btn btn-ghost" onclick="navigateTo('view-market', document.getElementById('nav-home'))">Volver al Mercado</button>
+        </div>
+
+        <!-- ==========================================
+             US-005: RATING (con confirmación previa)
+        ========================================== -->
+        <div id="view-rating" class="view hidden">
+            <div style="text-align:center; padding:10px 0 20px;">
+                <i class="fas fa-star-half-alt" style="font-size:46px; color:var(--warning); display:block; margin-bottom:12px;"></i>
+                <h3 style="font-weight:800; font-size:18px; color:var(--text-main);">¿Cómo fue la operación?</h3>
+                <p style="font-size:12px; color:var(--text-muted); margin-top:6px;">Califica a <strong id="rating-name">---</strong></p>
+                <div style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); border-radius:10px; padding:8px 12px; margin-top:10px; font-size:11px; color:#92400e;">
+                    <i class="fas fa-lock" style="margin-right:5px;"></i> La calificación es <strong>obligatoria</strong> y no podrá modificarse una vez enviada.
+                </div>
+            </div>
+            <div class="card">
+                <!-- Resumen de transacción -->
+                <div style="background:#F8FAFC; border-radius:12px; padding:12px; margin-bottom:14px; display:flex; align-items:center; gap:10px;">
+                    <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-light));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:white;flex-shrink:0;" id="rating-avatar">---</div>
+                    <div>
+                        <p style="font-size:13px;font-weight:700;color:var(--text-main);" id="rating-name2">---</p>
+                        <p style="font-size:11px;color:var(--text-muted);" id="rating-tx-summary">---</p>
+                    </div>
+                </div>
+                <div class="stars-row" id="stars-row">
+                    <span class="star" onclick="setRating(1)">⭐</span>
+                    <span class="star" onclick="setRating(2)">⭐</span>
+                    <span class="star" onclick="setRating(3)">⭐</span>
+                    <span class="star" onclick="setRating(4)">⭐</span>
+                    <span class="star" onclick="setRating(5)">⭐</span>
+                </div>
+                <p id="rating-lbl" style="text-align:center; font-size:13px; font-weight:700; color:var(--text-muted); margin-bottom:14px;">Selecciona tu calificación</p>
+                <label class="form-label">Comentario (opcional)</label>
+                <div style="position:relative;">
+                    <textarea class="form-input" id="rating-comment" rows="3" maxlength="200" placeholder="¿Cómo fue la experiencia?" oninput="updateCharCount()"></textarea>
+                    <span style="position:absolute;bottom:18px;right:12px;font-size:10px;color:var(--text-muted);" id="char-count">0/200</span>
+                </div>
+                <!-- Botón muestra overlay de confirmación -->
+                <button class="btn" onclick="askRatingConfirm()"><i class="fas fa-check"></i> Enviar Calificación</button>
+                <button class="btn btn-ghost" style="margin-top:8px;" onclick="navigateTo('view-market', document.getElementById('nav-home'))">Omitir por ahora</button>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             US-010: HISTORY con detalle al tocar
+        ========================================== -->
+        <div id="view-history" class="view hidden">
+            <div class="page-header"><h4>Historial de Operaciones</h4></div>
+            <!-- Búsqueda rápida -->
+            <div style="position:relative; margin-bottom:10px;">
+                <input type="text" class="form-input" id="history-search" placeholder="Buscar por contraparte..." style="margin-bottom:0; padding-left:36px;" oninput="searchHistory()">
+                <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:13px;"></i>
+            </div>
+            <div class="chips-container" id="history-chips">
+                <span class="chip active" onclick="filterHistory('all',this)">Todos</span>
+                <span class="chip" onclick="filterHistory('completed',this)">Completados</span>
+                <span class="chip" onclick="filterHistory('pending',this)">Pendientes</span>
+                <span class="chip" onclick="filterHistory('disputed',this)">Disputas</span>
+                <span class="chip" onclick="filterHistory('cancelled',this)">Cancelados</span>
+            </div>
+            <div class="card" style="padding:4px 16px;" id="history-list"></div>
+        </div>
+
+        <!-- US-010: DETALLE DE TRANSACCIÓN -->
+        <div id="view-tx-detail" class="view hidden">
+            <div class="page-header">
+                <div class="back-btn" onclick="navigateTo('view-history', document.getElementById('nav-profile'))"><i class="fas fa-chevron-left"></i></div>
+                <h4>Detalle de Operación</h4>
+            </div>
+            <div id="tx-detail-content"></div>
+        </div>
+
+        <!-- ==========================================
+             US-005: PROFILE mejorado
+        ========================================== -->
+        <div id="view-profile" class="view hidden">
+            <div style="text-align:center; margin-bottom:16px;">
+                <div style="position:relative; display:inline-block;">
+                    <div style="width:74px; height:74px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--primary-light)); color:white; display:flex; justify-content:center; align-items:center; font-size:24px; font-weight:800; margin:0 auto; box-shadow:0 8px 22px rgba(0,172,193,0.3);" id="profile-avatar">CM</div>
+                    <div style="position:absolute;bottom:2px;right:2px;width:18px;height:18px;background:var(--success);border-radius:50%;border:2px solid white;display:flex;align-items:center;justify-content:center;">
+                        <i class="fas fa-check" style="font-size:8px;color:white;"></i>
+                    </div>
+                </div>
+                <h4 style="font-weight:800; font-size:17px; margin-top:10px;" id="profile-name">Carlos Mendoza</h4>
+                <p style="font-size:11px; color:var(--primary); font-weight:600; margin-bottom:8px;" id="profile-email">carlos@peru.com</p>
+                <!-- Calificación promedio dinámica -->
+                <div style="display:flex; justify-content:center; gap:6px; flex-wrap:wrap;">
+                    <span class="stars-badge"><i class="fas fa-star"></i> <span id="profile-rating">4.9</span></span>
+                    <span class="level-experto">Experto</span>
+                    <span class="verified-badge"><i class="fas fa-check-circle"></i> Verificado</span>
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-box"><div class="stat-val" id="stat-ops">180</div><div class="stat-lbl">Operaciones</div></div>
+                <div class="stat-box"><div class="stat-val">98%</div><div class="stat-lbl">Completadas</div></div>
+                <div class="stat-box"><div class="stat-val">~3m</div><div class="stat-lbl">Respuesta</div></div>
+            </div>
+            <div class="kyc-banner">
+                <i class="fas fa-id-card" style="color:var(--success); font-size:22px; flex-shrink:0;"></i>
+                <div>
+                    <p style="font-size:12px; font-weight:700;">KYC Verificado</p>
+                    <p style="font-size:10px; color:var(--text-muted);">Identidad confirmada · Límites ampliados</p>
+                </div>
+            </div>
+            <div class="card" style="padding:0;">
+                <div class="menu-item" onclick="navigateTo('view-cards')">
+                    <div><i class="fas fa-credit-card" style="width:20px; color:var(--primary); margin-right:10px;"></i>Métodos de Pago</div>
+                    <i class="fas fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
+                </div>
+                <div class="menu-item" onclick="navigateTo('view-history', document.getElementById('nav-profile'))">
+                    <div><i class="fas fa-history" style="width:20px; color:var(--primary); margin-right:10px;"></i>Historial de Operaciones</div>
+                    <i class="fas fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
+                </div>
+                <!-- US-005: nueva sección de calificaciones recibidas -->
+                <div class="menu-item" onclick="navigateTo('view-my-reviews')">
+                    <div><i class="fas fa-star" style="width:20px; color:var(--warning); margin-right:10px;"></i>Mis Calificaciones</div>
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <span style="font-size:11px;color:var(--text-muted);" id="reviews-count-badge">12 reseñas</span>
+                        <i class="fas fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
+                    </div>
+                </div>
+                <div class="menu-item" onclick="showToast('info','Notificaciones actualizadas.')">
+                    <div><i class="fas fa-bell" style="width:20px; color:var(--primary); margin-right:10px;"></i>Notificaciones</div>
+                    <i class="fas fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
+                </div>
+                <div class="menu-item" id="admin-menu-link" style="display:none;" onclick="navigateTo('view-admin')">
+                    <div><i class="fas fa-user-shield" style="width:20px; color:var(--danger); margin-right:10px;"></i><span style="color:var(--danger);">Panel Administrador</span></div>
+                    <i class="fas fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin: 14px 0;">
+                <button class="btn btn-outline btn-sm" onclick="navigateTo('view-edit-profile')"><i class="fas fa-edit"></i> Editar Perfil</button>
+                <button class="btn btn-ghost btn-sm" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</button>
+            </div>
+        </div>
+
+        <!-- US-005: MIS CALIFICACIONES RECIBIDAS -->
+        <div id="view-my-reviews" class="view hidden">
+            <div class="page-header">
+                <div class="back-btn" onclick="navigateTo('view-profile', document.getElementById('nav-profile'))"><i class="fas fa-chevron-left"></i></div>
+                <h4>Mis Calificaciones</h4>
+            </div>
+            <!-- Resumen -->
+            <div class="card" style="background:linear-gradient(135deg,rgba(245,158,11,0.06),rgba(251,191,36,0.03)); border-color:rgba(245,158,11,0.2); margin-bottom:14px;">
+                <div style="display:flex; align-items:center; gap:16px;">
+                    <div style="text-align:center;">
+                        <div style="font-size:36px; font-weight:800; color:var(--text-main);" id="reviews-avg">4.9</div>
+                        <div style="color:var(--warning); font-size:14px; margin-top:2px;">★★★★★</div>
+                        <div style="font-size:10px; color:var(--text-muted); margin-top:4px;" id="reviews-total">12 reseñas</div>
+                    </div>
+                    <div style="flex:1;">
+                        <div id="reviews-bars"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="card" style="padding:4px 16px;" id="reviews-list"></div>
+        </div>
+
+        <!-- ==========================================
+             US-011: MÉTODOS DE PAGO mejorado
+        ========================================== -->
+        <div id="view-cards" class="view hidden">
+            <div class="page-header">
+                <div class="back-btn" onclick="navigateTo('view-profile', document.getElementById('nav-profile'))"><i class="fas fa-chevron-left"></i></div>
+                <h4>Métodos de Pago</h4>
+            </div>
+
+            <!-- Sección bancos -->
+            <div class="payment-section-header"><i class="fas fa-university"></i> Cuentas Bancarias</div>
+            <div id="bank-cards-list"></div>
+
+            <!-- Sección billeteras -->
+            <div class="payment-section-header" style="margin-top:6px;"><i class="fas fa-mobile-alt"></i> Billeteras Digitales</div>
+            <div id="wallet-cards-list"></div>
+
+            <!-- Agregar nuevo método -->
+            <div class="card" style="margin-top:8px;">
+                <p class="section-title" style="margin-bottom:12px;"><i class="fas fa-plus-circle"></i> Agregar Método</p>
+                <label class="form-label">Entidad</label>
+                <select class="form-select" id="new-bank" onchange="updatePlaceholder()">
+                    <option value="bcp">🏦 BCP</option>
+                    <option value="interbank">🏦 Interbank</option>
+                    <option value="bbva">🏦 BBVA</option>
+                    <option value="yape">📱 Yape</option>
+                    <option value="plin">📱 Plin</option>
+                </select>
+                <label class="form-label" id="new-card-label">Número de Cuenta / CCI</label>
+                <input type="text" class="form-input" id="new-card-num" placeholder="Ej. 002-191-0098765432-12" maxlength="30">
+                <p style="font-size:10px; color:var(--text-muted); margin-top:-8px; margin-bottom:12px;" id="new-card-hint">Ingresa el CCI completo (20 dígitos)</p>
+                <button class="btn btn-outline" onclick="addCard()"><i class="fas fa-plus"></i> Agregar</button>
+            </div>
+        </div>
+
+        <!-- EDIT PROFILE -->
+        <div id="view-edit-profile" class="view hidden">
+            <div class="page-header">
+                <div class="back-btn" onclick="navigateTo('view-profile',document.getElementById('nav-profile'))"><i class="fas fa-chevron-left"></i></div>
+                <h4>Editar Perfil</h4>
+            </div>
+            <div class="card">
+                <label class="form-label">Nombre Completo</label>
+                <input type="text" class="form-input" id="edit-name" placeholder="Ej. Carlos Mendoza">
+                <label class="form-label">Correo Electrónico</label>
+                <input type="email" class="form-input" id="edit-email" disabled style="opacity:0.6; cursor:not-allowed;">
+                <p style="font-size:10px; color:var(--text-muted); margin-top:-8px; margin-bottom:12px;">El correo no se puede cambiar.</p>
+                <label class="form-label">Teléfono</label>
+                <input type="tel" class="form-input" id="edit-phone" placeholder="+51 999 123 456">
+                <label class="form-label">País</label>
+                <select class="form-select" id="edit-country">
+                    <option value="PE" selected>🇵🇪 Perú</option><option value="CO">🇨🇴 Colombia</option>
+                    <option value="CL">🇨🇱 Chile</option><option value="MX">🇲🇽 México</option>
+                </select>
+                <label class="form-label">Moneda Preferida</label>
+                <select class="form-select" id="edit-currency">
+                    <option value="PEN" selected>🇵🇪 Soles (PEN)</option>
+                    <option value="USD">🇺🇸 Dólares (USD)</option>
+                    <option value="EUR">🇪🇺 Euros (EUR)</option>
+                </select>
+                <label style="display:flex; align-items:center; gap:8px; margin-bottom:14px; margin-top:14px; font-size:12px; color:var(--text-muted); cursor:pointer;">
+                    <input type="checkbox" id="edit-notify" checked> Recibir notificaciones por correo
+                </label>
+                <button class="btn btn-success" onclick="doSaveProfile()"><i class="fas fa-save"></i> Guardar Cambios</button>
+            </div>
+        </div>
+
+        <!-- ADMIN -->
+        <div id="view-admin" class="view hidden">
+            <div class="page-header">
+                <div class="back-btn" onclick="navigateTo('view-profile')"><i class="fas fa-chevron-left"></i></div>
+                <h4>Panel Administrador</h4>
+            </div>
+            <div class="admin-header">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <p style="font-size:10px; font-weight:700; color:var(--primary-light); text-transform:uppercase; letter-spacing:1px;">Control de Operaciones</p>
+                        <h4 style="font-size:15px; font-weight:800; margin-top:4px;">ADM · Perú Exchange</h4>
+                    </div>
+                    <i class="fas fa-user-shield" style="font-size:28px; color:var(--primary-light); opacity:0.7;"></i>
+                </div>
+                <div class="admin-stats">
+                    <div class="admin-stat"><p style="font-size:10px; color:#94A3B8;">Volumen</p><p style="font-size:16px; font-weight:800;">$142K</p></div>
+                    <div class="admin-stat"><p style="font-size:10px; color:#94A3B8;">Disputas</p><p style="font-size:16px; font-weight:800; color:var(--danger);" id="admin-count">0</p></div>
+                    <div class="admin-stat"><p style="font-size:10px; color:#94A3B8;">Usuarios</p><p style="font-size:16px; font-weight:800; color:var(--primary-mint);">284</p></div>
+                </div>
+            </div>
+            <div class="section-title"><i class="fas fa-gavel"></i> Casos de Arbitraje</div>
+            <div id="admin-disputes"></div>
+        </div>
+
+        <!-- VENDOR -->
+        <div id="view-vendor" class="view hidden">
+            <div style="background:linear-gradient(135deg,#1E293B,#0F172A); border-radius:18px; padding:16px; margin-bottom:16px; color:white;">
+                <span style="font-size:10px; font-weight:800; color:var(--warning); text-transform:uppercase; letter-spacing:1px;">Modo Vendedor</span>
+                <h4 style="font-size:16px; font-weight:800; margin-top:4px;">Transacciones Entrantes</h4>
+                <p style="font-size:11px; opacity:0.6; margin-top:3px;">Revisa y confirma los pagos que recibes</p>
+            </div>
+            <div id="vendor-list"></div>
+        </div>
+
+        <!-- FORGOT PASSWORD -->
+        <div id="view-forgot-pass" class="view hidden">
+            <div class="page-header">
+                <div class="back-btn" onclick="navigateTo('view-auth')"><i class="fas fa-chevron-left"></i></div>
+                <h4>Recuperar Contraseña</h4>
+            </div>
+            <div class="card" style="padding:20px;">
+                <p style="font-size:12px; color:var(--text-muted); margin-bottom:16px;">Ingresa tu correo para recibir un enlace de restablecimiento.</p>
+                <label class="form-label">Correo Electrónico</label>
+                <input type="email" class="form-input" id="forgot-email" placeholder="tu@correo.com">
+                <button class="btn" onclick="doForgotPassword()" style="margin-bottom:8px;"><i class="fas fa-paper-plane"></i> Enviar Enlace</button>
+                <button class="btn btn-ghost" onclick="navigateTo('view-auth')">Cancelar</button>
+            </div>
+        </div>
+
+        <!-- TERMS -->
+        <div id="view-terms" class="view hidden">
+            <div class="page-header">
+                <div class="back-btn" onclick="navigateTo('view-auth')"><i class="fas fa-chevron-left"></i></div>
+                <h4>Términos y Condiciones</h4>
+            </div>
+            <div class="card" style="max-height:600px; overflow-y:auto; padding:16px;">
+                <h5 style="font-weight:800; font-size:14px; margin-bottom:12px;">Términos de Servicio</h5>
+                <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px;"><strong>Última actualización:</strong> Mayo 2026</p>
+                <h6 style="font-weight:700; font-size:12px; margin:14px 0 6px;">1. Aceptación de Términos</h6>
+                <p style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:10px;">Al acceder y usar Perú Exchange, aceptas estar vinculado por estos términos.</p>
+                <h6 style="font-weight:700; font-size:12px; margin:14px 0 6px;">2. Descripción del Servicio</h6>
+                <p style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:10px;">Perú Exchange es una plataforma P2P que facilita el intercambio de divisas entre usuarios. No somos un banco; actuamos como intermediario neutro.</p>
+                <h6 style="font-weight:700; font-size:12px; margin:14px 0 6px;">3. Resolución de Disputas</h6>
+                <p style="font-size:11px; color:var(--text-muted); line-height:1.5; margin-bottom:10px;">Las disputas se arbitran internamente dentro de 5 días hábiles.</p>
+                <p style="font-size:10px; color:var(--primary); margin-top:16px; text-align:center;">legal@peruexchange.com</p>
+            </div>
+        </div>
+
+        <!-- PRIVACY -->
+        <div id="view-privacy" class="view hidden">
+            <div class="page-header">
+                <div class="back-btn" onclick="navigateTo('view-auth')"><i class="fas fa-chevron-left"></i></div>
+                <h4>Política de Privacidad</h4>
+            </div>
+            <div class="card" style="max-height:600px; overflow-y:auto; padding:16px;">
+                <h5 style="font-weight:800; font-size:14px; margin-bottom:12px;">Protección de Datos Personales</h5>
+                <p style="font-size:11px; color:var(--text-muted); margin-bottom:10px;"><strong>Última actualización:</strong> Mayo 2026</p>
+                <h6 style="font-weight:700; font-size:12px; margin:14px 0 6px;">Seguridad de Datos</h6>
+                <p style="font-size:11px; color:var(--text-muted); line-height:1.5;">Usamos encriptación AES-256, almacenamiento redundante y cumplimos ISO 27001. No vendemos datos a anunciantes.</p>
+                <p style="font-size:10px; color:var(--primary); margin-top:16px; text-align:center;">privacy@peruexchange.com</p>
+            </div>
+        </div>
+
+        <!-- VENDOR INBOX -->
+        <div id="view-vendor-inbox" class="view hidden">
+            <div class="page-header">
+                <div class="back-btn" onclick="navigateTo('view-profile',document.getElementById('nav-profile'))"><i class="fas fa-chevron-left"></i></div>
+                <h4>Transacciones Pendientes</h4>
+            </div>
+            <div id="vendor-inbox-list"></div>
+        </div>
+
+        <!-- DISPUTES PROFILE -->
+        <div id="view-disputes-profile" class="view hidden">
+            <div class="page-header">
+                <div class="back-btn" onclick="navigateTo('view-profile',document.getElementById('nav-profile'))"><i class="fas fa-chevron-left"></i></div>
+                <h4>Mis Disputas</h4>
+            </div>
+            <div id="disputes-user-list" style="padding:0;"></div>
+        </div>
+
+    </div><!-- /phone-screen -->
+
+    <!-- BOTTOM NAV -->
+    <div class="bottom-nav hidden" id="client-nav">
+        <div class="nav-item active" id="nav-home" onclick="navigateTo('view-market',this)">
+            <i class="fas fa-chart-line"></i><span>Mercado</span>
+        </div>
+        <div class="nav-item" id="nav-publish" onclick="navigateTo('view-publish',this)">
+            <div class="nav-fab"><i class="fas fa-plus" style="font-size:18px; color:white;"></i></div>
+            <span>Publicar</span>
+        </div>
+        <div class="nav-item" id="nav-profile" onclick="navigateTo('view-profile',this)">
+            <i class="fas fa-user-circle"></i><span>Perfil</span>
+        </div>
+    </div>
+
+</div><!-- /phone-frame -->
+<p class="app-label">Prototipo Demo · Perú Exchange P2P</p>
+</div>
+
+<script>
+// ── CLOCK & TICKER ──
+setInterval(() => {
+    document.getElementById('clock').innerText =
+        new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+}, 1000);
+const baseRates = { usd: 3.780, eur: 4.110, brl: 0.740 };
+setInterval(() => {
+    const f = (b, r) => (b + (Math.random() - 0.5) * r).toFixed(3);
+    document.getElementById('tick-usd').innerText = 'S/ ' + f(baseRates.usd, 0.012);
+    document.getElementById('tick-eur').innerText = 'S/ ' + f(baseRates.eur, 0.018);
+    document.getElementById('tick-brl').innerText = 'S/ ' + f(baseRates.brl, 0.006);
+}, 3500);
+
+// ── STATE ──
+let activeTx = null, txTimer = null, currRating = 0;
+let currentUser = { name: 'Carlos Mendoza', isAdmin: false };
+let appMode = 'buyer';
+let cardToDelete = null;
+
+// ── DB ──
+function initDB() {
+    if (!localStorage.getItem('p2p_offers')) {
+        localStorage.setItem('p2p_offers', JSON.stringify([
+            { id:1, seller:'Shirley Anaya',   from:'PEN', to:'USD', rate:3.775, amount:1000, min:50,  max:500,  bank:'bcp',       bankName:'BCP',       stars:5.0, trades:312, completion:99, resp:'~2m',  verified:true,  online:true  },
+            { id:2, seller:'Andrés Quiliche', from:'PEN', to:'USD', rate:3.780, amount:500,  min:100, max:500,  bank:'interbank', bankName:'Interbank', stars:4.8, trades:95,  completion:97, resp:'~5m',  verified:true,  online:true  },
+            { id:3, seller:'Lucía Alfaro',    from:'PEN', to:'USD', rate:3.785, amount:1200, min:200, max:1000, bank:'bbva',      bankName:'BBVA',      stars:4.9, trades:180, completion:98, resp:'~3m',  verified:false, online:false },
+            { id:4, seller:'Mateo Ortiz',     from:'PEN', to:'EUR', rate:4.110, amount:600,  min:100, max:600,  bank:'bcp',       bankName:'BCP',       stars:4.2, trades:40,  completion:92, resp:'~10m', verified:false, online:true  },
+            { id:5, seller:'Valeria Cruz',    from:'USD', to:'PEN', rate:3.760, amount:800,  min:50,  max:400,  bank:'yape',      bankName:'Yape',      stars:4.7, trades:65,  completion:95, resp:'~4m',  verified:true,  online:true  }
+        ]));
+    }
+    // US-011: tarjetas con isDefault y tipo
+    if (!localStorage.getItem('p2p_cards')) {
+        localStorage.setItem('p2p_cards', JSON.stringify([
+            { id:101, bank:'bcp',      bankName:'BCP',      type:'bank',   number:'191-98765432-0-12', isDefault:true  },
+            { id:102, bank:'interbank',bankName:'Interbank',type:'bank',   number:'002-001-000123456-12', isDefault:false },
+            { id:103, bank:'yape',     bankName:'Yape',     type:'wallet', number:'987 654 321', isDefault:false }
+        ]));
+    }
+    if (!localStorage.getItem('p2p_disputes'))       localStorage.setItem('p2p_disputes',       JSON.stringify([]));
+    if (!localStorage.getItem('p2p_vendor_pending')) localStorage.setItem('p2p_vendor_pending', JSON.stringify([]));
+    if (!localStorage.getItem('p2p_history')) {
+        localStorage.setItem('p2p_history', JSON.stringify([
+            { id:'TX-8811', seller:'Shirley Anaya',   from:'PEN', to:'USD', amount:200, currency:'USD', rate:3.775, status:'completed', date:'2026-05-10', voucher:'#994801' },
+            { id:'TX-7734', seller:'Lucía Alfaro',    from:'PEN', to:'USD', amount:150, currency:'USD', rate:3.782, status:'completed', date:'2026-05-08', voucher:'#994755' },
+            { id:'TX-6621', seller:'Mateo Ortiz',     from:'PEN', to:'EUR', amount:100, currency:'EUR', rate:4.115, status:'disputed',  date:'2026-05-05', voucher:'#994700' },
+            { id:'TX-5510', seller:'Valeria Cruz',    from:'USD', to:'PEN', amount:80,  currency:'PEN', rate:3.760, status:'cancelled', date:'2026-04-28', voucher:null      }
+        ]));
+    }
+    // US-005: calificaciones recibidas
+    if (!localStorage.getItem('p2p_reviews')) {
+        localStorage.setItem('p2p_reviews', JSON.stringify([
+            { from:'Shirley Anaya',   stars:5, comment:'Muy rápido y confiable. Recomendado.', date:'2026-05-10' },
+            { from:'Andrés Quiliche', stars:5, comment:'Excelente vendedor, respondió rápido.', date:'2026-05-08' },
+            { from:'Lucía Alfaro',    stars:4, comment:'Buena experiencia, un poco lento al responder.', date:'2026-05-05' },
+            { from:'Mateo Ortiz',     stars:5, comment:'Todo perfecto, volvería a operar.', date:'2026-04-28' },
+            { from:'Valeria Cruz',    stars:5, comment:'Proceso muy fluido y seguro.', date:'2026-04-20' },
+            { from:'Shirley Anaya',   stars:4, comment:'', date:'2026-04-15' }
+        ]));
+    }
+}
+initDB();
+
+// ── SPLASH ──
+setTimeout(() => {
+    document.getElementById('view-splash').style.display = 'none';
+    document.getElementById('view-auth').classList.remove('hidden');
+    document.getElementById('mode-bar').classList.remove('hidden');
+}, 2400);
+
+// ── TOAST ──
+function showToast(type, msg) {
+    const icons = { success:'✅', error:'❌', info:'ℹ️' };
+    const c = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    t.className = `toast ${type}`;
+    t.innerHTML = `<span>${icons[type]}</span><span>${msg}</span>`;
+    c.appendChild(t);
+    setTimeout(() => t.remove(), 3100);
+}
+
+// ── AUTH ──
+function switchTab(tab) {
+    document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+    document.getElementById('tab-reg').classList.toggle('active', tab === 'reg');
+    document.getElementById('form-login').classList.toggle('hidden', tab !== 'login');
+    document.getElementById('form-reg').classList.toggle('hidden', tab !== 'reg');
+}
+function togglePass(id, icon) {
+    const el = document.getElementById(id);
+    el.type = el.type === 'password' ? 'text' : 'password';
+    icon.className = el.type === 'text' ? 'fas fa-eye-slash input-icon' : 'fas fa-eye input-icon';
+}
+function doLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    if (!email) { showToast('error','Ingresa tu correo.'); return; }
+    const isAdmin = email === 'admin@p2p.com';
+    currentUser = { name: isAdmin ? 'Admin P2P' : 'Carlos Mendoza', email, isAdmin };
+    setupUser();
+    navigateTo('view-market', document.getElementById('nav-home'));
+    showToast('success', isAdmin ? 'Sesión de administrador iniciada.' : `Bienvenido, ${currentUser.name.split(' ')[0]}!`);
+}
+function doLoginGoogle() {
+    currentUser = { name:'Usuario Google', email:'usuario@gmail.com', isAdmin:false };
+    setupUser();
+    navigateTo('view-market', document.getElementById('nav-home'));
+    showToast('success','Sesión iniciada con Google.');
+}
+function doRegister() {
+    const name  = document.getElementById('reg-name').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    if (!name || !email) { showToast('error','Completa todos los campos.'); return; }
+    if (!document.getElementById('reg-terms').checked) { showToast('error','Acepta los términos de uso.'); return; }
+    showToast('success', `Cuenta creada para ${name}.`);
+    setTimeout(() => { document.getElementById('login-email').value = email; switchTab('login'); }, 1600);
+}
+function doRegisterGoogle() {
+    showToast('success','Cuenta creada con Google.');
+    setTimeout(() => { currentUser = { name:'Usuario Google', email:'usuario@gmail.com', isAdmin:false }; setupUser(); navigateTo('view-market', document.getElementById('nav-home')); }, 1400);
+}
+function setupUser() {
+    const initials = currentUser.name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+    document.getElementById('mkt-greeting').innerText  = `Bienvenido, ${currentUser.name.split(' ')[0]}`;
+    document.getElementById('profile-name').innerText  = currentUser.name;
+    document.getElementById('profile-email').innerText = currentUser.email;
+    document.getElementById('profile-avatar').innerText = initials;
+    document.getElementById('admin-menu-link').style.display = currentUser.isAdmin ? 'flex' : 'none';
+    document.getElementById('client-nav').classList.remove('hidden');
+    updateVendorNotifications();
+    refreshProfileRating();
+}
+function doLogout() {
+    document.getElementById('client-nav').classList.add('hidden');
+    document.getElementById('vendor-notif-btn').classList.add('hidden');
+    appMode = 'buyer'; currentUser = null;
+    navigateTo('view-auth');
+    showToast('info','Sesión cerrada correctamente.');
+}
+function doForgotPassword() {
+    const email = document.getElementById('forgot-email').value.trim();
+    if (!email) { showToast('error','Ingresa tu correo.'); return; }
+    showToast('success',`Enlace enviado a ${email}.`);
+    setTimeout(() => navigateTo('view-auth'), 1800);
+}
+function doSaveProfile() {
+    const name = document.getElementById('edit-name').value.trim();
+    if (!name) { showToast('error','El nombre es requerido.'); return; }
+    currentUser.name = name;
+    document.getElementById('profile-name').innerText = name;
+    document.getElementById('mkt-greeting').innerText = `Bienvenido, ${name.split(' ')[0]}`;
+    showToast('success','Perfil actualizado correctamente.');
+    setTimeout(() => navigateTo('view-profile', document.getElementById('nav-profile')), 1500);
+}
+function loadEditProfile() {
+    document.getElementById('edit-name').value  = currentUser ? currentUser.name : '';
+    document.getElementById('edit-email').value = currentUser ? currentUser.email : '';
+}
+
+// ── NAVIGATION ──
+function navigateTo(viewId, navElem = null) {
+    document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+    const t = document.getElementById(viewId);
+    if (t) t.classList.remove('hidden');
+    if (navElem) {
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        navElem.classList.add('active');
+    }
+    document.getElementById('main-screen').scrollTop = 0;
+    if (viewId === 'view-market')       loadMarket();
+    if (viewId === 'view-vendor')       loadVendorPending();
+    if (viewId === 'view-cards')        loadCards();
+    if (viewId === 'view-history')      loadHistory('all');
+    if (viewId === 'view-admin')        loadAdmin();
+    if (viewId === 'view-edit-profile') loadEditProfile();
+    if (viewId === 'view-vendor-inbox') loadVendorInbox();
+    if (viewId === 'view-my-reviews')   loadMyReviews();
+}
+
+// ── MARKET ──
+function loadMarket() {
+    const from = document.getElementById('filter-from').value;
+    const to   = document.getElementById('filter-to').value;
+    document.getElementById('lbl-results').innerHTML = `<i class="fas fa-store"></i> ${from} → ${to}`;
+    const savedTx = localStorage.getItem('p2p_activeTx');
+    const banner  = document.getElementById('paused-tx-banner');
+    if (savedTx) {
+        try { const tx = JSON.parse(savedTx); document.getElementById('paused-tx-info').innerText = `Con ${tx.seller} · ${tx.amount} ${tx.to}`; banner.classList.remove('hidden'); } catch(e) { banner.classList.add('hidden'); }
+    } else { banner.classList.add('hidden'); }
+    const offers   = JSON.parse(localStorage.getItem('p2p_offers'));
+    const filtered = offers.filter(o => o.from === from && o.to === to).sort((a,b) => a.rate - b.rate);
+    const c = document.getElementById('offers-list');
+    c.innerHTML = '';
+    if (!filtered.length) {
+        c.innerHTML = `<div class="card" style="text-align:center; padding:24px;"><i class="fas fa-search-minus" style="font-size:28px; color:var(--border-color); display:block; margin-bottom:8px;"></i><p style="font-size:12px; color:var(--text-muted);">No hay ofertas para este par.</p></div>`;
+        return;
+    }
+    filtered.forEach((o, i) => {
+        c.innerHTML += `
+        <div class="offer-card" onclick="startTx(${o.id})">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:38px; height:38px; border-radius:13px; background:linear-gradient(135deg,var(--primary),var(--primary-light)); display:flex; justify-content:center; align-items:center; font-size:12px; font-weight:800; color:white; position:relative; flex-shrink:0;">
+                        ${o.seller.substring(0,2).toUpperCase()}
+                        <span style="position:absolute; bottom:-2px; right:-2px; width:10px; height:10px; border-radius:50%; background:${o.online ? 'var(--success)' : '#94A3B8'}; border:2px solid white;"></span>
+                    </div>
+                    <div>
+                        <div style="display:flex; align-items:center; gap:5px;">
+                            <strong style="font-size:13px;">${o.seller}</strong>
+                            ${o.verified ? '<i class="fas fa-check-circle" style="color:var(--primary); font-size:11px;"></i>' : ''}
+                        </div>
+                        <div class="seller-meta">
+                            <span class="stars-badge"><i class="fas fa-star"></i> ${o.stars}</span>
+                            <span class="stat-badge"><i class="fas fa-exchange-alt"></i> ${o.trades}</span>
+                            <span class="stat-badge"><i class="fas fa-clock"></i> ${o.resp}</span>
+                            <span class="stat-badge">${o.completion}%</span>
+                        </div>
+                    </div>
+                </div>
+                <span class="chip ${o.bank}">${o.bankName}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:8px;">
+                <div>
+                    <span style="font-size:10px; color:var(--text-muted); display:block;">Tasa</span>
+                    <strong style="font-size:21px; font-weight:800; color:var(--text-main);">S/ ${o.rate.toFixed(3)}</strong>
+                </div>
+                <div style="text-align:right;">
+                    <span style="font-size:10px; color:var(--text-muted); display:block;">Límites: ${o.min}–${o.max} ${o.to}</span>
+                    <button class="btn btn-success btn-sm" style="margin-top:6px;" onclick="event.stopPropagation(); startTx(${o.id})">Comprar</button>
+                </div>
+            </div>
+            ${i === 0 ? '<div class="best-tag"><i class="fas fa-trophy"></i> Mejor tasa del mercado</div>' : ''}
+        </div>`;
+    });
+}
+function doMatching() {
+    const from = document.getElementById('filter-from').value;
+    const to   = document.getElementById('filter-to').value;
+    const best = JSON.parse(localStorage.getItem('p2p_offers')).filter(o => o.from === from && o.to === to).sort((a,b) => a.rate - b.rate)[0];
+    if (!best) { showToast('error','No hay contrapartes activas.'); return; }
+    showToast('info', `Matching con ${best.seller} · tasa ${best.rate.toFixed(3)}`);
+    setTimeout(() => startTx(best.id), 900);
+}
+function doPublish() {
+    const from = document.getElementById('pub-from').value, to = document.getElementById('pub-to').value;
+    const amount = parseFloat(document.getElementById('pub-amount').value);
+    const rate   = parseFloat(document.getElementById('pub-rate').value);
+    const bank   = document.getElementById('pub-bank').value;
+    const min    = parseFloat(document.getElementById('pub-min').value) || 50;
+    const max    = parseFloat(document.getElementById('pub-max').value) || amount;
+    const names  = { bcp:'BCP', interbank:'Interbank', bbva:'BBVA', yape:'Yape', plin:'Plin' };
+    if (!amount || amount <= 0) { showToast('error','Ingresa un monto válido.'); return; }
+    if (from === to) { showToast('error','Las monedas deben ser distintas.'); return; }
+    const offers = JSON.parse(localStorage.getItem('p2p_offers'));
+    offers.push({ id:Date.now(), seller:currentUser.name+' (Tú)', from, to, rate, amount, min, max, bank, bankName:names[bank], stars:4.9, trades:180, completion:98, resp:'~2m', verified:true, online:true });
+    localStorage.setItem('p2p_offers', JSON.stringify(offers));
+    showToast('success','Oferta publicada en el mercado.');
+    navigateTo('view-market', document.getElementById('nav-home'));
+}
+
+// ── TRANSACTION ──
+function startTx(id) {
+    activeTx = JSON.parse(localStorage.getItem('p2p_offers')).find(o => o.id === id);
+    localStorage.setItem('p2p_activeTx', JSON.stringify(activeTx));
+    document.getElementById('tx-seller').innerText   = activeTx.seller;
+    document.getElementById('tx-bank').innerText     = activeTx.bankName;
+    document.getElementById('tx-total').innerText    = `${(activeTx.amount * activeTx.rate).toFixed(2)} ${activeTx.from}`;
+    document.getElementById('rating-name').innerText  = activeTx.seller;
+    document.getElementById('rating-name2').innerText = activeTx.seller;
+    document.getElementById('rating-avatar').innerText = activeTx.seller.substring(0,2).toUpperCase();
+    document.getElementById('rating-tx-summary').innerText = `${activeTx.from} → ${activeTx.to} · ${activeTx.amount} ${activeTx.to}`;
+    document.getElementById('tx-online-dot').className = activeTx.online ? 'online-dot' : 'offline-dot';
+    ['st-1','st-2','st-3','st-4'].forEach(s => document.getElementById(s).className = 'step');
+    document.getElementById('st-1').className = 'step active';
+    document.getElementById('tl-fill').style.width = '0%';
+    document.getElementById('tx-actions').classList.add('hidden');
+    const vz = document.getElementById('voucher-zone');
+    vz.style.pointerEvents = 'auto';
+    vz.innerHTML = `<i class="fas fa-cloud-upload-alt" style="font-size:30px; color:var(--primary); margin-bottom:8px; display:block;"></i><p style="font-size:13px; font-weight:700; color:var(--text-main);">Subir Comprobante de Pago</p><p style="font-size:10px; color:var(--text-muted); margin-top:4px;">IA OCR · Validación automática en segundos</p>`;
+    document.getElementById('chat-msgs').innerHTML = `<div class="chat-msg recv">Hola, en cuanto vea la transferencia libero 👍<div class="msg-meta">Vendedor · ahora</div></div>`;
+    clearInterval(txTimer);
+    let secs = 15 * 60;
+    document.getElementById('tx-timer').style.color = 'white';
+    txTimer = setInterval(() => {
+        let m = Math.floor(secs/60), s = secs%60;
+        document.getElementById('tx-timer').innerText = `${m<10?'0'+m:m}:${s<10?'0'+s:s}`;
+        if (secs < 120) document.getElementById('tx-timer').style.color = 'var(--danger)';
+        secs--;
+        if (secs < 0) { clearInterval(txTimer); document.getElementById('tx-timer').innerText = 'EXPIRADO'; }
+    }, 1000);
+    navigateTo('view-tx');
+}
+function goBackFromTx() {
+    if (activeTx) localStorage.setItem('p2p_activeTx', JSON.stringify(activeTx));
+    clearInterval(txTimer);
+    navigateTo('view-market', document.getElementById('nav-home'));
+    showToast('info','Transacción pausada. Puedes continuarla después.');
+}
+function resumeTransaction() {
+    const saved = localStorage.getItem('p2p_activeTx');
+    if (saved) { activeTx = JSON.parse(saved); navigateTo('view-tx'); showToast('success','Transacción restaurada.'); }
+}
+function doOCR() {
+    const vz = document.getElementById('voucher-zone');
+    vz.innerHTML = `<div class="spinner" style="margin:0 auto 10px;"></div><p style="font-size:12px; font-weight:700; color:var(--text-main);">IA OCR leyendo voucher...</p>`;
+    vz.style.pointerEvents = 'none';
+    document.getElementById('tl-fill').style.width = '33%';
+    setTimeout(() => {
+        vz.innerHTML = `<i class="fas fa-check-circle" style="font-size:32px; color:var(--success); display:block; margin-bottom:8px;"></i><p style="font-size:13px; font-weight:700; color:var(--success);">Voucher Validado ✓</p><p style="font-size:11px; color:var(--text-muted); margin-top:4px;">Operación OCR: #994812 · Auténtico</p>`;
+        document.getElementById('st-1').className = 'step done';
+        document.getElementById('st-2').className = 'step active';
+        document.getElementById('tl-fill').style.width = '66%';
+        clearInterval(txTimer);
+        document.getElementById('tx-timer').innerText = 'VOUCHER SUBIDO';
+        document.getElementById('tx-timer').style.color = 'var(--primary-mint)';
+        document.getElementById('tx-actions').classList.remove('hidden');
+        showToast('success','OCR validado. Cambia a modo Vendedor para confirmar.');
+        const pending = JSON.parse(localStorage.getItem('p2p_vendor_pending'));
+        const txId = 'TX-' + Math.floor(Math.random()*9000+1000);
+        pending.push({ id:Date.now(), txId, buyer:currentUser.name, seller:activeTx.seller, amount:activeTx.amount, from:activeTx.from, to:activeTx.to, rate:activeTx.rate, total:(activeTx.amount*activeTx.rate).toFixed(2), ocrCode:'#994812', date:new Date().toISOString().split('T')[0] });
+        localStorage.setItem('p2p_vendor_pending', JSON.stringify(pending));
+        updateVendorNotifications();
+    }, 1900);
+}
+function sendMsg() {
+    const input = document.getElementById('chat-input');
+    const text  = input.value.trim();
+    if (!text) return;
+    const box = document.getElementById('chat-msgs');
+    box.innerHTML += `<div class="chat-msg sent">${text}<div class="msg-meta">Tú · ahora</div></div>`;
+    input.value = '';
+    box.scrollTop = box.scrollHeight;
+    const replies = ['De acuerdo, esperando tu pago.','Perfecto, avísame cuando lo hagas.','Ok, verifico en un momento.','Entendido 👌'];
+    setTimeout(() => {
+        box.innerHTML += `<div class="chat-msg recv">${replies[Math.floor(Math.random()*replies.length)]}<div class="msg-meta">Vendedor · ahora</div></div>`;
+        box.scrollTop = box.scrollHeight;
+    }, 1200);
+}
+function doBuyerDispute() {
+    if (!activeTx) { showToast('error','No hay transacción activa.'); return; }
+    addDisputeAndHistory(activeTx.seller, currentUser.name, activeTx.amount, activeTx.to, activeTx.rate, 'Comprador: vendedor no liberó fondos.');
+    localStorage.removeItem('p2p_activeTx'); activeTx = null;
+    showToast('error','Disputa abierta. Admin notificado.');
+    setTimeout(() => navigateTo('view-market', document.getElementById('nav-home')), 1500);
+}
+function addDisputeAndHistory(seller, buyer, amount, currency, rate, motivo) {
+    const d = JSON.parse(localStorage.getItem('p2p_disputes'));
+    d.push({ id:Math.floor(Math.random()*9000+1000), seller, buyer, amount, curr:currency, motivo });
+    localStorage.setItem('p2p_disputes', JSON.stringify(d));
+    const h = JSON.parse(localStorage.getItem('p2p_history'));
+    h.unshift({ id:'TX-'+Math.floor(Math.random()*9000+1000), seller, from:'PEN', to:currency, amount, currency, rate, status:'disputed', date:new Date().toISOString().split('T')[0], voucher:null });
+    localStorage.setItem('p2p_history', JSON.stringify(h));
+}
+
+// ── RECEIPT ──
+function doConfirm() {
+    ['st-2','st-3','st-4'].forEach(s => document.getElementById(s).className = 'step done');
+    document.getElementById('tl-fill').style.width = '100%';
+    document.getElementById('rcpt-id').innerText      = Math.floor(Math.random()*9000+1000);
+    document.getElementById('rcpt-buyer').innerText   = currentUser.name;
+    document.getElementById('rcpt-seller').innerText  = activeTx.seller;
+    document.getElementById('rcpt-rate').innerText    = `${activeTx.rate.toFixed(3)} ${activeTx.from}`;
+    document.getElementById('rcpt-received').innerText = `${activeTx.amount.toFixed(2)} ${activeTx.to}`;
+    const h = JSON.parse(localStorage.getItem('p2p_history'));
+    h.unshift({ id:'TX-'+Math.floor(Math.random()*9000+1000), seller:activeTx.seller, from:activeTx.from, to:activeTx.to, amount:activeTx.amount, currency:activeTx.to, rate:activeTx.rate, status:'completed', date:new Date().toISOString().split('T')[0], voucher:'#994812' });
+    localStorage.setItem('p2p_history', JSON.stringify(h));
+    localStorage.removeItem('p2p_activeTx'); activeTx = null;
+    setTimeout(() => navigateTo('view-receipt'), 400);
+}
+
+// ── US-005: RATING con confirmación bilateral ──
+const ratingLabels = ['','Muy malo','Malo','Regular','Bueno','¡Excelente!'];
+function setRating(val) {
+    currRating = val;
+    document.getElementById('rating-lbl').innerText = ratingLabels[val];
+    document.querySelectorAll('.star').forEach((s, i) => s.classList.toggle('lit', i < val));
+}
+function updateCharCount() {
+    const v = document.getElementById('rating-comment').value.length;
+    document.getElementById('char-count').innerText = v + '/200';
+}
+function askRatingConfirm() {
+    if (!currRating) { showToast('error','Selecciona una calificación (1-5 estrellas).'); return; }
+    document.getElementById('rating-confirm-overlay').classList.remove('hidden');
+}
+function closeRatingConfirm() {
+    document.getElementById('rating-confirm-overlay').classList.add('hidden');
+}
+function finalSubmitRating() {
+    closeRatingConfirm();
+    // Guardar calificación y actualizar promedio
+    const reviews = JSON.parse(localStorage.getItem('p2p_reviews'));
+    const comment  = document.getElementById('rating-comment').value.trim();
+    reviews.unshift({ from:'Contraparte', stars:currRating, comment, date:new Date().toISOString().split('T')[0] });
+    localStorage.setItem('p2p_reviews', JSON.stringify(reviews));
+    // Actualizar promedio en perfil
+    refreshProfileRating();
+    showToast('success', `Calificaste con ${currRating} ⭐. ¡Gracias!`);
+    currRating = 0;
+    document.querySelectorAll('.star').forEach(s => s.classList.remove('lit'));
+    document.getElementById('rating-comment').value = '';
+    document.getElementById('rating-lbl').innerText = 'Selecciona tu calificación';
+    document.getElementById('char-count').innerText = '0/200';
+    setTimeout(() => navigateTo('view-market', document.getElementById('nav-home')), 1500);
+}
+// US-005: actualizar calificación promedio dinámicamente
+function refreshProfileRating() {
+    const reviews = JSON.parse(localStorage.getItem('p2p_reviews') || '[]');
+    if (!reviews.length) return;
+    const avg = (reviews.reduce((s,r) => s + r.stars, 0) / reviews.length).toFixed(1);
+    const el = document.getElementById('profile-rating');
+    if (el) el.innerText = avg;
+    const countEl = document.getElementById('reviews-count-badge');
+    if (countEl) countEl.innerText = `${reviews.length} reseñas`;
+    document.getElementById('stat-ops').innerText = 180 + reviews.length;
+}
+
+// US-005: MIS CALIFICACIONES RECIBIDAS
+function loadMyReviews() {
+    const reviews = JSON.parse(localStorage.getItem('p2p_reviews') || '[]');
+    if (!reviews.length) return;
+    const avg = (reviews.reduce((s,r) => s + r.stars, 0) / reviews.length).toFixed(1);
+    document.getElementById('reviews-avg').innerText   = avg;
+    document.getElementById('reviews-total').innerText = `${reviews.length} reseñas`;
+    // Barras por estrella
+    const bars = document.getElementById('reviews-bars');
+    bars.innerHTML = '';
+    for (let i = 5; i >= 1; i--) {
+        const count = reviews.filter(r => r.stars === i).length;
+        const pct   = reviews.length ? Math.round((count / reviews.length) * 100) : 0;
+        bars.innerHTML += `
+        <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+            <span style="font-size:10px; color:var(--text-muted); width:8px;">${i}</span>
+            <i class="fas fa-star" style="color:var(--warning); font-size:10px;"></i>
+            <div style="flex:1; background:#F1F5F9; border-radius:4px; height:6px; overflow:hidden;">
+                <div style="width:${pct}%; background:var(--warning); height:100%; border-radius:4px;"></div>
+            </div>
+            <span style="font-size:10px; color:var(--text-muted); width:20px;">${count}</span>
+        </div>`;
+    }
+    // Lista de reseñas
+    const list = document.getElementById('reviews-list');
+    list.innerHTML = '';
+    reviews.forEach(r => {
+        const stars = '★'.repeat(r.stars) + '☆'.repeat(5 - r.stars);
+        list.innerHTML += `
+        <div class="review-item">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-light));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;">${r.from.substring(0,2).toUpperCase()}</div>
+                    <span style="font-size:12px; font-weight:700; color:var(--text-main);">${r.from}</span>
+                </div>
+                <span class="review-stars">${stars}</span>
+            </div>
+            ${r.comment ? `<p class="review-comment">"${r.comment}"</p>` : '<p class="review-comment" style="font-style:italic; color:#94A3B8;">Sin comentario</p>'}
+            <p class="review-meta">${r.date}</p>
+        </div>`;
+    });
+}
+
+// ── US-010: HISTORY con detalle y búsqueda ──
+let currentHistoryFilter = 'all';
+function loadHistory(filter) {
+    currentHistoryFilter = filter;
+    const search = document.getElementById('history-search') ? document.getElementById('history-search').value.toLowerCase() : '';
+    renderHistory(filter, search);
+}
+function searchHistory() {
+    const search = document.getElementById('history-search').value.toLowerCase();
+    renderHistory(currentHistoryFilter, search);
+}
+function renderHistory(filter, search = '') {
+    const all  = JSON.parse(localStorage.getItem('p2p_history'));
+    let data   = filter === 'all' ? all : all.filter(h => h.status === filter);
+    if (search) data = data.filter(h => h.seller.toLowerCase().includes(search) || h.id.toLowerCase().includes(search));
+    const c = document.getElementById('history-list');
+    c.innerHTML = '';
+    if (!data.length) {
+        c.innerHTML = `<div style="text-align:center; padding:24px;"><i class="fas fa-inbox" style="font-size:28px; color:var(--border-color); display:block; margin-bottom:8px;"></i><p style="font-size:12px; color:var(--text-muted);">Sin operaciones aquí.</p></div>`;
+        return;
+    }
+    const icons  = { completed:'✅', pending:'⏳', disputed:'⚠️', cancelled:'❌' };
+    const labels = { completed:'Completado', pending:'Pendiente', disputed:'En disputa', cancelled:'Cancelado' };
+    data.forEach(h => {
+        const pair = h.from && h.to ? `${h.from} → ${h.to}` : `--- → ${h.currency}`;
+        c.innerHTML += `
+        <div class="history-item" onclick="openTxDetail('${h.id}')">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:36px;height:36px;border-radius:10px;background:rgba(0,172,193,0.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fas fa-arrows-alt-h" style="color:var(--primary);font-size:14px;"></i>
+                </div>
+                <div>
+                    <p style="font-size:13px; font-weight:700; color:var(--text-main);">${pair}</p>
+                    <p style="font-size:11px; color:var(--text-muted); margin-top:2px;">${h.seller} · ${h.date}</p>
+                </div>
+            </div>
+            <div style="text-align:right;">
+                <p style="font-size:13px; font-weight:800; color:var(--text-main); margin-bottom:4px;">${h.amount} ${h.currency}</p>
+                <span class="status-pill ${h.status}">${icons[h.status]} ${labels[h.status]}</span>
+            </div>
+        </div>`;
+    });
+}
+function filterHistory(filter, el) {
+    document.querySelectorAll('#history-chips .chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    loadHistory(filter);
+}
+// US-010: detalle de transacción al tocar
+function openTxDetail(txId) {
+    const all = JSON.parse(localStorage.getItem('p2p_history'));
+    const h   = all.find(x => x.id === txId);
+    if (!h) return;
+    const statusColors = { completed:'var(--success)', pending:'var(--warning)', disputed:'var(--danger)', cancelled:'var(--text-muted)' };
+    const statusLabels = { completed:'Completado', pending:'Pendiente', disputed:'En disputa', cancelled:'Cancelado' };
+    const pair = h.from && h.to ? `${h.from} → ${h.to}` : `--- → ${h.currency}`;
+    const content = document.getElementById('tx-detail-content');
+    content.innerHTML = `
+        <div style="text-align:center; margin-bottom:20px;">
+            <div style="width:60px;height:60px;border-radius:50%;background:${h.status === 'completed' ? 'linear-gradient(135deg,var(--success),#059669)' : h.status === 'disputed' ? 'linear-gradient(135deg,var(--danger),#DC2626)' : 'linear-gradient(135deg,#94A3B8,#64748B)'};display:flex;align-items:center;justify-content:center;margin:0 auto 12px;box-shadow:0 8px 20px rgba(0,0,0,0.15);">
+                <i class="fas ${h.status === 'completed' ? 'fa-check' : h.status === 'disputed' ? 'fa-exclamation-triangle' : 'fa-times'}" style="font-size:22px;color:white;"></i>
+            </div>
+            <h4 style="font-size:16px;font-weight:800;color:var(--text-main);">${statusLabels[h.status]}</h4>
+            <p style="font-size:22px;font-weight:800;color:${statusColors[h.status]};margin-top:6px;">${h.amount} ${h.currency}</p>
+        </div>
+        <div class="card">
+            <div class="tx-detail-row"><span class="tx-detail-label">ID Transacción</span><span class="tx-detail-value">${h.id}</span></div>
+            <div class="tx-detail-row"><span class="tx-detail-label">Par de cambio</span><span class="tx-detail-value">${pair}</span></div>
+            <div class="tx-detail-row"><span class="tx-detail-label">Contraparte</span><span class="tx-detail-value">${h.seller}</span></div>
+            <div class="tx-detail-row"><span class="tx-detail-label">Tasa aplicada</span><span class="tx-detail-value">S/ ${h.rate}</span></div>
+            <div class="tx-detail-row"><span class="tx-detail-label">Fecha</span><span class="tx-detail-value">${h.date}</span></div>
+            <div class="tx-detail-row"><span class="tx-detail-label">Auditoría OCR</span><span class="tx-detail-value" style="color:${h.voucher ? 'var(--success)' : 'var(--text-muted)'};">${h.voucher ? h.voucher + ' ✓' : 'No disponible'}</span></div>
+            <div class="tx-detail-row" style="border:none;"><span class="tx-detail-label">Estado</span><span class="status-pill ${h.status}">${statusLabels[h.status]}</span></div>
+        </div>
+        ${h.status === 'completed' ? `
+        <button class="btn btn-outline" style="margin-bottom:8px;" onclick="showToast('success','Comprobante PDF descargado.')">
+            <i class="fas fa-file-download"></i> Descargar Comprobante
+        </button>` : ''}
+    `;
+    navigateTo('view-tx-detail');
+}
+
+// ── US-011: MÉTODOS DE PAGO mejorado ──
+const bankColors = { bcp:'#FF7A00', interbank:'#00B14F', bbva:'#072146', yape:'#742284', plin:'#00C3DA' };
+const bankTypes  = { bcp:'bank', interbank:'bank', bbva:'bank', yape:'wallet', plin:'wallet' };
+const bankNames  = { bcp:'BCP', interbank:'Interbank', bbva:'BBVA', yape:'Yape', plin:'Plin' };
+
+function loadCards() {
+    const cards   = JSON.parse(localStorage.getItem('p2p_cards'));
+    const banks   = cards.filter(c => c.type === 'bank');
+    const wallets = cards.filter(c => c.type === 'wallet');
+
+    const renderList = (list, containerId) => {
+        const c = document.getElementById(containerId);
+        c.innerHTML = '';
+        if (!list.length) {
+            c.innerHTML = `<div style="text-align:center; padding:12px; font-size:11px; color:var(--text-muted);">No hay métodos en esta categoría.</div>`;
+            return;
+        }
+        list.forEach(card => {
+            c.innerHTML += `
+            <div class="payment-card-item ${card.isDefault ? 'is-default' : ''}">
+                <div class="bank-logo-circle" style="background:${bankColors[card.bank] || '#888'};">
+                    ${card.bankName ? card.bankName.substring(0,3).toUpperCase() : card.bank.toUpperCase().substring(0,3)}
+                </div>
+                <div class="payment-card-info">
+                    <div class="payment-card-name">${card.bankName}</div>
+                    <div class="payment-card-num">•••• ${card.number.slice(-4)}</div>
+                </div>
+                <div class="payment-card-actions">
+                    ${card.isDefault
+                        ? `<span class="default-badge">Principal</span>`
+                        : `<button class="set-default-btn" onclick="setDefaultCard(${card.id})" title="Establecer como principal"><i class="fas fa-star"></i></button>`
+                    }
+                    <button class="delete-btn" onclick="askDeleteCard(${card.id}, '${card.bankName}')" title="Eliminar"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>`;
+        });
+    };
+    renderList(banks,   'bank-cards-list');
+    renderList(wallets, 'wallet-cards-list');
+}
+
+function updatePlaceholder() {
+    const bank  = document.getElementById('new-bank').value;
+    const label = document.getElementById('new-card-label');
+    const hint  = document.getElementById('new-card-hint');
+    const input = document.getElementById('new-card-num');
+    if (bank === 'yape' || bank === 'plin') {
+        label.innerText       = 'Número de teléfono';
+        hint.innerText        = 'Ingresa tu número de 9 dígitos (ej: 987 654 321)';
+        input.placeholder     = '987 654 321';
+        input.maxLength       = 11;
+    } else {
+        label.innerText       = 'Número de Cuenta / CCI';
+        hint.innerText        = 'Ingresa el CCI completo (20 dígitos)';
+        input.placeholder     = 'Ej. 002-191-0098765432-12';
+        input.maxLength       = 30;
+    }
+    input.value = '';
+}
+
+function addCard() {
+    const bank   = document.getElementById('new-bank').value;
+    const num    = document.getElementById('new-card-num').value.trim();
+    if (!num) { showToast('error','Ingresa el número de cuenta o teléfono.'); return; }
+    // Validación básica por tipo
+    const isWallet = bank === 'yape' || bank === 'plin';
+    const digitsOnly = num.replace(/\D/g,'');
+    if (isWallet && digitsOnly.length !== 9) { showToast('error','El teléfono debe tener 9 dígitos.'); return; }
+    if (!isWallet && digitsOnly.length < 16) { showToast('error','El CCI debe tener al menos 16 dígitos.'); return; }
+    // Verificar duplicado
+    const cards = JSON.parse(localStorage.getItem('p2p_cards'));
+    if (cards.find(c => c.bank === bank && c.number === num)) {
+        showToast('error','Ya tienes este método de pago registrado.'); return;
+    }
+    cards.push({ id:Date.now(), bank, bankName:bankNames[bank], type:bankTypes[bank], number:num, isDefault:false });
+    localStorage.setItem('p2p_cards', JSON.stringify(cards));
+    document.getElementById('new-card-num').value = '';
+    loadCards();
+    showToast('success','Método de pago agregado correctamente.');
+}
+
+function setDefaultCard(id) {
+    const cards = JSON.parse(localStorage.getItem('p2p_cards'));
+    cards.forEach(c => c.isDefault = (c.id === id));
+    localStorage.setItem('p2p_cards', JSON.stringify(cards));
+    loadCards();
+    showToast('success','Método principal actualizado.');
+}
+
+function askDeleteCard(id, name) {
+    // Verificar si hay transacción activa vinculada
+    const pending = JSON.parse(localStorage.getItem('p2p_vendor_pending') || '[]');
+    if (pending.length > 0) {
+        showToast('error','No puedes eliminar un método con transacciones activas.');
+        return;
+    }
+    cardToDelete = id;
+    document.getElementById('confirm-subtitle').innerText = `Se eliminará "${name}". Esta acción no se puede deshacer.`;
+    document.getElementById('confirm-overlay').classList.remove('hidden');
+}
+function closeConfirm() {
+    document.getElementById('confirm-overlay').classList.add('hidden');
+    cardToDelete = null;
+}
+function confirmDeleteCard() {
+    if (!cardToDelete) return;
+    let cards = JSON.parse(localStorage.getItem('p2p_cards'));
+    const wasDefault = cards.find(c => c.id === cardToDelete)?.isDefault;
+    cards = cards.filter(c => c.id !== cardToDelete);
+    // Si era el principal, asignar el siguiente
+    if (wasDefault && cards.length > 0) cards[0].isDefault = true;
+    localStorage.setItem('p2p_cards', JSON.stringify(cards));
+    closeConfirm();
+    loadCards();
+    showToast('success','Método de pago eliminado.');
+}
+
+// ── MODE TOGGLE ──
+function setMode(mode) {
+    appMode = mode;
+    document.getElementById('mode-btn-buyer').classList.toggle('active', mode === 'buyer');
+    document.getElementById('mode-btn-seller').classList.toggle('active', mode === 'seller');
+    if (mode === 'buyer') { navigateTo('view-market', document.getElementById('nav-home')); }
+    else { loadVendorPending(); navigateTo('view-vendor'); document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); }
+}
+
+// ── VENDOR ──
+function loadVendorPending() {
+    const pending = JSON.parse(localStorage.getItem('p2p_vendor_pending'));
+    const c = document.getElementById('vendor-list');
+    c.innerHTML = '';
+    if (!pending.length) {
+        c.innerHTML = `<div class="card" style="text-align:center; padding:28px;"><i class="fas fa-inbox" style="font-size:32px; color:var(--border-color); display:block; margin-bottom:10px;"></i><p style="font-size:13px; font-weight:700;">Sin transacciones pendientes</p></div>`;
+        return;
+    }
+    pending.forEach(tx => {
+        c.innerHTML += `
+        <div class="vendor-card has-action">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                <div><span style="font-size:10px; font-weight:800; color:var(--warning); text-transform:uppercase;">Pago recibido · Confirmar</span><p style="font-size:14px; font-weight:800; margin-top:3px;">${tx.txId}</p></div>
+                <span style="background:rgba(245,158,11,0.12); color:var(--warning); padding:4px 10px; border-radius:10px; font-size:10px; font-weight:700;">PENDIENTE</span>
+            </div>
+            <div style="background:#F8FAFC; border-radius:12px; padding:12px; margin-bottom:12px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span style="font-size:11px; color:var(--text-muted);">Comprador</span><strong style="font-size:11px;">${tx.buyer}</strong></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span style="font-size:11px; color:var(--text-muted);">Monto</span><strong style="font-size:11px;">${tx.amount} ${tx.to} · tasa ${tx.rate}</strong></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span style="font-size:11px; color:var(--text-muted);">Total recibido</span><strong style="font-size:11px; color:var(--success);">${tx.total} ${tx.from}</strong></div>
+                <div style="display:flex; justify-content:space-between;"><span style="font-size:11px; color:var(--text-muted);">Auditoría OCR</span><span class="ocr-tag"><i class="fas fa-check-circle"></i> ${tx.ocrCode} · Auténtico</span></div>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button class="btn btn-success btn-sm" style="flex:1;" onclick="vendorConfirm(${tx.id})"><i class="fas fa-unlock"></i> Liberar Fondos</button>
+                <button class="btn btn-danger btn-sm"  style="flex:1;" onclick="vendorDispute(${tx.id})"><i class="fas fa-flag"></i> Disputar</button>
+            </div>
+        </div>`;
+    });
+}
+function vendorConfirm(id) {
+    let pending = JSON.parse(localStorage.getItem('p2p_vendor_pending'));
+    const tx = pending.find(t => t.id === id);
+    if (!tx) return;
+    pending = pending.filter(t => t.id !== id);
+    localStorage.setItem('p2p_vendor_pending', JSON.stringify(pending));
+    const h = JSON.parse(localStorage.getItem('p2p_history'));
+    h.unshift({ id:tx.txId, seller:tx.seller, from:tx.from, to:tx.to, amount:tx.amount, currency:tx.to, rate:tx.rate, status:'completed', date:tx.date, voucher:tx.ocrCode });
+    localStorage.setItem('p2p_history', JSON.stringify(h));
+    document.getElementById('rcpt-id').innerText      = tx.txId.replace('TX-','');
+    document.getElementById('rcpt-buyer').innerText   = tx.buyer;
+    document.getElementById('rcpt-seller').innerText  = tx.seller;
+    document.getElementById('rcpt-rate').innerText    = `${tx.rate} ${tx.from}`;
+    document.getElementById('rcpt-received').innerText = `${tx.amount} ${tx.to}`;
+    showToast('success', `Fondos liberados. TX ${tx.txId}`);
+    updateVendorNotifications();
+    loadVendorPending();
+    setTimeout(() => { setMode('buyer'); navigateTo('view-receipt', document.getElementById('nav-home')); }, 1200);
+}
+function vendorDispute(id) {
+    let pending = JSON.parse(localStorage.getItem('p2p_vendor_pending'));
+    const tx = pending.find(t => t.id === id);
+    if (!tx) return;
+    pending = pending.filter(t => t.id !== id);
+    localStorage.setItem('p2p_vendor_pending', JSON.stringify(pending));
+    addDisputeAndHistory(tx.seller, tx.buyer, tx.amount, tx.to, tx.rate, 'Vendedor: voucher no corresponde al pago esperado.');
+    showToast('error','Disputa registrada como vendedor.');
+    updateVendorNotifications();
+    loadVendorPending();
+}
+function loadVendorInbox() {
+    const pending = JSON.parse(localStorage.getItem('p2p_vendor_pending'));
+    const c = document.getElementById('vendor-inbox-list');
+    c.innerHTML = '';
+    if (!pending.length) {
+        c.innerHTML = `<div class="card" style="text-align:center; padding:28px; margin:0 0 14px;"><i class="fas fa-inbox" style="font-size:32px; color:var(--border-color); display:block; margin-bottom:10px;"></i><p style="font-size:13px; font-weight:700;">Sin transacciones pendientes</p></div>`;
+        return;
+    }
+    pending.forEach(tx => {
+        c.innerHTML += `<div class="vendor-card has-action" style="margin:0 0 12px;">
+            <p style="font-size:13px; font-weight:800; margin-bottom:8px;">${tx.txId}</p>
+            <p style="font-size:11px; color:var(--text-muted);">Comprador: <strong>${tx.buyer}</strong> · ${tx.amount} ${tx.to}</p>
+            <div style="display:flex; gap:8px; margin-top:10px;">
+                <button class="btn btn-success btn-sm" style="flex:1;" onclick="vendorConfirm(${tx.id})"><i class="fas fa-unlock"></i> Liberar</button>
+                <button class="btn btn-danger btn-sm"  style="flex:1;" onclick="vendorDispute(${tx.id})"><i class="fas fa-flag"></i> Disputar</button>
+            </div>
+        </div>`;
+    });
+}
+
+// ── VENDOR NOTIFICATIONS ──
+function toggleVendorNotifications() {
+    document.getElementById('vendor-notif-modal').classList.toggle('hidden');
+    updateVendorNotifications();
+}
+function updateVendorNotifications() {
+    if (!currentUser || currentUser.isAdmin) { document.getElementById('vendor-notif-btn').classList.add('hidden'); return; }
+    const pending = JSON.parse(localStorage.getItem('p2p_vendor_pending') || '[]');
+    const btn   = document.getElementById('vendor-notif-btn');
+    const badge = document.getElementById('vendor-notif-badge');
+    const list  = document.getElementById('vendor-notif-list');
+    if (!pending.length) {
+        btn.classList.add('hidden');
+        if (list) list.innerHTML = `<div style="text-align:center; padding:28px 0;"><p style="font-size:13px; color:var(--text-muted);">Sin transacciones pendientes</p></div>`;
+    } else {
+        btn.classList.remove('hidden');
+        badge.innerText = pending.length;
+        if (list) {
+            list.innerHTML = '';
+            pending.forEach(tx => {
+                list.innerHTML += `
+                <div style="background:#F8FAFC;border-radius:14px;padding:14px;margin-bottom:10px;border:1px solid rgba(245,158,11,0.3);">
+                    <p style="font-size:12px;font-weight:800;margin-bottom:6px;">${tx.txId}</p>
+                    <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Comprador: <strong>${tx.buyer}</strong> · ${tx.amount} ${tx.to}</p>
+                    <div style="display:flex;gap:8px;">
+                        <button class="btn btn-success btn-sm" style="flex:1;" onclick="vendorConfirm(${tx.id}); toggleVendorNotifications();"><i class="fas fa-unlock"></i> Liberar</button>
+                        <button class="btn btn-danger btn-sm"  style="flex:1;" onclick="vendorDispute(${tx.id}); toggleVendorNotifications();"><i class="fas fa-flag"></i> Disputar</button>
+                    </div>
+                </div>`;
+            });
+        }
+    }
+}
+
+// ── ADMIN ──
+function loadAdmin() {
+    const disputes = JSON.parse(localStorage.getItem('p2p_disputes'));
+    document.getElementById('admin-count').innerText = disputes.length;
+    const c = document.getElementById('admin-disputes');
+    c.innerHTML = '';
+    if (!disputes.length) {
+        c.innerHTML = `<div class="card" style="text-align:center; padding:24px;"><i class="fas fa-check-circle" style="font-size:28px; color:var(--success); display:block; margin-bottom:8px;"></i><p style="font-size:12px; color:var(--text-muted);">No hay disputas activas.</p></div>`;
+        return;
+    }
+    disputes.forEach(d => {
+        c.innerHTML += `
+        <div class="dispute-card">
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <strong style="font-size:12px; color:var(--danger);">ORDEN #TX-${d.id}</strong>
+                <span style="background:var(--danger); color:white; font-size:9px; font-weight:700; padding:2px 8px; border-radius:10px;">EN ARBITRAJE</span>
+            </div>
+            <p style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">🧑 ${d.buyer} · 🏪 ${d.seller} · 💰 ${d.amount} ${d.curr}</p>
+            <p style="font-size:10px; color:var(--danger); font-style:italic; margin-bottom:12px;">${d.motivo}</p>
+            <div style="display:flex; gap:8px;">
+                <button class="btn btn-success btn-sm" style="flex:1;" onclick="resolveDispute(${d.id},true)"><i class="fas fa-check"></i> Liberar Comprador</button>
+                <button class="btn btn-danger btn-sm"  style="flex:1;" onclick="resolveDispute(${d.id},false)"><i class="fas fa-times"></i> Revertir</button>
+            </div>
+        </div>`;
+    });
+}
+function resolveDispute(id, release) {
+    let d = JSON.parse(localStorage.getItem('p2p_disputes'));
+    d = d.filter(x => x.id !== id);
+    localStorage.setItem('p2p_disputes', JSON.stringify(d));
+    loadAdmin();
+    showToast('success', release ? 'Capital liberado al comprador.' : 'Transacción revertida al vendedor.');
+}
+</script>
+</body>
+</html>
