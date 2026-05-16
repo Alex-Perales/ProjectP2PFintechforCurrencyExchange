@@ -632,41 +632,7 @@
                             <span style="color:var(--primary); cursor:pointer;" onclick="event.stopPropagation(); navigateTo('view-privacy')">Privacidad</span>
                         </label>
 
-                        <!-- Contrato de registro obligatorio -->
-                        <div style="background:rgba(245,158,11,0.06); border:1px solid rgba(245,158,11,0.25); border-radius:12px; padding:12px; margin-bottom:12px;">
-                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                                <i class="fas fa-file-signature" style="color:var(--warning); font-size:16px;"></i>
-                                <p style="font-size:12px; font-weight:700; color:var(--text-main);">Contrato de Registro P2P</p>
-                            </div>
-                            <div style="max-height:120px; overflow-y:auto; background:white; border:1px solid var(--border-color); border-radius:10px; padding:10px; margin-bottom:10px; font-size:10px; color:var(--text-muted); line-height:1.6;">
-                                <p style="font-weight:700; color:var(--text-main); margin-bottom:6px;">CONTRATO DE USUARIO – PERÚ EXCHANGE P2P</p>
-                                <p><strong>CLÁUSULA 1 – RESPONSABILIDAD FINANCIERA:</strong> El usuario se compromete a realizar las transferencias de dinero en los montos y plazos acordados. Perú Exchange actúa como intermediario y no se responsabiliza por pérdidas derivadas de incumplimiento entre partes.</p>
-                                <p style="margin-top:4px;"><strong>CLÁUSULA 2 – FONDOS EN CUSTODIA:</strong> Los fondos se mantienen en custodia electrónica hasta que ambas partes confirmen la transacción. En caso de disputa, se activa el arbitraje interno.</p>
-                                <p style="margin-top:4px;"><strong>CLÁUSULA 3 – NO LLEGADA DE FONDOS:</strong> Si una de las partes alega no haber recibido los fondos, se abrirá un proceso de arbitraje con revisión de evidencias (vouchers, capturas, datos bancarios). La parte que no presente evidencia suficiente perderá la disputa.</p>
-                                <p style="margin-top:4px;"><strong>CLÁUSULA 4 – RECLAMOS Y PÉRDIDAS:</strong> Todo reclamo deberá presentarse dentro de las 48 horas posteriores a la transacción. Pasado este plazo, la plataforma no se hace responsable. Los reclamos se resuelven en un máximo de 5 días hábiles.</p>
-                                <p style="margin-top:4px;"><strong>CLÁUSULA 5 – FRAUDE Y SANCIONES:</strong> Cualquier intento de fraude (vouchers falsos, suplantación, lavado) resultará en la suspensión permanente de la cuenta y reporte a las autoridades competentes.</p>
-                                <p style="margin-top:4px;"><strong>CLÁUSULA 6 – VERIFICACIÓN KYC:</strong> Es obligatorio completar la verificación de identidad (DNI frontal, posterior y selfie). Sin esta verificación no se podrán realizar operaciones.</p>
-                                <p style="margin-top:4px;"><strong>CLÁUSULA 7 – JURISDICCIÓN:</strong> Este contrato se rige bajo las leyes de la República del Perú. Las disputas no resueltas internamente se someterán a la jurisdicción de Lima.</p>
-                            </div>
-
-                            <!-- Firma digital simulada -->
-                            <div id="reg-signature-area" style="border:2px dashed var(--border-color); border-radius:10px; padding:14px; text-align:center; cursor:pointer; transition:all 0.2s; margin-bottom:8px;" onclick="simulateContractSign()">
-                                <i class="fas fa-pen-fancy" style="font-size:22px; color:var(--text-muted); display:block; margin-bottom:6px;"></i>
-                                <p style="font-size:11px; font-weight:700; color:var(--text-main);">Toca para firmar el contrato</p>
-                                <p style="font-size:9px; color:var(--text-muted); margin-top:2px;">Tu firma digital confirma que aceptas todas las cláusulas</p>
-                            </div>
-                            <div id="reg-signature-done" class="hidden" style="background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.25); border-radius:10px; padding:10px 12px; display:flex; align-items:center; gap:10px;">
-                                <div style="width:36px; height:36px; border-radius:10px; background:var(--success); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                                    <i class="fas fa-check" style="color:white; font-size:14px;"></i>
-                                </div>
-                                <div>
-                                    <p style="font-size:11px; font-weight:700; color:var(--success);">Contrato firmado digitalmente</p>
-                                    <p style="font-size:9px; color:var(--text-muted);" id="reg-sign-date">—</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <button class="btn btn-success" onclick="doRegister()">Crear mi Cuenta</button>
+                        <button class="btn btn-success" onclick="doRegister()">Continuar a Verificación</button>
                         <div style="display:flex; align-items:center; gap:8px; margin:16px 0; opacity:0.4;">
                             <hr style="flex:1; border:none; border-top:1px solid var(--border-color);">
                             <span style="font-size:11px; color:var(--text-muted); font-weight:600;">O regístrate con</span>
@@ -782,20 +748,56 @@
                 </div>
 
                 <!-- KYC Result -->
+                <!-- KYC Result -->
                 <div id="kyc-result" class="hidden">
-                    <div class="card" style="text-align:center; border:2px solid var(--success); background:rgba(16,185,129,0.03);">
+                    <div class="card" style="text-align:center; border:2px solid var(--success); background:rgba(16,185,129,0.03); margin-bottom:14px;">
                         <div style="width:56px; height:56px; background:linear-gradient(135deg,var(--success),#059669); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; box-shadow:0 8px 20px rgba(16,185,129,0.3);">
                             <i class="fas fa-check" style="font-size:24px; color:white;"></i>
                         </div>
-                        <h4 style="font-weight:800; font-size:16px; color:var(--text-main);">¡Verificación Completada!</h4>
-                        <p style="font-size:11px; color:var(--text-muted); margin-top:6px;">Tu identidad ha sido validada correctamente. Ya puedes operar en la plataforma.</p>
+                        <h4 style="font-weight:800; font-size:16px; color:var(--text-main);">¡Verificación KYC Completada!</h4>
+                        <p style="font-size:11px; color:var(--text-muted); margin-top:6px;">Tus documentos y biometría han sido validados con éxito. Ahora firma el contrato de usuario para activar tu cuenta.</p>
                         <div style="display:flex; gap:6px; justify-content:center; margin-top:12px; flex-wrap:wrap;">
                             <span class="verified-badge"><i class="fas fa-check-circle"></i> DNI Verificado</span>
                             <span class="verified-badge" style="background:rgba(16,185,129,0.1); color:var(--success);"><i class="fas fa-user-check"></i> Biometría OK</span>
                         </div>
                     </div>
-                    <button class="btn btn-success" onclick="completeKyc()">
-                        <i class="fas fa-arrow-right"></i> Continuar al Login
+
+                    <!-- Contrato de registro P2P (Post-KYC) -->
+                    <div class="card" style="margin-bottom:16px;">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                            <i class="fas fa-file-signature" style="color:var(--primary); font-size:18px;"></i>
+                            <strong style="font-size:13px; color:var(--text-main);">Contrato de Registro P2P</strong>
+                        </div>
+                        <div style="max-height:140px; overflow-y:auto; background:white; border:1px solid var(--border-color); border-radius:10px; padding:10px; margin-bottom:12px; font-size:10px; color:var(--text-muted); line-height:1.6;">
+                            <p style="font-weight:700; color:var(--text-main); margin-bottom:6px;">CONTRATO DE USUARIO – PERÚ EXCHANGE P2P</p>
+                            <p><strong>CLÁUSULA 1 – RESPONSABILIDAD FINANCIERA:</strong> El usuario se compromete a realizar las transferencias de dinero en los montos y plazos acordados. Perú Exchange actúa como intermediario y no se responsabiliza por pérdidas derivadas de incumplimiento entre partes.</p>
+                            <p style="margin-top:4px;"><strong>CLÁUSULA 2 – FONDOS EN CUSTODIA:</strong> Los fondos se mantienen en custodia electrónica hasta que ambas partes confirmen la transacción. En caso de disputa, se activa el arbitraje interno.</p>
+                            <p style="margin-top:4px;"><strong>CLÁUSULA 3 – NO LLEGADA DE FONDOS:</strong> Si una de las partes alega no haber recibido los fondos, se abrirá un proceso de arbitraje con revisión de evidencias (vouchers, capturas, datos bancarios). La parte que no presente evidencia suficiente perderá la disputa.</p>
+                            <p style="margin-top:4px;"><strong>CLÁUSULA 4 – RECLAMOS Y PÉRDIDAS:</strong> Todo reclamo deberá presentarse dentro de las 48 horas posteriores a la transacción. Pasado este plazo, la plataforma no se hace responsable. Los reclamos se resuelven en un máximo de 5 días hábiles.</p>
+                            <p style="margin-top:4px;"><strong>CLÁUSULA 5 – FRAUDE Y SANCIONES:</strong> Cualquier intento de fraude (vouchers falsos, suplantación, lavado) resultará en la suspensión permanente de la cuenta y reporte a las autoridades competentes.</p>
+                            <p style="margin-top:4px;"><strong>CLÁUSULA 6 – VERIFICACIÓN KYC:</strong> Es obligatorio completar la verificación de identidad (DNI frontal, posterior y selfie). Sin esta verificación no se podrán realizar operaciones.</p>
+                            <p style="margin-top:4px;"><strong>CLÁUSULA 7 – JURISDICCIÓN:</strong> Este contrato se rige bajo las leyes de la República del Perú. Las disputas no resueltas internamente se someterán a la jurisdicción de Lima.</p>
+                        </div>
+
+                        <!-- Firma digital simulada -->
+                        <div id="reg-signature-area" style="border:2px dashed var(--border-color); border-radius:10px; padding:14px; text-align:center; cursor:pointer; transition:all 0.2s; margin-bottom:8px;" onclick="simulateContractSign()">
+                            <i class="fas fa-pen-fancy" style="font-size:22px; color:var(--text-muted); display:block; margin-bottom:6px;"></i>
+                            <p style="font-size:11px; font-weight:700; color:var(--text-main);">Toca para firmar el contrato</p>
+                            <p style="font-size:9px; color:var(--text-muted); margin-top:2px;">Tu firma digital confirma que aceptas todas las cláusulas con tu identidad verificada</p>
+                        </div>
+                        <div id="reg-signature-done" class="hidden" style="background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.25); border-radius:10px; padding:10px 12px; display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                            <div style="width:36px; height:36px; border-radius:10px; background:var(--success); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                <i class="fas fa-check" style="color:white; font-size:14px;"></i>
+                            </div>
+                            <div>
+                                <p style="font-size:11px; font-weight:700; color:var(--success);">Contrato firmado digitalmente</p>
+                                <p style="font-size:9px; color:var(--text-muted);" id="reg-sign-date">—</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-success" id="btn-complete-kyc" onclick="completeKyc()" disabled style="opacity:0.5;">
+                        <i class="fas fa-user-check"></i> Finalizar y Crear Cuenta
                     </button>
                 </div>
             </div>
@@ -1040,7 +1042,7 @@
                 </div>
 
                 <!-- Botón Cancelar Transacción -->
-                <button class="btn btn-ghost" style="width:100%; margin-bottom:14px; color:var(--danger); border:1px solid rgba(239,68,68,0.3); background:rgba(239,68,68,0.03);" onclick="cancelTransaction()">
+                <button id="btn-cancel-tx" class="btn btn-ghost" style="width:100%; margin-bottom:14px; color:var(--danger); border:1px solid rgba(239,68,68,0.3); background:rgba(239,68,68,0.03);" onclick="cancelTransaction()">
                     <i class="fas fa-times-circle"></i> Cancelar Transacción
                 </button>
 
@@ -1176,7 +1178,7 @@
                         <div><i class="fas fa-headset" style="width:20px; color:var(--danger); margin-right:10px;"></i>Reclamos</div>
                         <i class="fas fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
                     </div>
-                    <div class="menu-item" onclick="showToast('info','Notificaciones actualizadas.')">
+                    <div class="menu-item" onclick="navigateTo('view-notifications')">
                         <div><i class="fas fa-bell" style="width:20px; color:var(--primary); margin-right:10px;"></i>Notificaciones</div>
                         <i class="fas fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
                     </div>
@@ -1196,11 +1198,11 @@
                         <div><i class="fas fa-lock" style="width:20px; color:var(--primary); margin-right:10px;"></i>Política de Privacidad</div>
                         <i class="fas fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
                     </div>
-                    <div class="menu-item" onclick="showToast('info','Versión 2.1.4 · Actualizado mayo 2026.')">
+                    <div class="menu-item" onclick="navigateTo('view-about')">
                         <div><i class="fas fa-info-circle" style="width:20px; color:var(--primary); margin-right:10px;"></i>Acerca de Perú Exchange</div>
                         <i class="fas fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
                     </div>
-                    <div class="menu-item" onclick="showToast('success','Soporte: support@peruexchange.com')">
+                    <div class="menu-item" onclick="navigateTo('view-help')">
                         <div><i class="fas fa-headset" style="width:20px; color:var(--primary); margin-right:10px;"></i>Centro de Ayuda</div>
                         <i class="fas fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
                     </div>
@@ -1758,6 +1760,155 @@
                 <div id="complaints-list"></div>
             </div>
 
+            <!-- ── NOTIFICATIONS ── -->
+            <div id="view-notifications" class="view hidden">
+                <div class="page-header">
+                    <div class="back-btn" onclick="navigateTo('view-profile',document.getElementById('nav-profile'))"><i class="fas fa-chevron-left"></i></div>
+                    <h4>Notificaciones</h4>
+                </div>
+                <div class="card" style="padding:14px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <span style="font-size:12px; font-weight:700; color:var(--text-main);">Recientes</span>
+                        <span style="font-size:10px; color:var(--primary); cursor:pointer; font-weight:600;" onclick="showToast('success','Notificaciones marcadas como leídas.')"><i class="fas fa-check-double"></i> Marcar todo como leído</span>
+                    </div>
+                    
+                    <div style="display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--border-color);">
+                        <div style="width:36px; height:36px; border-radius:10px; background:rgba(16,185,129,0.1); color:var(--success); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                            <i class="fas fa-shield-check" style="font-size:16px;"></i>
+                        </div>
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <strong style="font-size:12px; color:var(--text-main);">Inicio de sesión exitoso</strong>
+                                <span style="font-size:9px; color:var(--text-muted);">hace 10m</span>
+                            </div>
+                            <p style="font-size:11px; color:var(--text-muted); margin-top:2px;">Se detectó un nuevo inicio de sesión desde Lima, Perú (IP 190.230.12.5).</p>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--border-color);">
+                        <div style="width:36px; height:36px; border-radius:10px; background:rgba(245,158,11,0.1); color:var(--warning); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                            <i class="fas fa-gavel" style="font-size:16px;"></i>
+                        </div>
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <strong style="font-size:12px; color:var(--text-main);">Disputa #TX-8811 Actualizada</strong>
+                                <span style="font-size:9px; color:var(--text-muted);">hace 2h</span>
+                            </div>
+                            <p style="font-size:11px; color:var(--text-muted); margin-top:2px;">El administrador ha marcado el caso en estado "Revisión". Revisa tu correo.</p>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--border-color);">
+                        <div style="width:36px; height:36px; border-radius:10px; background:rgba(0,172,193,0.1); color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                            <i class="fas fa-exchange-alt" style="font-size:16px;"></i>
+                        </div>
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <strong style="font-size:12px; color:var(--text-main);">Nueva Oferta de Mercado</strong>
+                                <span style="font-size:9px; color:var(--text-muted);">ayer</span>
+                            </div>
+                            <p style="font-size:11px; color:var(--text-muted); margin-top:2px;">Andrés Quiliche ha publicado una nueva oferta PEN/USD con tasa de 3.780.</p>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:12px; padding:12px 0;">
+                        <div style="width:36px; height:36px; border-radius:10px; background:rgba(239,68,68,0.1); color:var(--danger); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                            <i class="fas fa-user-lock" style="font-size:16px;"></i>
+                        </div>
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <strong style="font-size:12px; color:var(--text-main);">Seguridad de Cuenta</strong>
+                                <span style="font-size:9px; color:var(--text-muted);">hace 3d</span>
+                            </div>
+                            <p style="font-size:11px; color:var(--text-muted); margin-top:2px;">Recuerda no compartir tus credenciales ni enviar comprobantes falsos.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── ABOUT ── -->
+            <div id="view-about" class="view hidden">
+                <div class="page-header">
+                    <div class="back-btn" onclick="navigateTo('view-profile',document.getElementById('nav-profile'))"><i class="fas fa-chevron-left"></i></div>
+                    <h4>Acerca de Perú Exchange</h4>
+                </div>
+                <div class="card" style="text-align:center; padding:24px 16px;">
+                    <div style="width:64px; height:64px; border-radius:18px; background:linear-gradient(135deg,var(--primary),var(--primary-light)); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; box-shadow:0 10px 25px rgba(0,172,193,0.3);">
+                        <i class="fas fa-exchange-alt" style="font-size:30px; color:white;"></i>
+                    </div>
+                    <h3 style="font-weight:800; font-size:18px; color:var(--text-main);">Perú Exchange P2P</h3>
+                    <p style="font-size:11px; color:var(--primary); font-weight:700; margin-top:2px;">Fintech de Cambio de Divisas · Versión 2.1.4</p>
+                    
+                    <p style="font-size:12px; color:var(--text-muted); line-height:1.6; margin:16px 0;">
+                        Somos la plataforma líder en el Perú para el intercambio de divisas entre personas (Peer-to-Peer), conectando compradores y vendedores con las mejores tasas del mercado, garantizando seguridad y rapidez en cada transacción mediante nuestro sistema de fondos en custodia (Escrow).
+                    </p>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:20px 0; text-align:left;">
+                        <div style="background:rgba(0,172,193,0.05); border:1px solid rgba(0,172,193,0.2); border-radius:12px; padding:12px;">
+                            <i class="fas fa-shield-alt" style="color:var(--primary); font-size:18px; margin-bottom:6px;"></i>
+                            <h5 style="font-size:12px; font-weight:700; color:var(--text-main);">Regulados SBS</h5>
+                            <p style="font-size:10px; color:var(--text-muted); margin-top:2px;">Inscritos en el registro de Casas de Cambio de la SBS.</p>
+                        </div>
+                        <div style="background:rgba(16,185,129,0.05); border:1px solid rgba(16,185,129,0.2); border-radius:12px; padding:12px;">
+                            <i class="fas fa-bolt" style="color:var(--success); font-size:18px; margin-bottom:6px;"></i>
+                            <h5 style="font-size:12px; font-weight:700; color:var(--text-main);">Tecnología IA</h5>
+                            <p style="font-size:10px; color:var(--text-muted); margin-top:2px;">Validación OCR de comprobantes en segundos.</p>
+                        </div>
+                    </div>
+
+                    <div style="border-top:1px solid var(--border-color); padding-top:16px; font-size:10px; color:var(--text-muted);">
+                        <p>© 2026 Perú Exchange S.A.C. Todos los derechos reservados.</p>
+                        <p style="margin-top:4px;">RUC: 20601234567 · Lima, Perú</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── HELP CENTER ── -->
+            <div id="view-help" class="view hidden">
+                <div class="page-header">
+                    <div class="back-btn" onclick="navigateTo('view-profile',document.getElementById('nav-profile'))"><i class="fas fa-chevron-left"></i></div>
+                    <h4>Centro de Ayuda</h4>
+                </div>
+
+                <div class="card" style="margin-bottom:14px;">
+                    <h5 style="font-size:13px; font-weight:700; color:var(--text-main); margin-bottom:12px;"><i class="fas fa-headset" style="color:var(--primary); margin-right:6px;"></i> Canales de Atención Directa</h5>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                        <a href="https://wa.me/51987654321" target="_blank" style="text-decoration:none;">
+                            <div style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); border-radius:12px; padding:10px; text-align:center; color:var(--success);">
+                                <i class="fab fa-whatsapp" style="font-size:22px; margin-bottom:4px;"></i>
+                                <p style="font-size:11px; font-weight:700;">WhatsApp</p>
+                                <p style="font-size:9px; opacity:0.8;">Atención 24/7</p>
+                            </div>
+                        </a>
+                        <div style="background:rgba(0,172,193,0.1); border:1px solid rgba(0,172,193,0.3); border-radius:12px; padding:10px; text-align:center; color:var(--primary); cursor:pointer;" onclick="showToast('success','Correo copiado: support@peruexchange.com')">
+                            <i class="fas fa-envelope" style="font-size:22px; margin-bottom:4px;"></i>
+                            <p style="font-size:11px; font-weight:700;">Soporte Correo</p>
+                            <p style="font-size:9px; opacity:0.8;">support@peruexchange.com</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-title"><i class="fas fa-question-circle"></i> Preguntas Frecuentes (FAQ)</div>
+                <div class="card" style="padding:0;">
+                    <div style="padding:14px; border-bottom:1px solid var(--border-color);">
+                        <strong style="font-size:12px; color:var(--text-main); display:block; margin-bottom:4px;"><i class="fas fa-circle" style="font-size:6px; color:var(--primary); vertical-align:middle; margin-right:6px;"></i>¿Cómo funciona el sistema P2P?</strong>
+                        <p style="font-size:11px; color:var(--text-muted); line-height:1.5;">El P2P permite cambiar divisas directamente con otras personas. Al iniciar una compra, los fondos del vendedor quedan congelados en garantía (Escrow) hasta que confirmes el pago.</p>
+                    </div>
+                    <div style="padding:14px; border-bottom:1px solid var(--border-color);">
+                        <strong style="font-size:12px; color:var(--text-main); display:block; margin-bottom:4px;"><i class="fas fa-circle" style="font-size:6px; color:var(--primary); vertical-align:middle; margin-right:6px;"></i>¿Qué hago si el vendedor no libera mis fondos?</strong>
+                        <p style="font-size:11px; color:var(--text-muted); line-height:1.5;">Puedes presionar el botón "Abrir Disputa". Nuestro equipo de arbitraje revisará el voucher subido y el chat para liberar los fondos a tu favor en minutos.</p>
+                    </div>
+                    <div style="padding:14px; border-bottom:1px solid var(--border-color);">
+                        <strong style="font-size:12px; color:var(--text-main); display:block; margin-bottom:4px;"><i class="fas fa-circle" style="font-size:6px; color:var(--primary); vertical-align:middle; margin-right:6px;"></i>¿Cuánto tiempo tengo para pagar?</strong>
+                        <p style="font-size:11px; color:var(--text-muted); line-height:1.5;">Cada oferta tiene un tiempo límite especificado (generalmente 15 minutos). Si no realizas el pago en ese lapso, la orden se cancela automáticamente.</p>
+                    </div>
+                    <div style="padding:14px;">
+                        <strong style="font-size:12px; color:var(--text-main); display:block; margin-bottom:4px;"><i class="fas fa-circle" style="font-size:6px; color:var(--primary); vertical-align:middle; margin-right:6px;"></i>¿Es seguro subir mi DNI y datos bancarios?</strong>
+                        <p style="font-size:11px; color:var(--text-muted); line-height:1.5;">Sí, cumplimos con estrictas normativas de protección de datos personales (Ley N° 29733) y encriptación de nivel bancario.</p>
+                    </div>
+                </div>
+            </div>
+
         </div><!-- /phone-screen -->
 
         <!-- ── CONFIRM OVERLAY ── -->
@@ -1942,7 +2093,8 @@ function doRegister() {
     if (!name || !email) { showToast('error', 'Completa todos los campos.'); return; }
     if (!dni || dni.length < 8) { showToast('error', 'Ingresa un DNI válido (mín. 8 dígitos).'); return; }
     if (!terms) { showToast('error', 'Acepta los términos de uso.'); return; }
-    if (!contractSigned) { showToast('error', 'Debes firmar el contrato de registro P2P.'); return; }
+    
+    contractSigned = false; // Reiniciar estado del contrato
     // Save registration data temporarily
     window._pendingReg = { name, email, dni };
     // Fill KYC preview with user data
@@ -2522,6 +2674,12 @@ function simulateContractSign() {
         document.getElementById('reg-signature-done').classList.remove('hidden');
         const now = new Date();
         document.getElementById('reg-sign-date').innerText = `Firmado el ${now.toLocaleDateString('es-PE')} a las ${now.toLocaleTimeString('es-PE', {hour:'2-digit', minute:'2-digit'})}`;
+        
+        const btnComplete = document.getElementById('btn-complete-kyc');
+        if (btnComplete) {
+            btnComplete.disabled = false;
+            btnComplete.style.opacity = '1';
+        }
         showToast('success', 'Contrato firmado exitosamente.');
     }, 1500);
 }
@@ -2581,6 +2739,7 @@ function startPartialTx(offerId) {
     document.getElementById('st-1').className = 'step active';
     document.getElementById('tl-fill').style.width = '0%';
     document.getElementById('tx-actions').classList.add('hidden');
+    document.getElementById('btn-cancel-tx').classList.remove('hidden');
     // Reset voucher zone
     const vz = document.getElementById('voucher-zone');
     vz.style.pointerEvents = 'auto';
@@ -2646,6 +2805,7 @@ function startTx(id) {
     document.getElementById('st-1').className = 'step active';
     document.getElementById('tl-fill').style.width = '0%';
     document.getElementById('tx-actions').classList.add('hidden');
+    document.getElementById('btn-cancel-tx').classList.remove('hidden');
     // Reset voucher zone
     const vz = document.getElementById('voucher-zone');
     vz.style.pointerEvents = 'auto';
@@ -2794,6 +2954,7 @@ function doOCR() {
         document.getElementById('tx-timer').innerText = 'VOUCHER SUBIDO';
         document.getElementById('tx-timer').style.color = 'var(--primary-mint)';
         document.getElementById('tx-actions').classList.remove('hidden');
+        document.getElementById('btn-cancel-tx').classList.add('hidden');
         showToast('success', 'OCR validado. Cambia a modo Vendedor para confirmar.');
         // Registrar en bandeja del vendedor
         const pending = JSON.parse(localStorage.getItem('p2p_vendor_pending'));
