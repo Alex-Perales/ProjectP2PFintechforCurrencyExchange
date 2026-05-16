@@ -1039,6 +1039,11 @@
                     <p style="font-size:10px; color:var(--text-muted); margin-top:4px;">IA OCR · Validación automática en segundos</p>
                 </div>
 
+                <!-- Botón Cancelar Transacción -->
+                <button class="btn btn-ghost" style="width:100%; margin-bottom:14px; color:var(--danger); border:1px solid rgba(239,68,68,0.3); background:rgba(239,68,68,0.03);" onclick="cancelTransaction()">
+                    <i class="fas fa-times-circle"></i> Cancelar Transacción
+                </button>
+
                 <div id="tx-actions" class="hidden">
                     <div class="waiting-box">
                         <i class="fas fa-clock" style="font-size:22px; color:var(--warning); flex-shrink:0;"></i>
@@ -2671,6 +2676,46 @@ function goBackFromTx() {
     clearInterval(txTimer);
     navigateTo('view-market', document.getElementById('nav-home'));
     showToast('info', 'Transacción pausada. Puedes continuarla después.');
+}
+
+function cancelTransaction() {
+    if (!activeTx) { showToast('error', 'No hay transacción activa.'); return; }
+    
+    // Detener temporizador
+    clearInterval(txTimer);
+    
+    // Si fue compra por partes, restaurar los fondos en la oferta original del mercado
+    if (activeTx.sellMode === 'partial' || activeTx.min < activeTx.max) {
+        const offers = JSON.parse(localStorage.getItem('p2p_offers')) || [];
+        const offerIdx = offers.findIndex(o => o.id === activeTx.id);
+        if (offerIdx >= 0) {
+            offers[offerIdx].amount += activeTx.amount;
+        } else {
+            // Si la oferta se había agotado, la volvemos a listar en el mercado
+            offers.push(activeTx);
+        }
+        localStorage.setItem('p2p_offers', JSON.stringify(offers));
+    }
+    
+    // Registrar en el historial como cancelada
+    const h = JSON.parse(localStorage.getItem('p2p_history')) || [];
+    h.unshift({ 
+        id: 'TX-' + Math.floor(Math.random() * 9000 + 1000), 
+        seller: activeTx.seller, 
+        amount: activeTx.amount, 
+        currency: activeTx.to, 
+        rate: activeTx.rate, 
+        status: 'cancelled', 
+        date: new Date().toISOString().split('T')[0] 
+    });
+    localStorage.setItem('p2p_history', JSON.stringify(h));
+    
+    // Limpiar transacción activa
+    localStorage.removeItem('p2p_activeTx');
+    activeTx = null;
+    
+    showToast('info', 'Transacción cancelada. Órdenes y fondos restaurados.');
+    navigateTo('view-market', document.getElementById('nav-home'));
 }
 
 function resumeTransaction() {
