@@ -342,137 +342,169 @@
         /* ── App label ── */
         .app-label { color: rgba(255,255,255,0.3); font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
 
-        /* ══ DISPUTE STYLES (US-ADM-01 / US-ADM-02 / US-ADM-03 / US-USER-01 / US-USER-02) ══ */
+        /* ── Enhanced Payment Cards ── */
+        .payment-card-item { display:flex; align-items:center; gap:12px; padding:14px; background:white; border:1px solid var(--border-color); border-radius:14px; margin-bottom:8px; transition:all 0.2s; }
+        .payment-card-item.is-default { border-color:var(--primary); background:rgba(0,172,193,0.03); }
+        .bank-logo-circle { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; color:white; flex-shrink:0; }
+        .payment-card-info { flex:1; }
+        .payment-card-name { font-size:13px; font-weight:700; color:var(--text-main); }
+        .payment-card-num { font-size:11px; color:var(--text-muted); margin-top:2px; }
+        .payment-card-actions { display:flex; gap:6px; align-items:center; }
+        .default-badge { background:rgba(0,172,193,0.1); color:var(--primary); padding:3px 8px; border-radius:8px; font-size:9px; font-weight:800; }
+        .set-default-btn, .delete-card-btn { background:none; border:1px solid var(--border-color); width:30px; height:30px; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--text-muted); transition:all 0.2s; }
+        .set-default-btn:hover { border-color:var(--warning); color:var(--warning); }
+        .delete-card-btn:hover { border-color:var(--danger); color:var(--danger); }
 
-        /* Status pills extended */
-        .status-pill.en-revision { background: rgba(245,158,11,0.12); color: var(--warning); }
-        .status-pill.resuelta    { background: rgba(16,185,129,0.12); color: var(--success); }
-        .status-pill.pendiente   { background: rgba(100,116,139,0.1); color: var(--text-muted); }
-        .status-pill.arbitraje   { background: rgba(239,68,68,0.12);  color: var(--danger); }
+        /* ── Reviews ── */
+        .review-item { border-bottom:1px solid var(--border-color); padding:12px 0; }
+        .review-item:last-child { border-bottom:none; }
+        .review-stars { color:var(--warning); font-size:12px; letter-spacing:1px; }
+        .review-comment { font-size:11px; color:var(--text-muted); margin-top:6px; line-height:1.4; }
+        .review-meta { font-size:10px; color:#94A3B8; margin-top:4px; }
+        .star-bar { display:flex; align-items:center; gap:8px; margin-bottom:4px; }
+        .star-bar-label { font-size:11px; width:12px; text-align:right; color:var(--text-muted); font-weight:700; }
+        .star-bar-track { flex:1; height:6px; background:var(--border-color); border-radius:3px; overflow:hidden; }
+        .star-bar-fill { height:100%; border-radius:3px; background:var(--warning); transition:width 0.5s ease; }
+        .star-bar-count { font-size:10px; color:var(--text-muted); width:20px; }
 
-        /* Admin dispute list card (US-ADM-01) */
-        .adm-dispute-row {
-            background: white; border-radius: 14px; border: 1px solid var(--border-color);
-            padding: 14px; margin-bottom: 10px; cursor: pointer;
-            transition: all 0.2s; display: flex; justify-content: space-between; align-items: flex-start;
-        }
-        .adm-dispute-row:hover { border-color: var(--primary); box-shadow: 0 4px 16px rgba(0,172,193,0.1); transform: translateY(-1px); }
-        .adm-dispute-row.pendiente-row  { border-left: 4px solid var(--text-muted); }
-        .adm-dispute-row.revision-row   { border-left: 4px solid var(--warning); }
-        .adm-dispute-row.resuelta-row   { border-left: 4px solid var(--success); }
-        .adm-dispute-row.arbitraje-row  { border-left: 4px solid var(--danger); }
+        /* ── TX Detail ── */
+        .tx-detail-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border-color); font-size:12px; }
+        .tx-detail-row:last-child { border-bottom:none; }
+        .tx-detail-label { color:var(--text-muted); font-weight:600; }
+        .tx-detail-value { font-weight:700; color:var(--text-main); text-align:right; max-width:55%; }
+
+        /* ── Complaints ── */
+        .complaint-card { background:white; border:1px solid var(--border-color); border-radius:14px; padding:14px; margin-bottom:10px; }
+        .complaint-card.open { border-left:4px solid var(--warning); }
+        .complaint-card.resolved { border-left:4px solid var(--success); }
+
+        /* ── Confirm Overlay ── */
+        .confirm-overlay { position:absolute; inset:0; background:rgba(0,0,0,0.55); display:flex; align-items:center; justify-content:center; z-index:400; border-radius:34px; padding:20px; }
+        .confirm-overlay.hidden { display:none !important; }
+        .confirm-box { background:white; border-radius:22px; padding:22px; width:100%; box-shadow:0 20px 60px rgba(0,0,0,0.25); animation:popIn 0.25s ease; }
+        @keyframes popIn { from { opacity:0; transform:scale(0.92); } to { opacity:1; transform:scale(1); } }
+
+        /* ── My Offers ── */
+        .my-offer-card { background:white; border:1px solid var(--border-color); border-radius:16px; padding:14px; margin-bottom:10px; }
+        .my-offer-card .offer-owner-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:8px; background:rgba(0,172,193,0.08); color:var(--primary); font-size:10px; font-weight:800; }
+
+        /* ── Enhanced Status Pills ── */
+        .status-pill.open { background:rgba(245,158,11,0.1); color:var(--warning); }
+
+        /* ── Search box ── */
+        .search-box { position:relative; margin-bottom:12px; }
+        .search-box input { width:100%; padding:10px 14px 10px 36px; border:1.5px solid var(--border-color); border-radius:12px; font-size:12px; outline:none; background:white; }
+        .search-box input:focus { border-color:var(--primary); }
+        .search-box i { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); font-size:13px; }
+
+        /* ── KYC Verification ── */
+        .kyc-step-card { background:white; border:2px dashed var(--border-color); border-radius:18px; padding:20px; text-align:center; margin-bottom:14px; cursor:pointer; transition:all 0.3s; position:relative; overflow:hidden; }
+        .kyc-step-card:hover { border-color:var(--primary); background:rgba(0,172,193,0.02); }
+        .kyc-step-card.uploading { border-color:var(--warning); border-style:solid; cursor:default; }
+        .kyc-step-card.done { border-color:var(--success); border-style:solid; background:rgba(16,185,129,0.03); cursor:default; }
+        .kyc-step-card .kyc-icon { font-size:36px; margin-bottom:10px; display:block; }
+        .kyc-step-card .kyc-title { font-size:13px; font-weight:800; color:var(--text-main); }
+        .kyc-step-card .kyc-subtitle { font-size:10px; color:var(--text-muted); margin-top:4px; }
+        .kyc-progress { height:4px; background:var(--border-color); border-radius:2px; margin-top:12px; overflow:hidden; }
+        .kyc-progress-fill { height:100%; background:linear-gradient(90deg,var(--primary),var(--primary-mint)); border-radius:2px; transition:width 0.3s ease; }
+        .kyc-preview { width:100%; height:120px; border-radius:12px; margin-top:10px; object-fit:cover; display:none; }
+        .kyc-preview.show { display:block; }
+        .kyc-doc-preview { background:linear-gradient(135deg,#F1F5F9,#E2E8F0); border-radius:12px; padding:14px; margin-top:10px; display:none; position:relative; }
+        .kyc-doc-preview.show { display:block; }
+        .kyc-selfie-circle { width:100px; height:100px; border-radius:50%; background:linear-gradient(135deg,#E2E8F0,#CBD5E1); margin:10px auto 0; display:none; align-items:center; justify-content:center; overflow:hidden; }
+        .kyc-selfie-circle.show { display:flex; }
+        .kyc-steps-indicator { display:flex; justify-content:center; gap:8px; margin-bottom:18px; }
+        .kyc-dot { width:10px; height:10px; border-radius:50%; background:var(--border-color); transition:all 0.3s; }
+        .kyc-dot.active { background:var(--primary); transform:scale(1.3); }
+        .kyc-dot.done { background:var(--success); }
+
+        /* ── Admin dispute list card (US-ADM-01) ── */
+        .adm-dispute-row { background:white; border-radius:14px; border:1px solid var(--border-color); padding:14px; margin-bottom:10px; cursor:pointer; transition:all 0.2s; display:flex; justify-content:space-between; align-items:flex-start; }
+        .adm-dispute-row:hover { border-color:var(--primary); box-shadow:0 4px 16px rgba(0,172,193,0.1); transform:translateY(-1px); }
+        .adm-dispute-row.pendiente-row { border-left:4px solid var(--text-muted); }
+        .adm-dispute-row.revision-row  { border-left:4px solid var(--warning); }
+        .adm-dispute-row.resuelta-row  { border-left:4px solid var(--success); }
+        .adm-dispute-row.arbitraje-row { border-left:4px solid var(--danger); }
 
         /* Admin tabs (US-ADM-01 filter) */
-        .adm-tabs { display: flex; gap: 6px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 2px; }
-        .adm-tab  { flex-shrink: 0; padding: 5px 12px; border-radius: 20px; font-size: 10px; font-weight: 700;
-                    background: #F1F5F9; color: var(--text-muted); cursor: pointer; transition: all 0.2s; border: none; }
-        .adm-tab.active { background: var(--primary); color: white; }
+        .adm-tabs { display:flex; gap:6px; margin-bottom:12px; overflow-x:auto; padding-bottom:2px; }
+        .adm-tab { flex-shrink:0; padding:5px 12px; border-radius:20px; font-size:10px; font-weight:700; background:#F1F5F9; color:var(--text-muted); cursor:pointer; transition:all 0.2s; border:none; }
+        .adm-tab.active { background:var(--primary); color:white; }
 
         /* Detail view blocks (US-ADM-02) */
-        .detail-block {
-            background: #F8FAFC; border-radius: 12px; padding: 12px 14px; margin-bottom: 10px;
-            border: 1px solid var(--border-color);
-        }
-        .detail-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 12px; }
-        .detail-row:last-child { margin-bottom: 0; }
-        .detail-label { color: var(--text-muted); font-weight: 600; }
-        .detail-value { font-weight: 700; color: var(--text-main); text-align: right; max-width: 60%; }
+        .detail-block { background:#F8FAFC; border-radius:12px; padding:12px 14px; margin-bottom:10px; border:1px solid var(--border-color); }
+        .detail-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:12px; }
+        .detail-row:last-child { margin-bottom:0; }
+        .detail-label { color:var(--text-muted); font-weight:600; }
+        .detail-value { font-weight:700; color:var(--text-main); text-align:right; max-width:60%; }
 
         /* Evidence card (US-ADM-02) */
-        .evidence-card {
-            background: white; border: 1.5px dashed var(--border-color); border-radius: 12px;
-            padding: 12px; display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
-            cursor: pointer; transition: border-color 0.2s;
-        }
-        .evidence-card:hover { border-color: var(--primary); }
-        .evidence-thumb { width: 40px; height: 40px; border-radius: 10px; object-fit: cover; flex-shrink: 0;
-                          background: linear-gradient(135deg, var(--primary), var(--primary-light));
-                          display: flex; align-items: center; justify-content: center; }
+        .evidence-card { background:white; border:1.5px dashed var(--border-color); border-radius:12px; padding:12px; display:flex; align-items:center; gap:10px; margin-bottom:8px; cursor:pointer; transition:border-color 0.2s; }
+        .evidence-card:hover { border-color:var(--primary); }
+        .evidence-thumb { width:40px; height:40px; border-radius:10px; flex-shrink:0; background:linear-gradient(135deg,var(--primary),var(--primary-light)); display:flex; align-items:center; justify-content:center; }
 
         /* Resolution buttons (US-ADM-03) */
-        .resolution-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
-        .res-option {
-            border: 2px solid var(--border-color); border-radius: 14px; padding: 12px 14px;
-            cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 10px;
-            background: white;
-        }
-        .res-option:hover { transform: translateY(-1px); }
-        .res-option.selected-buyer  { border-color: var(--success); background: rgba(16,185,129,0.06); }
-        .res-option.selected-seller { border-color: var(--danger);  background: rgba(239,68,68,0.06); }
-        .res-option.selected-review { border-color: var(--warning); background: rgba(245,158,11,0.06); }
-        .res-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center;
-                    justify-content: center; font-size: 16px; flex-shrink: 0; }
+        .resolution-options { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+        .res-option { border:2px solid var(--border-color); border-radius:14px; padding:12px 14px; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:10px; background:white; }
+        .res-option:hover { transform:translateY(-1px); }
+        .res-option.selected-buyer  { border-color:var(--success); background:rgba(16,185,129,0.06); }
+        .res-option.selected-seller { border-color:var(--danger);  background:rgba(239,68,68,0.06); }
+        .res-option.selected-review { border-color:var(--warning); background:rgba(245,158,11,0.06); }
+        .res-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
 
-        /* User dispute list (US-USER-02) */
-        .user-dispute-card {
-            background: white; border-radius: 14px; border: 1px solid var(--border-color);
-            padding: 14px; margin-bottom: 10px;
-        }
-        .user-dispute-card.pending  { border-left: 4px solid var(--text-muted); }
-        .user-dispute-card.revision { border-left: 4px solid var(--warning); }
-        .user-dispute-card.resolved { border-left: 4px solid var(--success); }
-        .dispute-status-badge {
-            font-size: 9px; font-weight: 800; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;
-        }
-        .dispute-status-badge.pendiente  { background: rgba(100,116,139,0.1); color: var(--text-muted); }
-        .dispute-status-badge.revision   { background: rgba(245,158,11,0.12); color: var(--warning); }
-        .dispute-status-badge.resuelta   { background: rgba(16,185,129,0.12); color: var(--success); }
-        .dispute-status-badge.arbitraje  { background: rgba(239,68,68,0.12);  color: var(--danger); }
+        /* User dispute card (US-USER-02) */
+        .user-dispute-card { background:white; border-radius:14px; border:1px solid var(--border-color); padding:14px; margin-bottom:10px; }
+        .user-dispute-card.pending  { border-left:4px solid var(--text-muted); }
+        .user-dispute-card.revision { border-left:4px solid var(--warning); }
+        .user-dispute-card.resolved { border-left:4px solid var(--success); }
+        .dispute-status-badge { font-size:9px; font-weight:800; padding:3px 9px; border-radius:20px; text-transform:uppercase; letter-spacing:0.5px; }
+        .dispute-status-badge.pendiente { background:rgba(100,116,139,0.1); color:var(--text-muted); }
+        .dispute-status-badge.revision  { background:rgba(245,158,11,0.12); color:var(--warning); }
+        .dispute-status-badge.resuelta  { background:rgba(16,185,129,0.12); color:var(--success); }
+        .dispute-status-badge.arbitraje { background:rgba(239,68,68,0.12);  color:var(--danger); }
 
         /* Timeline dispute (US-USER-02 tracking) */
-        .dispute-timeline { display: flex; flex-direction: column; gap: 0; }
-        .dt-step { display: flex; gap: 10px; position: relative; }
-        .dt-step:not(:last-child)::before {
-            content: ''; position: absolute; left: 13px; top: 28px;
-            width: 2px; height: calc(100% + 4px); background: var(--border-color); z-index: 0;
-        }
-        .dt-step.done::before { background: var(--success); }
-        .dt-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border-color);
-                  background: white; display: flex; align-items: center; justify-content: center;
-                  font-size: 11px; z-index: 1; flex-shrink: 0; }
-        .dt-step.done .dt-dot { background: var(--success); border-color: var(--success); color: white; }
-        .dt-step.active .dt-dot { background: var(--warning); border-color: var(--warning); color: white; }
-        .dt-body { padding-bottom: 16px; flex: 1; }
-        .dt-title { font-size: 12px; font-weight: 700; color: var(--text-main); }
-        .dt-sub   { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+        .dispute-timeline { display:flex; flex-direction:column; gap:0; }
+        .dt-step { display:flex; gap:10px; position:relative; }
+        .dt-step:not(:last-child)::before { content:''; position:absolute; left:13px; top:28px; width:2px; height:calc(100% + 4px); background:var(--border-color); z-index:0; }
+        .dt-step.done::before { background:var(--success); }
+        .dt-dot { width:28px; height:28px; border-radius:50%; border:2px solid var(--border-color); background:white; display:flex; align-items:center; justify-content:center; font-size:11px; z-index:1; flex-shrink:0; }
+        .dt-step.done .dt-dot   { background:var(--success); border-color:var(--success); color:white; }
+        .dt-step.active .dt-dot { background:var(--warning); border-color:var(--warning); color:white; }
+        .dt-body { padding-bottom:16px; flex:1; }
+        .dt-title { font-size:12px; font-weight:700; color:var(--text-main); }
+        .dt-sub   { font-size:10px; color:var(--text-muted); margin-top:2px; }
 
         /* Register dispute form (US-USER-01) */
-        .tx-select-card {
-            background: white; border: 2px solid var(--border-color); border-radius: 12px;
-            padding: 12px 14px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .tx-select-card:hover { border-color: var(--primary); }
-        .tx-select-card.selected { border-color: var(--primary); background: rgba(0,172,193,0.04); }
-        .tx-select-card .tx-check { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border-color);
-                                     display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .tx-select-card.selected .tx-check { background: var(--primary); border-color: var(--primary); color: white; font-size: 10px; }
+        .tx-select-card { background:white; border:2px solid var(--border-color); border-radius:12px; padding:12px 14px; margin-bottom:8px; cursor:pointer; transition:all 0.2s; display:flex; justify-content:space-between; align-items:center; }
+        .tx-select-card:hover { border-color:var(--primary); }
+        .tx-select-card.selected { border-color:var(--primary); background:rgba(0,172,193,0.04); }
+        .tx-select-card .tx-check { width:20px; height:20px; border-radius:50%; border:2px solid var(--border-color); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .tx-select-card.selected .tx-check { background:var(--primary); border-color:var(--primary); color:white; font-size:10px; }
 
         /* Evidence uploader (US-USER-01) */
-        .evidence-uploader { border: 2px dashed var(--border-color); border-radius: 14px; padding: 18px;
-                              text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 12px; }
-        .evidence-uploader:hover { border-color: var(--primary); background: rgba(0,172,193,0.03); }
-        .evidence-uploader.uploaded { border-color: var(--success); background: rgba(16,185,129,0.04); }
+        .evidence-uploader { border:2px dashed var(--border-color); border-radius:14px; padding:18px; text-align:center; cursor:pointer; transition:all 0.2s; margin-bottom:12px; }
+        .evidence-uploader:hover { border-color:var(--primary); background:rgba(0,172,193,0.03); }
+        .evidence-uploader.uploaded { border-color:var(--success); background:rgba(16,185,129,0.04); }
 
         /* Confirm modal (US-ADM-03) */
-        .confirm-modal { position: absolute; inset: 0; background: rgba(0,0,0,0.55);
-                         display: flex; align-items: center; justify-content: center;
-                         z-index: 300; border-radius: 34px; padding: 20px; }
-        .confirm-modal.hidden { display: none !important; }
-        .confirm-modal-box { background: white; border-radius: 22px; padding: 22px; width: 100%;
-                             box-shadow: 0 20px 60px rgba(0,0,0,0.25); animation: popIn 0.25s ease; }
-        @keyframes popIn { from { opacity:0; transform: scale(0.92); } to { opacity:1; transform: scale(1); } }
+        .confirm-modal { position:absolute; inset:0; background:rgba(0,0,0,0.55); display:flex; align-items:center; justify-content:center; z-index:300; border-radius:34px; padding:20px; }
+        .confirm-modal.hidden { display:none !important; }
+        .confirm-modal-box { background:white; border-radius:22px; padding:22px; width:100%; box-shadow:0 20px 60px rgba(0,0,0,0.25); animation:popIn 0.25s ease; }
 
         /* Admin stats pills row */
-        .admin-pills-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
-        .admin-pill { background: rgba(255,255,255,0.07); border-radius: 20px; padding: 4px 10px;
-                      font-size: 10px; font-weight: 700; color: #94A3B8; border: 1px solid rgba(255,255,255,0.1); }
-        .admin-pill.danger  { color: var(--danger); border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); }
-        .admin-pill.success { color: var(--primary-mint); border-color: rgba(0,230,118,0.25); background: rgba(0,230,118,0.07); }
-        .admin-pill.warning { color: var(--warning); border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.07); }
+        .admin-pills-row { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+        .admin-pill { background:rgba(255,255,255,0.07); border-radius:20px; padding:4px 10px; font-size:10px; font-weight:700; color:#94A3B8; border:1px solid rgba(255,255,255,0.1); }
+        .admin-pill.danger  { color:var(--danger); border-color:rgba(239,68,68,0.3); background:rgba(239,68,68,0.08); }
+        .admin-pill.success { color:var(--primary-mint); border-color:rgba(0,230,118,0.25); background:rgba(0,230,118,0.07); }
+        .admin-pill.warning { color:var(--warning); border-color:rgba(245,158,11,0.3); background:rgba(245,158,11,0.07); }
 
         /* btn-warning */
-        .btn-warning { background: linear-gradient(135deg, var(--warning), #D97706); box-shadow: 0 4px 15px rgba(245,158,11,0.25); }
+        .btn-warning { background:linear-gradient(135deg,var(--warning),#D97706); box-shadow:0 4px 15px rgba(245,158,11,0.25); }
+
+        /* Status pills extended */
+        .status-pill.pendiente { background:rgba(100,116,139,0.1); color:var(--text-muted); }
+        .status-pill.arbitraje { background:rgba(239,68,68,0.12); color:var(--danger); }
     </style>
 </head>
 <body>
@@ -585,17 +617,55 @@
                         <input type="text" class="form-input" id="reg-name" placeholder="Ej. Carlos Mendoza">
                         <label class="form-label">Correo Electrónico</label>
                         <input type="email" class="form-input" id="reg-email" placeholder="correo@ejemplo.com">
+                        <label class="form-label">DNI / Documento de Identidad</label>
+                        <input type="text" class="form-input" id="reg-dni" placeholder="Ej. 72345678" maxlength="12">
+                        <p style="font-size:10px; color:var(--text-muted); margin-top:-8px; margin-bottom:12px;">Requerido para verificación KYC</p>
                         <label class="form-label">Contraseña</label>
                         <div class="input-group">
                             <input type="password" class="form-input" id="reg-pass" placeholder="Mínimo 8 caracteres">
                             <i class="fas fa-eye input-icon" onclick="togglePass('reg-pass',this)"></i>
                         </div>
-                        <label style="display:flex; align-items:center; gap:8px; margin-bottom:14px; font-size:12px; color:var(--text-muted); cursor:pointer;">
+                        <label style="display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:12px; color:var(--text-muted); cursor:pointer;">
                             <input type="checkbox" id="reg-terms" onchange="updateTermsAccept()"> Acepto los 
                             <span style="color:var(--primary); cursor:pointer;" onclick="event.stopPropagation(); navigateTo('view-terms')">Términos de Uso</span>
                             y 
                             <span style="color:var(--primary); cursor:pointer;" onclick="event.stopPropagation(); navigateTo('view-privacy')">Privacidad</span>
                         </label>
+
+                        <!-- Contrato de registro obligatorio -->
+                        <div style="background:rgba(245,158,11,0.06); border:1px solid rgba(245,158,11,0.25); border-radius:12px; padding:12px; margin-bottom:12px;">
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                                <i class="fas fa-file-signature" style="color:var(--warning); font-size:16px;"></i>
+                                <p style="font-size:12px; font-weight:700; color:var(--text-main);">Contrato de Registro P2P</p>
+                            </div>
+                            <div style="max-height:120px; overflow-y:auto; background:white; border:1px solid var(--border-color); border-radius:10px; padding:10px; margin-bottom:10px; font-size:10px; color:var(--text-muted); line-height:1.6;">
+                                <p style="font-weight:700; color:var(--text-main); margin-bottom:6px;">CONTRATO DE USUARIO – PERÚ EXCHANGE P2P</p>
+                                <p><strong>CLÁUSULA 1 – RESPONSABILIDAD FINANCIERA:</strong> El usuario se compromete a realizar las transferencias de dinero en los montos y plazos acordados. Perú Exchange actúa como intermediario y no se responsabiliza por pérdidas derivadas de incumplimiento entre partes.</p>
+                                <p style="margin-top:4px;"><strong>CLÁUSULA 2 – FONDOS EN CUSTODIA:</strong> Los fondos se mantienen en custodia electrónica hasta que ambas partes confirmen la transacción. En caso de disputa, se activa el arbitraje interno.</p>
+                                <p style="margin-top:4px;"><strong>CLÁUSULA 3 – NO LLEGADA DE FONDOS:</strong> Si una de las partes alega no haber recibido los fondos, se abrirá un proceso de arbitraje con revisión de evidencias (vouchers, capturas, datos bancarios). La parte que no presente evidencia suficiente perderá la disputa.</p>
+                                <p style="margin-top:4px;"><strong>CLÁUSULA 4 – RECLAMOS Y PÉRDIDAS:</strong> Todo reclamo deberá presentarse dentro de las 48 horas posteriores a la transacción. Pasado este plazo, la plataforma no se hace responsable. Los reclamos se resuelven en un máximo de 5 días hábiles.</p>
+                                <p style="margin-top:4px;"><strong>CLÁUSULA 5 – FRAUDE Y SANCIONES:</strong> Cualquier intento de fraude (vouchers falsos, suplantación, lavado) resultará en la suspensión permanente de la cuenta y reporte a las autoridades competentes.</p>
+                                <p style="margin-top:4px;"><strong>CLÁUSULA 6 – VERIFICACIÓN KYC:</strong> Es obligatorio completar la verificación de identidad (DNI frontal, posterior y selfie). Sin esta verificación no se podrán realizar operaciones.</p>
+                                <p style="margin-top:4px;"><strong>CLÁUSULA 7 – JURISDICCIÓN:</strong> Este contrato se rige bajo las leyes de la República del Perú. Las disputas no resueltas internamente se someterán a la jurisdicción de Lima.</p>
+                            </div>
+
+                            <!-- Firma digital simulada -->
+                            <div id="reg-signature-area" style="border:2px dashed var(--border-color); border-radius:10px; padding:14px; text-align:center; cursor:pointer; transition:all 0.2s; margin-bottom:8px;" onclick="simulateContractSign()">
+                                <i class="fas fa-pen-fancy" style="font-size:22px; color:var(--text-muted); display:block; margin-bottom:6px;"></i>
+                                <p style="font-size:11px; font-weight:700; color:var(--text-main);">Toca para firmar el contrato</p>
+                                <p style="font-size:9px; color:var(--text-muted); margin-top:2px;">Tu firma digital confirma que aceptas todas las cláusulas</p>
+                            </div>
+                            <div id="reg-signature-done" class="hidden" style="background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.25); border-radius:10px; padding:10px 12px; display:flex; align-items:center; gap:10px;">
+                                <div style="width:36px; height:36px; border-radius:10px; background:var(--success); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                    <i class="fas fa-check" style="color:white; font-size:14px;"></i>
+                                </div>
+                                <div>
+                                    <p style="font-size:11px; font-weight:700; color:var(--success);">Contrato firmado digitalmente</p>
+                                    <p style="font-size:9px; color:var(--text-muted);" id="reg-sign-date">—</p>
+                                </div>
+                            </div>
+                        </div>
+
                         <button class="btn btn-success" onclick="doRegister()">Crear mi Cuenta</button>
                         <div style="display:flex; align-items:center; gap:8px; margin:16px 0; opacity:0.4;">
                             <hr style="flex:1; border:none; border-top:1px solid var(--border-color);">
@@ -610,6 +680,124 @@
                 <p style="text-align:center; font-size:10px; color:var(--text-muted); margin-top:10px;">
                     Modo admin: <strong>admin@p2p.com</strong>
                 </p>
+            </div>
+
+            <!-- ── KYC VERIFICATION ── -->
+            <div id="view-kyc" class="view hidden">
+                <div class="page-header">
+                    <div class="back-btn" onclick="navigateTo('view-auth')"><i class="fas fa-chevron-left"></i></div>
+                    <h4>Verificación KYC</h4>
+                </div>
+
+                <div style="text-align:center; margin-bottom:14px;">
+                    <div style="width:60px; height:60px; background:linear-gradient(135deg,var(--primary),var(--primary-mint)); border-radius:18px; display:flex; align-items:center; justify-content:center; margin:0 auto 10px;">
+                        <i class="fas fa-id-card" style="font-size:26px; color:white;"></i>
+                    </div>
+                    <h3 style="font-weight:800; font-size:18px; color:var(--text-main);">Valida tu Identidad</h3>
+                    <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">Sube las fotos de tu DNI y una selfie para verificar tu cuenta</p>
+                </div>
+
+                <div class="kyc-steps-indicator">
+                    <div class="kyc-dot active" id="kyc-dot-1"></div>
+                    <div class="kyc-dot" id="kyc-dot-2"></div>
+                    <div class="kyc-dot" id="kyc-dot-3"></div>
+                </div>
+
+                <!-- Step 1: DNI Front -->
+                <div class="kyc-step-card" id="kyc-step-1" onclick="startKycUpload(1)">
+                    <i class="fas fa-address-card kyc-icon" style="color:var(--primary);"></i>
+                    <p class="kyc-title">DNI · Cara Frontal</p>
+                    <p class="kyc-subtitle">Toca para capturar o subir la parte delantera de tu DNI</p>
+                    <div class="kyc-doc-preview" id="kyc-preview-1">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:50px; height:38px; background:linear-gradient(135deg,var(--primary),#0288D1); border-radius:6px; display:flex; align-items:center; justify-content:center;">
+                                <i class="fas fa-flag" style="color:white; font-size:14px;"></i>
+                            </div>
+                            <div style="flex:1; text-align:left;">
+                                <p style="font-size:8px; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px;">República del Perú</p>
+                                <p style="font-size:11px; font-weight:800; color:var(--text-main); margin-top:2px;">DOCUMENTO NACIONAL DE IDENTIDAD</p>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:10px; margin-top:10px;">
+                            <div style="width:55px; height:65px; background:#CBD5E1; border-radius:4px; display:flex; align-items:center; justify-content:center;">
+                                <i class="fas fa-user" style="color:#94A3B8; font-size:20px;"></i>
+                            </div>
+                            <div style="flex:1; text-align:left;">
+                                <p style="font-size:8px; color:#94A3B8; font-weight:700;">APELLIDOS</p>
+                                <p style="font-size:11px; font-weight:700; color:var(--text-main);" id="kyc-name-display">MENDOZA LÓPEZ</p>
+                                <p style="font-size:8px; color:#94A3B8; font-weight:700; margin-top:4px;">NOMBRES</p>
+                                <p style="font-size:11px; font-weight:700; color:var(--text-main);" id="kyc-firstname-display">CARLOS ANDRÉS</p>
+                                <p style="font-size:8px; color:#94A3B8; font-weight:700; margin-top:4px;">DNI Nº</p>
+                                <p style="font-size:12px; font-weight:800; color:var(--primary);" id="kyc-dni-display">72345678</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="kyc-progress hidden" id="kyc-progress-1"><div class="kyc-progress-fill" id="kyc-fill-1" style="width:0%"></div></div>
+                </div>
+
+                <!-- Step 2: DNI Back -->
+                <div class="kyc-step-card" id="kyc-step-2" style="opacity:0.5; pointer-events:none;" onclick="startKycUpload(2)">
+                    <i class="fas fa-credit-card kyc-icon" style="color:var(--warning); transform:scaleX(-1);"></i>
+                    <p class="kyc-title">DNI · Cara Posterior</p>
+                    <p class="kyc-subtitle">Toca para capturar o subir el reverso de tu DNI</p>
+                    <div class="kyc-doc-preview" id="kyc-preview-2">
+                        <div style="text-align:left;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <p style="font-size:8px; font-weight:800; color:var(--primary); text-transform:uppercase; letter-spacing:1px;">Reverso DNI</p>
+                                <i class="fas fa-qrcode" style="font-size:20px; color:#94A3B8;"></i>
+                            </div>
+                            <div style="background:white; border-radius:4px; padding:6px 8px; margin-bottom:6px;">
+                                <p style="font-size:8px; color:#94A3B8; font-weight:700;">DIRECCIÓN</p>
+                                <p style="font-size:10px; color:var(--text-main);">Av. Javier Prado Este 1234, San Isidro</p>
+                            </div>
+                            <div style="display:flex; gap:8px;">
+                                <div style="flex:1; background:white; border-radius:4px; padding:6px 8px;">
+                                    <p style="font-size:8px; color:#94A3B8; font-weight:700;">F. NACIMIENTO</p>
+                                    <p style="font-size:10px; color:var(--text-main);">15/03/1995</p>
+                                </div>
+                                <div style="flex:1; background:white; border-radius:4px; padding:6px 8px;">
+                                    <p style="font-size:8px; color:#94A3B8; font-weight:700;">SEXO</p>
+                                    <p style="font-size:10px; color:var(--text-main);">M</p>
+                                </div>
+                            </div>
+                            <div style="margin-top:8px; background:#1E293B; border-radius:4px; padding:4px 8px;">
+                                <p style="font-family:monospace; font-size:8px; color:#94A3B8; letter-spacing:1px;">IDPER72345678&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="kyc-progress hidden" id="kyc-progress-2"><div class="kyc-progress-fill" id="kyc-fill-2" style="width:0%"></div></div>
+                </div>
+
+                <!-- Step 3: Selfie -->
+                <div class="kyc-step-card" id="kyc-step-3" style="opacity:0.5; pointer-events:none;" onclick="startKycUpload(3)">
+                    <i class="fas fa-camera kyc-icon" style="color:var(--success);"></i>
+                    <p class="kyc-title">Selfie de Verificación</p>
+                    <p class="kyc-subtitle">Toca para tomar una foto de tu rostro para validación biométrica</p>
+                    <div class="kyc-selfie-circle" id="kyc-preview-3">
+                        <div style="text-align:center;">
+                            <i class="fas fa-user-check" style="font-size:36px; color:var(--success);"></i>
+                        </div>
+                    </div>
+                    <div class="kyc-progress hidden" id="kyc-progress-3"><div class="kyc-progress-fill" id="kyc-fill-3" style="width:0%"></div></div>
+                </div>
+
+                <!-- KYC Result -->
+                <div id="kyc-result" class="hidden">
+                    <div class="card" style="text-align:center; border:2px solid var(--success); background:rgba(16,185,129,0.03);">
+                        <div style="width:56px; height:56px; background:linear-gradient(135deg,var(--success),#059669); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; box-shadow:0 8px 20px rgba(16,185,129,0.3);">
+                            <i class="fas fa-check" style="font-size:24px; color:white;"></i>
+                        </div>
+                        <h4 style="font-weight:800; font-size:16px; color:var(--text-main);">¡Verificación Completada!</h4>
+                        <p style="font-size:11px; color:var(--text-muted); margin-top:6px;">Tu identidad ha sido validada correctamente. Ya puedes operar en la plataforma.</p>
+                        <div style="display:flex; gap:6px; justify-content:center; margin-top:12px; flex-wrap:wrap;">
+                            <span class="verified-badge"><i class="fas fa-check-circle"></i> DNI Verificado</span>
+                            <span class="verified-badge" style="background:rgba(16,185,129,0.1); color:var(--success);"><i class="fas fa-user-check"></i> Biometría OK</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-success" onclick="completeKyc()">
+                        <i class="fas fa-arrow-right"></i> Continuar al Login
+                    </button>
+                </div>
             </div>
 
             <!-- ── MARKET ── -->
@@ -681,7 +869,7 @@
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:4px;">
                         <div>
                             <label class="form-label">Ofrezco</label>
-                            <select class="form-select" id="pub-from">
+                            <select class="form-select" id="pub-from" onchange="updatePublishPreview()">
                                 <option value="USD">🇺🇸 USD</option>
                                 <option value="PEN">🇵🇪 PEN</option>
                                 <option value="EUR">🇪🇺 EUR</option>
@@ -689,7 +877,7 @@
                         </div>
                         <div>
                             <label class="form-label">Recibo</label>
-                            <select class="form-select" id="pub-to">
+                            <select class="form-select" id="pub-to" onchange="updatePublishPreview()">
                                 <option value="PEN">🇵🇪 PEN</option>
                                 <option value="USD">🇺🇸 USD</option>
                                 <option value="EUR">🇪🇺 EUR</option>
@@ -697,19 +885,64 @@
                         </div>
                     </div>
                     <label class="form-label">Monto Total Disponible</label>
-                    <input type="number" class="form-input" id="pub-amount" placeholder="Ej. 500">
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                        <div>
-                            <label class="form-label">Mín. por op.</label>
-                            <input type="number" class="form-input" id="pub-min" placeholder="Ej. 50">
+                    <input type="number" class="form-input" id="pub-amount" placeholder="Ej. 500" oninput="updatePublishPreview()">
+
+                    <!-- Modo de venta -->
+                    <label class="form-label" style="margin-top:4px;">Modalidad de Venta</label>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px;">
+                        <div id="pub-mode-full" class="res-option selected-buyer" style="padding:10px; text-align:center; cursor:pointer;" onclick="setPublishMode('full')">
+                            <div style="flex:1; text-align:center;">
+                                <i class="fas fa-coins" style="font-size:18px; color:var(--success); display:block; margin-bottom:4px;"></i>
+                                <p style="font-size:11px; font-weight:700; color:var(--success);">Venta Completa</p>
+                                <p style="font-size:9px; color:var(--text-muted); margin-top:2px;">Vendo todo el monto</p>
+                            </div>
                         </div>
-                        <div>
-                            <label class="form-label">Máx. por op.</label>
-                            <input type="number" class="form-input" id="pub-max" placeholder="Ej. 500">
+                        <div id="pub-mode-partial" class="res-option" style="padding:10px; text-align:center; cursor:pointer;" onclick="setPublishMode('partial')">
+                            <div style="flex:1; text-align:center;">
+                                <i class="fas fa-puzzle-piece" style="font-size:18px; color:var(--primary); display:block; margin-bottom:4px;"></i>
+                                <p style="font-size:11px; font-weight:700; color:var(--primary);">Venta por Partes</p>
+                                <p style="font-size:9px; color:var(--text-muted); margin-top:2px;">El comprador elige cuánto</p>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Límites (solo para venta por partes) -->
+                    <div id="pub-limits-section" class="hidden">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                            <div>
+                                <label class="form-label">Mín. por operación</label>
+                                <input type="number" class="form-input" id="pub-min" placeholder="Ej. 50" oninput="updatePublishPreview()">
+                            </div>
+                            <div>
+                                <label class="form-label">Máx. por operación</label>
+                                <input type="number" class="form-input" id="pub-max" placeholder="Ej. 250" oninput="updatePublishPreview()">
+                            </div>
+                        </div>
+                    </div>
+
                     <label class="form-label">Mi Tasa</label>
-                    <input type="number" step="0.001" class="form-input" id="pub-rate" value="3.778">
+                    <input type="number" step="0.001" class="form-input" id="pub-rate" value="3.778" oninput="updatePublishPreview()">
+
+                    <!-- Vista previa de conversión automática -->
+                    <div id="pub-conversion-preview" class="hidden" style="background:linear-gradient(135deg,rgba(0,172,193,0.06),rgba(0,230,118,0.04)); border:1px solid rgba(0,172,193,0.2); border-radius:12px; padding:12px 14px; margin-bottom:12px;">
+                        <p style="font-size:10px; font-weight:700; color:var(--primary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">📊 Vista Previa de Conversión</p>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                            <span style="font-size:12px; color:var(--text-muted);">Ofreces</span>
+                            <strong style="font-size:14px; color:var(--text-main);" id="pub-preview-from">—</strong>
+                        </div>
+                        <div style="text-align:center; margin:4px 0;">
+                            <i class="fas fa-exchange-alt" style="color:var(--primary); font-size:14px;"></i>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+                            <span style="font-size:12px; color:var(--text-muted);">Recibes</span>
+                            <strong style="font-size:16px; color:var(--success);" id="pub-preview-to">—</strong>
+                        </div>
+                        <div id="pub-preview-partial" class="hidden" style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(0,172,193,0.15);">
+                            <p style="font-size:10px; color:var(--text-muted); margin-bottom:4px;">Rango de compra:</p>
+                            <p style="font-size:12px; font-weight:700; color:var(--primary);" id="pub-preview-range">—</p>
+                        </div>
+                    </div>
+
                     <label class="form-label">Banco de Recepción</label>
                     <select class="form-select" id="pub-bank">
                         <option value="bcp">BCP</option>
@@ -863,6 +1096,10 @@
             <!-- ── HISTORY ── -->
             <div id="view-history" class="view hidden">
                 <div class="page-header"><h4>Historial de Operaciones</h4></div>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="history-search" placeholder="Buscar por ID o vendedor..." oninput="searchHistory()">
+                </div>
                 <div class="chips-container" id="history-chips">
                     <span class="chip active" onclick="filterHistory('all',this)">Todos</span>
                     <span class="chip" onclick="filterHistory('completed',this)">Completados</span>
@@ -906,6 +1143,18 @@
                     </div>
                     <div class="menu-item" onclick="navigateTo('view-history')">
                         <div><i class="fas fa-history" style="width:20px; color:var(--primary); margin-right:10px;"></i>Historial de Operaciones</div>
+                        <i class="fas fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
+                    </div>
+                    <div class="menu-item" onclick="navigateTo('view-my-reviews')">
+                        <div><i class="fas fa-star" style="width:20px; color:var(--warning); margin-right:10px;"></i>Mis Reseñas</div>
+                        <i class="fas fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
+                    </div>
+                    <div class="menu-item" onclick="navigateTo('view-my-offers')">
+                        <div><i class="fas fa-bullhorn" style="width:20px; color:var(--success); margin-right:10px;"></i>Mis Ofertas</div>
+                        <i class="fas fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
+                    </div>
+                    <div class="menu-item" onclick="navigateTo('view-complaints')">
+                        <div><i class="fas fa-headset" style="width:20px; color:var(--danger); margin-right:10px;"></i>Reclamos</div>
                         <i class="fas fa-chevron-right" style="color:var(--text-muted); font-size:12px;"></i>
                     </div>
                     <div class="menu-item" onclick="showToast('info','Notificaciones actualizadas.')">
@@ -1013,7 +1262,6 @@
                         <span class="admin-pill success" id="adm-pill-resuelta">✅ 0 Resueltas</span>
                     </div>
                 </div>
-
                 <!-- Filtros por estado (US-ADM-01) -->
                 <div class="adm-tabs">
                     <button class="adm-tab active" onclick="filterAdminDisputes('all', this)">Todas</button>
@@ -1021,9 +1269,7 @@
                     <button class="adm-tab" onclick="filterAdminDisputes('revision', this)">🔍 Revisión</button>
                     <button class="adm-tab" onclick="filterAdminDisputes('resuelta', this)">✅ Resuelta</button>
                 </div>
-
                 <div id="admin-disputes"></div>
-
                 <!-- Reset demo -->
                 <div style="text-align:center; margin-top:14px; padding-top:10px; border-top:1px solid var(--border-color);">
                     <button class="btn btn-ghost btn-sm" style="width:auto; font-size:10px;" onclick="resetDemoData()">
@@ -1039,7 +1285,6 @@
                     <h4>Detalle de Disputa</h4>
                     <span id="dd-status-badge" class="dispute-status-badge arbitraje" style="margin-left:auto;">EN ARBITRAJE</span>
                 </div>
-
                 <!-- Bloque ID y estado -->
                 <div class="detail-block" style="background:linear-gradient(135deg,rgba(239,68,68,0.04),white); border-color:rgba(239,68,68,0.2);">
                     <div class="detail-row">
@@ -1055,7 +1300,6 @@
                         <span class="detail-value" id="dd-curr">—</span>
                     </div>
                 </div>
-
                 <!-- Usuarios involucrados -->
                 <p class="section-title" style="margin-bottom:6px;"><i class="fas fa-users"></i> Partes Involucradas</p>
                 <div class="detail-block">
@@ -1068,7 +1312,6 @@
                         <strong class="detail-value" id="dd-seller">—</strong>
                     </div>
                 </div>
-
                 <!-- Monto -->
                 <div class="detail-block" style="background:rgba(0,172,193,0.03); border-color:rgba(0,172,193,0.2);">
                     <div class="detail-row" style="margin-bottom:0;">
@@ -1076,13 +1319,11 @@
                         <strong style="font-size:16px; color:var(--primary);" id="dd-amount">—</strong>
                     </div>
                 </div>
-
                 <!-- Motivo -->
                 <p class="section-title" style="margin-bottom:6px;"><i class="fas fa-exclamation-circle"></i> Motivo del Reclamo</p>
                 <div class="detail-block">
                     <p style="font-size:12px; color:var(--text-muted); line-height:1.5; font-style:italic;" id="dd-motivo">—</p>
                 </div>
-
                 <!-- Evidencias simuladas (US-ADM-02) -->
                 <p class="section-title" style="margin-bottom:8px;"><i class="fas fa-paperclip"></i> Evidencias Adjuntas</p>
                 <div id="dd-evidencias">
@@ -1095,9 +1336,7 @@
                         <i class="fas fa-eye" style="margin-left:auto; color:var(--primary); font-size:14px;"></i>
                     </div>
                     <div class="evidence-card" onclick="showToast('info','Visualizando evidencia: captura_chat.png')">
-                        <div class="evidence-thumb" style="background:linear-gradient(135deg,#334155,#1E293B);">
-                            <i class="fas fa-comments" style="color:white; font-size:16px;"></i>
-                        </div>
+                        <div class="evidence-thumb" style="background:linear-gradient(135deg,#334155,#1E293B);"><i class="fas fa-comments" style="color:white; font-size:16px;"></i></div>
                         <div>
                             <p style="font-size:12px; font-weight:700;">captura_chat.png</p>
                             <p style="font-size:10px; color:var(--text-muted);">Conversación entre partes · 89 KB</p>
@@ -1105,7 +1344,6 @@
                         <i class="fas fa-eye" style="margin-left:auto; color:var(--primary); font-size:14px;"></i>
                     </div>
                 </div>
-
                 <button class="btn" onclick="goToResolution()" style="margin-top:6px;">
                     <i class="fas fa-gavel"></i> Proceder a Resolución
                 </button>
@@ -1117,7 +1355,6 @@
                     <div class="back-btn" onclick="navigateTo('view-dispute-detail')"><i class="fas fa-chevron-left"></i></div>
                     <h4>Resolver Disputa</h4>
                 </div>
-
                 <div class="card" style="background:rgba(239,68,68,0.04); border-color:rgba(239,68,68,0.2); margin-bottom:14px;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <div>
@@ -1130,7 +1367,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- Opciones de resolución (US-ADM-03) -->
                 <p class="section-title" style="margin-bottom:10px;"><i class="fas fa-balance-scale"></i> Decisión de Arbitraje</p>
                 <div class="resolution-options" id="resolution-options">
@@ -1159,12 +1395,10 @@
                         <div id="chk-review" style="width:20px; height:20px; border-radius:50%; border:2px solid var(--border-color); flex-shrink:0;"></div>
                     </div>
                 </div>
-
                 <!-- Comentario del admin (US-ADM-03) -->
                 <p class="section-title" style="margin-bottom:8px;"><i class="fas fa-comment-alt"></i> Justificación</p>
                 <textarea class="form-input" id="res-comment" rows="3"
-                    placeholder="Describe el motivo de la decisión tomada (ej. el voucher presentado es auténtico y corresponde al monto...)"></textarea>
-
+                    placeholder="Describe el motivo de la decisión tomada..."></textarea>
                 <button class="btn btn-success" onclick="confirmResolution()" style="margin-bottom:8px;">
                     <i class="fas fa-check-circle"></i> Confirmar Resolución
                 </button>
@@ -1331,11 +1565,9 @@
                     <i class="fas fa-info-circle" style="color:var(--danger); font-size:16px; margin-top:1px; flex-shrink:0;"></i>
                     <p style="font-size:11px; color:var(--text-muted); line-height:1.5;">Las disputas son revisadas por nuestro equipo en <strong>5 días hábiles</strong>. Solo abre una disputa si hay un problema real con la transacción.</p>
                 </div>
-
                 <!-- Selección de transacción (US-USER-01) -->
                 <p class="section-title" style="margin-bottom:8px;"><i class="fas fa-exchange-alt"></i> Selecciona la Transacción</p>
                 <div id="dispute-tx-list"></div>
-
                 <!-- Motivo (US-USER-01) -->
                 <p class="section-title" style="margin-bottom:8px; margin-top:4px;"><i class="fas fa-edit"></i> Motivo de la Disputa</p>
                 <select class="form-select" id="dispute-motivo-tipo" onchange="updateMotivoPlaceholder()">
@@ -1348,7 +1580,6 @@
                 </select>
                 <textarea class="form-input" id="dispute-motivo-detalle" rows="3"
                     placeholder="Describe con detalle qué ocurrió en la transacción..."></textarea>
-
                 <!-- Evidencia (US-USER-01) -->
                 <p class="section-title" style="margin-bottom:8px;"><i class="fas fa-paperclip"></i> Adjuntar Evidencia</p>
                 <div class="evidence-uploader" id="dispute-uploader" onclick="simulateEvidenceUpload()">
@@ -1366,7 +1597,6 @@
                         <i class="fas fa-times" style="margin-left:auto; color:var(--text-muted); cursor:pointer;" onclick="removeEvidence()"></i>
                     </div>
                 </div>
-
                 <button class="btn btn-danger" onclick="submitDisputeUser()">
                     <i class="fas fa-paper-plane"></i> Enviar Disputa
                 </button>
@@ -1378,11 +1608,9 @@
                     <div class="back-btn" onclick="navigateTo('view-profile',document.getElementById('nav-profile'))"><i class="fas fa-chevron-left"></i></div>
                     <h4>Mis Disputas</h4>
                 </div>
-
                 <button class="btn btn-danger" style="margin-bottom:14px;" onclick="navigateTo('view-register-dispute')">
                     <i class="fas fa-plus"></i> Registrar nueva disputa
                 </button>
-
                 <!-- Chips filtro (US-USER-02) -->
                 <div class="chips-container" id="user-dispute-chips">
                     <span class="chip active" onclick="filterUserDisputes('all',this)">Todas</span>
@@ -1390,7 +1618,6 @@
                     <span class="chip" onclick="filterUserDisputes('revision',this)">🔍 Revisión</span>
                     <span class="chip" onclick="filterUserDisputes('resuelta',this)">✅ Resuelta</span>
                 </div>
-
                 <div id="disputes-user-list"></div>
             </div>
 
@@ -1440,7 +1667,94 @@
                 </div>
             </div>
 
+            <!-- ── MY REVIEWS ── -->
+            <div id="view-my-reviews" class="view hidden">
+                <div class="page-header">
+                    <div class="back-btn" onclick="navigateTo('view-profile',document.getElementById('nav-profile'))"><i class="fas fa-chevron-left"></i></div>
+                    <h4>Mis Reseñas</h4>
+                </div>
+                <div class="card">
+                    <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
+                        <div style="text-align:center;">
+                            <p style="font-size:32px; font-weight:800; color:var(--text-main);" id="review-avg">4.9</p>
+                            <p style="font-size:10px; color:var(--text-muted);" id="review-total-count">0 reseñas</p>
+                        </div>
+                        <div style="flex:1;" id="review-bars">
+                            <!-- Star bars rendered by JS -->
+                        </div>
+                    </div>
+                </div>
+                <div class="section-title"><i class="fas fa-comments"></i> Comentarios Recibidos</div>
+                <div class="card" style="padding:4px 16px;" id="reviews-list"></div>
+            </div>
+
+            <!-- ── TX DETAIL ── -->
+            <div id="view-tx-detail" class="view hidden">
+                <div class="page-header">
+                    <div class="back-btn" onclick="navigateTo('view-history')"><i class="fas fa-chevron-left"></i></div>
+                    <h4>Detalle de Transacción</h4>
+                </div>
+                <div class="card">
+                    <div style="text-align:center; margin-bottom:12px;">
+                        <p style="font-size:18px; font-weight:800; color:var(--primary);" id="txd-id">---</p>
+                        <span class="status-pill" id="txd-status">---</span>
+                    </div>
+                    <div id="txd-rows"></div>
+                </div>
+                <button class="btn btn-outline" style="margin-bottom:8px;" onclick="showToast('success','Comprobante PDF descargado.')">
+                    <i class="fas fa-file-download"></i> Descargar PDF
+                </button>
+                <button class="btn btn-ghost" onclick="navigateTo('view-history')">Volver al Historial</button>
+            </div>
+
+            <!-- ── MY OFFERS ── -->
+            <div id="view-my-offers" class="view hidden">
+                <div class="page-header">
+                    <div class="back-btn" onclick="navigateTo('view-profile',document.getElementById('nav-profile'))"><i class="fas fa-chevron-left"></i></div>
+                    <h4>Mis Ofertas</h4>
+                </div>
+                <div id="my-offers-list"></div>
+            </div>
+
+            <!-- ── COMPLAINTS ── -->
+            <div id="view-complaints" class="view hidden">
+                <div class="page-header">
+                    <div class="back-btn" onclick="navigateTo('view-profile',document.getElementById('nav-profile'))"><i class="fas fa-chevron-left"></i></div>
+                    <h4>Reclamos</h4>
+                </div>
+                <div class="card">
+                    <p class="section-title"><i class="fas fa-plus-circle"></i> Nuevo Reclamo</p>
+                    <label class="form-label">Tipo</label>
+                    <select class="form-select" id="complaint-type">
+                        <option value="tx">Problema con transacción</option>
+                        <option value="user">Comportamiento de usuario</option>
+                        <option value="app">Error en la plataforma</option>
+                        <option value="other">Otro</option>
+                    </select>
+                    <label class="form-label">Descripción</label>
+                    <textarea class="form-input" id="complaint-desc" rows="3" placeholder="Describe tu reclamo con detalle..."></textarea>
+                    <button class="btn btn-danger" onclick="submitComplaint()"><i class="fas fa-paper-plane"></i> Enviar Reclamo</button>
+                </div>
+                <div class="section-title" style="margin-top:10px;"><i class="fas fa-list"></i> Mis Reclamos</div>
+                <div id="complaints-list"></div>
+            </div>
+
         </div><!-- /phone-screen -->
+
+        <!-- ── CONFIRM OVERLAY ── -->
+        <div id="confirm-overlay" class="confirm-overlay hidden">
+            <div class="confirm-box">
+                <div style="text-align:center; margin-bottom:16px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size:36px; color:var(--danger); margin-bottom:10px; display:block;"></i>
+                    <h4 style="font-weight:800; font-size:16px; color:var(--text-main);" id="confirm-title">¿Estás seguro?</h4>
+                    <p style="font-size:12px; color:var(--text-muted); margin-top:6px;" id="confirm-msg">Esta acción no se puede deshacer.</p>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-ghost" style="flex:1;" onclick="closeConfirm()">Cancelar</button>
+                    <button class="btn btn-danger" style="flex:1;" id="confirm-action-btn" onclick="executeConfirm()">Confirmar</button>
+                </div>
+            </div>
+        </div>
 
         <!-- ── BOTTOM NAV (3 items) ── -->
         <div class="bottom-nav hidden" id="client-nav">
@@ -1489,6 +1803,14 @@ let txTimer   = null;
 let currRating = 0;
 let currentUser = { name: 'Carlos Mendoza', isAdmin: false };
 let appMode = 'buyer';
+let confirmAction = null;
+let currentHistoryFilter = 'all';
+let currentDisputeId = null;
+let selectedResolution = null;
+let selectedTxForDispute = null;
+let disputeEvidenceUploaded = false;
+let contractSigned = false;
+let publishMode = 'full';
 
 // ══════════════════════════════════════════
 // INIT LOCAL DB
@@ -1505,8 +1827,8 @@ function initDB() {
     }
     if (!localStorage.getItem('p2p_cards')) {
         localStorage.setItem('p2p_cards', JSON.stringify([
-            { id:101, bank:'bcp',  number:'191-98765432-0-12' },
-            { id:102, bank:'yape', number:'987654321' }
+            { id:101, bank:'bcp',  type:'bank', number:'191-98765432-0-12', isDefault:true },
+            { id:102, bank:'yape', type:'wallet', number:'987654321', isDefault:false }
         ]));
     }
     if (!localStorage.getItem('p2p_disputes') || localStorage.getItem('p2p_disputes') === '[]') {
@@ -1516,7 +1838,6 @@ function initDB() {
             { id: 4390, buyer: 'Andrés Quiliche', seller: 'Valeria Cruz',   amount: 180, curr: 'USD', motivo: '[Voucher posiblemente falso] El comprobante presentado tiene datos inconsistentes con una transferencia real.',  date: '2026-04-29', estado: 'resuelta',  evidencia: true, resolution: 'Fondos liberados al comprador', comment: 'El voucher fue validado como auténtico vía API bancaria.' },
         ]));
     } else {
-        // Migrate old disputes without estado field
         const existing = JSON.parse(localStorage.getItem('p2p_disputes'));
         const migrated = existing.map(d => ({ ...d, estado: d.estado || 'arbitraje', date: d.date || '2026-05-01' }));
         localStorage.setItem('p2p_disputes', JSON.stringify(migrated));
@@ -1524,11 +1845,20 @@ function initDB() {
     if (!localStorage.getItem('p2p_vendor_pending')) localStorage.setItem('p2p_vendor_pending', JSON.stringify([]));
     if (!localStorage.getItem('p2p_history')) {
         localStorage.setItem('p2p_history', JSON.stringify([
-            { id:'TX-8811', seller:'Shirley Anaya',   amount:200, currency:'USD', rate:3.775, status:'completed', date:'2026-05-10' },
-            { id:'TX-7734', seller:'Lucía Alfaro',    amount:150, currency:'USD', rate:3.782, status:'completed', date:'2026-05-08' },
-            { id:'TX-6621', seller:'Mateo Ortiz',     amount:100, currency:'EUR', rate:4.115, status:'disputed',  date:'2026-05-05' }
+            { id:'TX-8811', seller:'Shirley Anaya', buyer:'Carlos Mendoza', amount:200, currency:'USD', rate:3.775, status:'completed', date:'2026-05-10', bank:'BCP' },
+            { id:'TX-7734', seller:'Lucía Alfaro',  buyer:'Carlos Mendoza', amount:150, currency:'USD', rate:3.782, status:'completed', date:'2026-05-08', bank:'BBVA' },
+            { id:'TX-6621', seller:'Mateo Ortiz',   buyer:'Carlos Mendoza', amount:100, currency:'EUR', rate:4.115, status:'disputed',  date:'2026-05-05', bank:'BCP' }
         ]));
     }
+    if (!localStorage.getItem('p2p_reviews')) {
+        localStorage.setItem('p2p_reviews', JSON.stringify([
+            { id:1, from:'Shirley Anaya', stars:5, comment:'Excelente vendedora, muy rápida.', date:'2026-05-10' },
+            { id:2, from:'Lucía Alfaro',  stars:4, comment:'Buen servicio, un poco lenta.', date:'2026-05-08' },
+            { id:3, from:'Valeria Cruz',  stars:5, comment:'Perfecto, sin problemas.', date:'2026-05-06' },
+            { id:4, from:'Andrés Quiliche', stars:5, comment:'Recomendado 100%.', date:'2026-05-04' }
+        ]));
+    }
+    if (!localStorage.getItem('p2p_complaints')) localStorage.setItem('p2p_complaints', JSON.stringify([]));
 }
 initDB();
 
@@ -1587,11 +1917,95 @@ function doLogin() {
 function doRegister() {
     const name  = document.getElementById('reg-name').value.trim();
     const email = document.getElementById('reg-email').value.trim();
+    const dni   = document.getElementById('reg-dni').value.trim();
     const terms = document.getElementById('reg-terms').checked;
     if (!name || !email) { showToast('error', 'Completa todos los campos.'); return; }
+    if (!dni || dni.length < 8) { showToast('error', 'Ingresa un DNI válido (mín. 8 dígitos).'); return; }
     if (!terms) { showToast('error', 'Acepta los términos de uso.'); return; }
-    showToast('success', `Cuenta creada para ${name}. ¡Bienvenido!`);
-    setTimeout(() => { document.getElementById('login-email').value = email; switchTab('login'); }, 1600);
+    if (!contractSigned) { showToast('error', 'Debes firmar el contrato de registro P2P.'); return; }
+    // Save registration data temporarily
+    window._pendingReg = { name, email, dni };
+    // Fill KYC preview with user data
+    const parts = name.toUpperCase().split(' ');
+    document.getElementById('kyc-name-display').innerText = parts.length > 1 ? parts.slice(-1).join(' ') : parts[0];
+    document.getElementById('kyc-firstname-display').innerText = parts.length > 1 ? parts.slice(0, -1).join(' ') : '';
+    document.getElementById('kyc-dni-display').innerText = dni;
+    // Reset KYC state
+    kycStep = 0;
+    [1,2,3].forEach(i => {
+        const card = document.getElementById('kyc-step-'+i);
+        card.className = 'kyc-step-card';
+        card.style.opacity = i === 1 ? '1' : '0.5';
+        card.style.pointerEvents = i === 1 ? 'auto' : 'none';
+        document.getElementById('kyc-progress-'+i).classList.add('hidden');
+        document.getElementById('kyc-fill-'+i).style.width = '0%';
+        const preview = document.getElementById('kyc-preview-'+i);
+        preview.classList.remove('show');
+        document.getElementById('kyc-dot-'+i).className = i === 1 ? 'kyc-dot active' : 'kyc-dot';
+    });
+    document.getElementById('kyc-result').classList.add('hidden');
+    navigateTo('view-kyc');
+    showToast('info', 'Verifica tu identidad para completar el registro.');
+}
+let kycStep = 0;
+function startKycUpload(step) {
+    if (kycStep >= step) return;
+    const card = document.getElementById('kyc-step-'+step);
+    const progress = document.getElementById('kyc-progress-'+step);
+    const fill = document.getElementById('kyc-fill-'+step);
+    const stepNames = ['','Analizando DNI frontal...','Escaneando reverso...','Procesando biometría facial...'];
+    card.classList.add('uploading');
+    card.querySelector('.kyc-title').innerText = stepNames[step];
+    progress.classList.remove('hidden');
+    let pct = 0;
+    const interval = setInterval(() => {
+        pct += Math.random() * 15 + 5;
+        if (pct > 100) pct = 100;
+        fill.style.width = pct + '%';
+        if (pct >= 100) {
+            clearInterval(interval);
+            finishKycStep(step);
+        }
+    }, 200);
+}
+function finishKycStep(step) {
+    kycStep = step;
+    const card = document.getElementById('kyc-step-'+step);
+    const preview = document.getElementById('kyc-preview-'+step);
+    const dot = document.getElementById('kyc-dot-'+step);
+    const titles = ['','DNI Frontal ✓ Verificado','DNI Posterior ✓ Verificado','Selfie ✓ Biometría OK'];
+    card.classList.remove('uploading');
+    card.classList.add('done');
+    card.querySelector('.kyc-title').innerText = titles[step];
+    card.querySelector('.kyc-subtitle').innerText = 'Documento capturado correctamente';
+    card.querySelector('.kyc-icon').className = 'fas fa-check-circle kyc-icon';
+    card.querySelector('.kyc-icon').style.color = 'var(--success)';
+    preview.classList.add('show');
+    dot.className = 'kyc-dot done';
+    const msgs = ['','DNI frontal capturado y validado.','Reverso escaneado correctamente.','Coincidencia facial confirmada.'];
+    showToast('success', msgs[step]);
+    if (step < 3) {
+        const next = document.getElementById('kyc-step-'+(step+1));
+        next.style.opacity = '1';
+        next.style.pointerEvents = 'auto';
+        document.getElementById('kyc-dot-'+(step+1)).className = 'kyc-dot active';
+    } else {
+        setTimeout(() => {
+            document.getElementById('kyc-result').classList.remove('hidden');
+            document.getElementById('main-screen').scrollTop = 9999;
+        }, 600);
+    }
+}
+function completeKyc() {
+    const reg = window._pendingReg;
+    if (reg) {
+        showToast('success', `Cuenta verificada para ${reg.name}. ¡Bienvenido!`);
+        setTimeout(() => {
+            document.getElementById('login-email').value = reg.email;
+            switchTab('login');
+            navigateTo('view-auth');
+        }, 1200);
+    }
 }
 function doForgotPassword() {
     const email = document.getElementById('forgot-email').value.trim();
@@ -1737,137 +2151,6 @@ function loadVendorInbox() {
     });
     c.innerHTML += '</div>';
 }
-// ══════════════════════════════════════════
-// US-USER-01 — REGISTRAR DISPUTA (usuario)
-// ══════════════════════════════════════════
-let selectedTxForDispute = null;
-let disputeEvidenceUploaded = false;
-
-function loadRegisterDisputeView() {
-    selectedTxForDispute = null;
-    disputeEvidenceUploaded = false;
-    // Cargar transacciones del historial para seleccionar
-    const history = JSON.parse(localStorage.getItem('p2p_history'));
-    const c = document.getElementById('dispute-tx-list');
-    c.innerHTML = '';
-    if (!history || !history.length) {
-        c.innerHTML = `<p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">No tienes transacciones previas para disputar.</p>`;
-        return;
-    }
-    history.slice(0, 5).forEach(tx => {
-        const statusColors = { completed: 'var(--success)', pending: 'var(--warning)', disputed: 'var(--danger)', cancelled: 'var(--text-muted)' };
-        c.innerHTML += `
-        <div class="tx-select-card" id="tx-sel-${tx.id}" onclick="selectTxForDispute('${tx.id}')">
-            <div style="flex:1;">
-                <p style="font-size:12px; font-weight:700; color:var(--text-main);">${tx.id}</p>
-                <p style="font-size:10px; color:var(--text-muted); margin-top:2px;">${tx.seller} &nbsp;·&nbsp; ${tx.date}</p>
-                <p style="font-size:11px; font-weight:700; color:var(--primary); margin-top:2px;">${tx.amount} ${tx.currency}</p>
-            </div>
-            <div style="display:flex; align-items:center; gap:8px;">
-                <span style="font-size:9px; font-weight:700; color:${statusColors[tx.status] || 'var(--text-muted)'};">${tx.status.toUpperCase()}</span>
-                <div class="tx-check" id="chk-tx-${tx.id}"></div>
-            </div>
-        </div>`;
-    });
-    // Reset fields
-    document.getElementById('dispute-motivo-tipo').value = '';
-    document.getElementById('dispute-motivo-detalle').value = '';
-    document.getElementById('dispute-uploader').className = 'evidence-uploader';
-    document.getElementById('dispute-evidence-preview').classList.add('hidden');
-}
-
-function selectTxForDispute(txId) {
-    selectedTxForDispute = txId;
-    document.querySelectorAll('.tx-select-card').forEach(el => {
-        el.classList.remove('selected');
-        const chk = el.querySelector('.tx-check');
-        if (chk) { chk.innerHTML = ''; chk.style.background = ''; chk.style.borderColor = ''; }
-    });
-    const card = document.getElementById(`tx-sel-${txId}`);
-    if (card) {
-        card.classList.add('selected');
-        const chk = document.getElementById(`chk-tx-${txId}`);
-        if (chk) { chk.innerHTML = '✓'; chk.style.background = 'var(--primary)'; chk.style.borderColor = 'var(--primary)'; chk.style.color = 'white'; chk.style.fontSize = '10px'; chk.style.display = 'flex'; chk.style.alignItems = 'center'; chk.style.justifyContent = 'center'; }
-    }
-}
-
-function updateMotivoPlaceholder() {
-    const val = document.getElementById('dispute-motivo-tipo').value;
-    const placeholders = {
-        no_libero: 'Ej. Realicé el pago hace 2 horas y el vendedor no ha liberado los fondos ni responde el chat...',
-        no_pago:   'Ej. El comprador indicó haber pagado pero no recibí transferencia en mi cuenta...',
-        monto_incorrecto: 'Ej. El comprador transfirió S/ 380 pero la operación era por S/ 400...',
-        voucher_falso: 'Ej. El voucher presentado tiene datos que no coinciden con una transferencia real...',
-        otro: 'Describe con detalle qué ocurrió en la transacción...',
-    };
-    document.getElementById('dispute-motivo-detalle').placeholder = placeholders[val] || 'Describe con detalle qué ocurrió...';
-}
-
-function simulateEvidenceUpload() {
-    const uploader = document.getElementById('dispute-uploader');
-    uploader.innerHTML = `<div style="width:24px;height:24px;border:3px solid var(--primary);border-top-color:transparent;border-radius:50%;animation:spin 0.75s linear infinite;margin:0 auto 8px;"></div><p style="font-size:12px; font-weight:700;">Subiendo...</p>`;
-    setTimeout(() => {
-        disputeEvidenceUploaded = true;
-        uploader.className = 'evidence-uploader uploaded';
-        uploader.innerHTML = `<i class="fas fa-check-circle" style="font-size:28px; color:var(--success); display:block; margin-bottom:6px;"></i><p style="font-size:12px; font-weight:700; color:var(--success);">Archivo listo</p>`;
-        const names = ['captura_voucher.png', 'comprobante.jpg', 'screenshot_chat.png', 'evidencia_001.pdf'];
-        const name = names[Math.floor(Math.random() * names.length)];
-        document.getElementById('dispute-evidence-name').innerText = `${name} · ${Math.floor(Math.random()*100+50)} KB`;
-        document.getElementById('dispute-evidence-preview').classList.remove('hidden');
-    }, 1400);
-}
-
-function removeEvidence() {
-    disputeEvidenceUploaded = false;
-    document.getElementById('dispute-uploader').className = 'evidence-uploader';
-    document.getElementById('dispute-uploader').innerHTML = `<i class="fas fa-cloud-upload-alt" style="font-size:28px; color:var(--text-muted); margin-bottom:8px; display:block;"></i><p style="font-size:12px; font-weight:700; color:var(--text-main);">Toca para adjuntar archivo</p><p style="font-size:10px; color:var(--text-muted); margin-top:3px;">Captura de pantalla, voucher o comprobante (PNG, JPG, PDF)</p>`;
-    document.getElementById('dispute-evidence-preview').classList.add('hidden');
-}
-
-function submitDisputeUser() {
-    if (!selectedTxForDispute) { showToast('error', 'Selecciona la transacción involucrada.'); return; }
-    const tipo   = document.getElementById('dispute-motivo-tipo').value;
-    const detalle = document.getElementById('dispute-motivo-detalle').value.trim();
-    if (!tipo)    { showToast('error', 'Selecciona el tipo de problema.'); return; }
-    if (!detalle) { showToast('error', 'Describe el motivo de la disputa.'); return; }
-
-    const history  = JSON.parse(localStorage.getItem('p2p_history'));
-    const tx       = history.find(h => h.id === selectedTxForDispute);
-    if (!tx) return;
-
-    const motiOptions = {
-        no_libero: 'Vendedor no liberó fondos',
-        no_pago:   'Comprador no realizó el pago',
-        monto_incorrecto: 'Monto recibido incorrecto',
-        voucher_falso: 'Voucher posiblemente falso',
-        otro: 'Otro motivo',
-    };
-    const disputes = JSON.parse(localStorage.getItem('p2p_disputes'));
-    const newId = Date.now();
-    disputes.push({
-        id: newId,
-        buyer:  currentUser.name,
-        seller: tx.seller,
-        amount: tx.amount,
-        curr:   tx.currency,
-        motivo: `[${motiOptions[tipo]}] ${detalle}`,
-        date:   new Date().toLocaleDateString('es-PE'),
-        estado: 'arbitraje',
-        evidencia: disputeEvidenceUploaded,
-    });
-    localStorage.setItem('p2p_disputes', JSON.stringify(disputes));
-
-    // Marcar tx en historial como disputed
-    const idx = history.findIndex(h => h.id === selectedTxForDispute);
-    if (idx >= 0) { history[idx].status = 'disputed'; localStorage.setItem('p2p_history', JSON.stringify(history)); }
-
-    showToast('success', '✅ Disputa registrada. El equipo revisará en 5 días hábiles.');
-    setTimeout(() => navigateTo('view-disputes-profile', document.getElementById('nav-profile')), 1400);
-}
-
-// ══════════════════════════════════════════
-// US-USER-02 — CONSULTA DE DISPUTAS (usuario)
-// ══════════════════════════════════════════
 function loadDisputesUser(filter = 'all') {
     const disputes = JSON.parse(localStorage.getItem('p2p_disputes'));
     const userDisputes = disputes.filter(d =>
@@ -1985,6 +2268,9 @@ function navigateTo(viewId, navElem = null) {
     if (viewId === 'view-vendor-inbox') loadVendorInbox();
     if (viewId === 'view-disputes-profile') loadDisputesUser();
     if (viewId === 'view-register-dispute') loadRegisterDisputeView();
+    if (viewId === 'view-my-reviews') loadMyReviews();
+    if (viewId === 'view-my-offers') loadMyOffers();
+    if (viewId === 'view-complaints') loadComplaints();
     if (viewId === 'view-tx') {
         // Intentar restaurar transacción guardada
         if (!activeTx) {
@@ -2032,8 +2318,10 @@ function loadMarket() {
     }
     const bankVar = { bcp:'--bcp', interbank:'--interbank', bbva:'--bbva', yape:'--yape', plin:'--plin' };
     filtered.forEach((o, i) => {
+        const isPartial = o.sellMode === 'partial' || o.min < o.max;
+        const modeLabel = isPartial ? '<span style="font-size:8px; font-weight:700; padding:2px 6px; border-radius:6px; background:rgba(0,172,193,0.1); color:var(--primary); margin-left:4px;">POR PARTES</span>' : '<span style="font-size:8px; font-weight:700; padding:2px 6px; border-radius:6px; background:rgba(16,185,129,0.1); color:var(--success); margin-left:4px;">COMPLETA</span>';
         c.innerHTML += `
-        <div class="offer-card" onclick="startTx(${o.id})">
+        <div class="offer-card" ${!isPartial ? `onclick="startTx(${o.id})"` : ''}>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                 <div style="display:flex; align-items:center; gap:10px;">
                     <div style="width:38px; height:38px; border-radius:13px; background:linear-gradient(135deg,var(--primary),var(--primary-light)); display:flex; justify-content:center; align-items:center; font-size:12px; font-weight:800; color:white; position:relative; flex-shrink:0;">
@@ -2057,15 +2345,37 @@ function loadMarket() {
             </div>
             <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:8px;">
                 <div>
-                    <span style="font-size:10px; color:var(--text-muted); display:block;">Tasa</span>
+                    <span style="font-size:10px; color:var(--text-muted); display:block;">Tasa ${modeLabel}</span>
                     <strong style="font-size:21px; font-weight:800; color:var(--text-main);">S/ ${o.rate.toFixed(3)}</strong>
                 </div>
                 <div style="text-align:right;">
-                    <span style="font-size:10px; color:var(--text-muted); display:block;">Límites: ${o.min}–${o.max} ${o.to}</span>
-                    <button class="btn btn-success btn-sm" style="margin-top:6px;" onclick="event.stopPropagation(); startTx(${o.id})">Comprar</button>
+                    <span style="font-size:10px; color:var(--text-muted); display:block;">Disponible: ${o.amount} ${o.from}</span>
+                    ${isPartial 
+                        ? `<span style="font-size:9px; color:var(--text-muted); display:block; margin-bottom:4px;">Rango: ${o.min}–${o.max} ${o.to}</span>
+                           <button class="btn btn-sm" style="margin-top:4px; font-size:10px; padding:4px 12px;" onclick="event.stopPropagation(); openPartialBuy(${o.id})"><i class="fas fa-shopping-cart"></i> Elegir monto</button>` 
+                        : `<button class="btn btn-success btn-sm" style="margin-top:6px;" onclick="event.stopPropagation(); startTx(${o.id})">Comprar todo</button>`}
                 </div>
             </div>
             ${i === 0 ? '<div class="best-tag"><i class="fas fa-trophy"></i> Mejor tasa del mercado</div>' : ''}
+            <!-- Compra parcial inline -->
+            <div id="partial-buy-${o.id}" class="hidden" style="margin-top:10px; padding-top:10px; border-top:1px solid var(--border-color);">
+                <p style="font-size:11px; font-weight:700; color:var(--text-main); margin-bottom:6px;"><i class="fas fa-calculator" style="color:var(--primary); margin-right:4px;"></i> ¿Cuánto deseas comprar?</p>
+                <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+                    <input type="number" class="form-input" id="partial-input-${o.id}" placeholder="Monto en ${o.from}" min="${o.min}" max="${o.max}" style="flex:1; margin-bottom:0; font-size:13px;" oninput="calcPartialConversion(${o.id}, ${o.rate}, '${o.from}', '${o.to}')">
+                    <span style="font-size:12px; font-weight:700; color:var(--text-muted);">${o.from}</span>
+                </div>
+                <div id="partial-result-${o.id}" class="hidden" style="background:rgba(0,172,193,0.05); border-radius:10px; padding:8px 12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <p style="font-size:10px; color:var(--text-muted);">Recibirás aprox.</p>
+                        <strong style="font-size:15px; color:var(--success);" id="partial-converted-${o.id}">—</strong>
+                    </div>
+                    <i class="fas fa-arrow-right" style="color:var(--primary);"></i>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-success btn-sm" style="flex:1;" onclick="startPartialTx(${o.id})"><i class="fas fa-check"></i> Confirmar compra</button>
+                    <button class="btn btn-ghost btn-sm" style="flex:0 0 auto;" onclick="document.getElementById('partial-buy-${o.id}').classList.add('hidden')">Cancelar</button>
+                </div>
+            </div>
         </div>`;
     });
 }
@@ -2079,16 +2389,178 @@ function doPublish() {
     const amount = parseFloat(document.getElementById('pub-amount').value);
     const rate   = parseFloat(document.getElementById('pub-rate').value);
     const bank   = document.getElementById('pub-bank').value;
-    const min    = parseFloat(document.getElementById('pub-min').value) || 50;
-    const max    = parseFloat(document.getElementById('pub-max').value) || amount;
     const names  = { bcp:'BCP', interbank:'Interbank', bbva:'BBVA', yape:'Yape', plin:'Plin' };
     if (!amount || amount <= 0) { showToast('error', 'Ingresa un monto válido.'); return; }
     if (from === to)            { showToast('error', 'Las monedas deben ser distintas.'); return; }
+    
+    let min, max;
+    if (publishMode === 'full') {
+        min = amount;
+        max = amount;
+    } else {
+        min = parseFloat(document.getElementById('pub-min').value) || 50;
+        max = parseFloat(document.getElementById('pub-max').value) || amount;
+        if (min > max) { showToast('error', 'El mínimo no puede ser mayor al máximo.'); return; }
+        if (max > amount) { showToast('error', 'El máximo no puede superar el monto disponible.'); return; }
+    }
     const offers = JSON.parse(localStorage.getItem('p2p_offers'));
-    offers.push({ id:Date.now(), seller: currentUser.name+' (Tú)', from, to, rate, amount, min, max, bank, bankName:names[bank], stars:4.9, trades:180, completion:98, resp:'~2m', verified:true, online:true });
+    offers.push({ id:Date.now(), seller: currentUser.name+' (Tú)', from, to, rate, amount, min, max, bank, bankName:names[bank], stars:4.9, trades:180, completion:98, resp:'~2m', verified:true, online:true, sellMode: publishMode });
     localStorage.setItem('p2p_offers', JSON.stringify(offers));
-    showToast('success', 'Oferta publicada en el mercado.');
+    showToast('success', publishMode === 'full' ? 'Oferta de venta completa publicada.' : 'Oferta de venta por partes publicada.');
+    publishMode = 'full';
     navigateTo('view-market', document.getElementById('nav-home'));
+}
+
+function setPublishMode(mode) {
+    publishMode = mode;
+    const full = document.getElementById('pub-mode-full');
+    const partial = document.getElementById('pub-mode-partial');
+    const limits = document.getElementById('pub-limits-section');
+    if (mode === 'full') {
+        full.className = 'res-option selected-buyer';
+        partial.className = 'res-option';
+        limits.classList.add('hidden');
+    } else {
+        full.className = 'res-option';
+        partial.className = 'res-option selected-buyer';
+        partial.style.borderColor = 'var(--primary)';
+        partial.style.background = 'rgba(0,172,193,0.06)';
+        limits.classList.remove('hidden');
+    }
+    updatePublishPreview();
+}
+
+function updatePublishPreview() {
+    const amount = parseFloat(document.getElementById('pub-amount').value);
+    const rate   = parseFloat(document.getElementById('pub-rate').value);
+    const from   = document.getElementById('pub-from').value;
+    const to     = document.getElementById('pub-to').value;
+    const preview = document.getElementById('pub-conversion-preview');
+    
+    if (!amount || amount <= 0 || !rate || rate <= 0) {
+        preview.classList.add('hidden');
+        return;
+    }
+    preview.classList.remove('hidden');
+    const converted = (amount * rate).toFixed(2);
+    document.getElementById('pub-preview-from').innerText = `${amount.toFixed(2)} ${from}`;
+    document.getElementById('pub-preview-to').innerText   = `${converted} ${to}`;
+    
+    const partialPreview = document.getElementById('pub-preview-partial');
+    if (publishMode === 'partial') {
+        partialPreview.classList.remove('hidden');
+        const min = parseFloat(document.getElementById('pub-min').value) || 50;
+        const max = parseFloat(document.getElementById('pub-max').value) || amount;
+        const minConv = (min * rate).toFixed(2);
+        const maxConv = (max * rate).toFixed(2);
+        document.getElementById('pub-preview-range').innerText = `${min} – ${max} ${from} (${minConv} – ${maxConv} ${to})`;
+    } else {
+        partialPreview.classList.add('hidden');
+    }
+}
+
+function simulateContractSign() {
+    const area = document.getElementById('reg-signature-area');
+    area.innerHTML = `<div style="width:24px;height:24px;border:3px solid var(--warning);border-top-color:transparent;border-radius:50%;animation:spin 0.75s linear infinite;margin:0 auto 8px;"></div><p style="font-size:11px; font-weight:700;">Generando firma digital...</p>`;
+    setTimeout(() => {
+        contractSigned = true;
+        area.classList.add('hidden');
+        document.getElementById('reg-signature-done').classList.remove('hidden');
+        const now = new Date();
+        document.getElementById('reg-sign-date').innerText = `Firmado el ${now.toLocaleDateString('es-PE')} a las ${now.toLocaleTimeString('es-PE', {hour:'2-digit', minute:'2-digit'})}`;
+        showToast('success', 'Contrato firmado exitosamente.');
+    }, 1500);
+}
+
+// ══════════════════════════════════════════
+// PARTIAL BUY — Compra por partes
+// ══════════════════════════════════════════
+function openPartialBuy(offerId) {
+    // Cerrar cualquier otro panel partial abierto
+    document.querySelectorAll('[id^="partial-buy-"]').forEach(el => el.classList.add('hidden'));
+    const panel = document.getElementById(`partial-buy-${offerId}`);
+    if (panel) {
+        panel.classList.remove('hidden');
+        const input = document.getElementById(`partial-input-${offerId}`);
+        if (input) { input.value = ''; input.focus(); }
+        const result = document.getElementById(`partial-result-${offerId}`);
+        if (result) result.classList.add('hidden');
+    }
+}
+
+function calcPartialConversion(offerId, rate, fromCurr, toCurr) {
+    const input = document.getElementById(`partial-input-${offerId}`);
+    const result = document.getElementById(`partial-result-${offerId}`);
+    const converted = document.getElementById(`partial-converted-${offerId}`);
+    const val = parseFloat(input.value);
+    if (!val || val <= 0) {
+        result.classList.add('hidden');
+        return;
+    }
+    result.classList.remove('hidden');
+    result.style.display = 'flex';
+    converted.innerText = `${(val * rate).toFixed(2)} ${toCurr}`;
+}
+
+function startPartialTx(offerId) {
+    const input = document.getElementById(`partial-input-${offerId}`);
+    const val = parseFloat(input?.value);
+    const offers = JSON.parse(localStorage.getItem('p2p_offers'));
+    const offer = offers.find(o => o.id === offerId);
+    if (!offer) return;
+    if (!val || val <= 0) { showToast('error', 'Ingresa un monto válido.'); return; }
+    if (val < offer.min) { showToast('error', `El mínimo es ${offer.min} ${offer.from}.`); return; }
+    if (val > offer.max) { showToast('error', `El máximo es ${offer.max} ${offer.from}.`); return; }
+    if (val > offer.amount) { showToast('error', `Solo hay ${offer.amount} ${offer.from} disponibles.`); return; }
+    
+    // Crear oferta temporal con el monto parcial para la transacción
+    const tempOffer = { ...offer, amount: val };
+    activeTx = tempOffer;
+    localStorage.setItem('p2p_activeTx', JSON.stringify(activeTx));
+    document.getElementById('tx-seller').innerText  = activeTx.seller;
+    document.getElementById('tx-bank').innerText    = activeTx.bankName;
+    document.getElementById('tx-total').innerText   = `${(activeTx.amount * activeTx.rate).toFixed(2)} ${activeTx.from}`;
+    document.getElementById('rating-name').innerText = activeTx.seller;
+    document.getElementById('tx-online-dot').className = activeTx.online ? 'online-dot' : 'offline-dot';
+    // Reset timeline
+    ['st-1','st-2','st-3','st-4'].forEach(s => document.getElementById(s).className = 'step');
+    document.getElementById('st-1').className = 'step active';
+    document.getElementById('tl-fill').style.width = '0%';
+    document.getElementById('tx-actions').classList.add('hidden');
+    // Reset voucher zone
+    const vz = document.getElementById('voucher-zone');
+    vz.style.pointerEvents = 'auto';
+    vz.innerHTML = `
+        <i class="fas fa-cloud-upload-alt" style="font-size:30px; color:var(--primary); margin-bottom:8px; display:block;"></i>
+        <p style="font-size:13px; font-weight:700; color:var(--text-main);">Subir Comprobante de Pago</p>
+        <p style="font-size:10px; color:var(--text-muted); margin-top:4px;">IA OCR · Validación automática en segundos</p>`;
+    // Reset chat
+    document.getElementById('chat-msgs').innerHTML = `
+        <div class="chat-msg recv">Hola, en cuanto vea la transferencia libero 👍<div class="msg-meta">Vendedor · ahora</div></div>`;
+    // Start timer
+    clearInterval(txTimer);
+    let secs = 15 * 60;
+    document.getElementById('tx-timer').style.color = 'white';
+    txTimer = setInterval(() => {
+        let m = Math.floor(secs/60), s = secs%60;
+        document.getElementById('tx-timer').innerText = `${m<10?'0'+m:m}:${s<10?'0'+s:s}`;
+        if (secs < 120) document.getElementById('tx-timer').style.color = 'var(--danger)';
+        secs--;
+        if (secs < 0) { clearInterval(txTimer); document.getElementById('tx-timer').innerText = 'EXPIRADO'; }
+    }, 1000);
+    
+    // Actualizar el monto disponible de la oferta original
+    const offerIdx = offers.findIndex(o => o.id === offerId);
+    if (offerIdx >= 0) {
+        offers[offerIdx].amount -= val;
+        if (offers[offerIdx].amount <= 0) {
+            offers.splice(offerIdx, 1);
+        }
+        localStorage.setItem('p2p_offers', JSON.stringify(offers));
+    }
+    
+    showToast('info', `Comprando ${val} ${offer.from} de ${offer.amount} disponibles.`);
+    navigateTo('view-tx');
 }
 
 // ══════════════════════════════════════════
@@ -2279,8 +2751,7 @@ function doConfirm() {
 // ══════════════════════════════════════════
 function addDisputeAndHistory(seller, buyer, amount, currency, rate, motivo) {
     const d = JSON.parse(localStorage.getItem('p2p_disputes'));
-    d.push({ id:Math.floor(Math.random()*9000+1000), seller, buyer, amount, curr:currency, motivo,
-             date: new Date().toLocaleDateString('es-PE'), estado: 'arbitraje', evidencia: false });
+    d.push({ id:Math.floor(Math.random()*9000+1000), seller, buyer, amount, curr:currency, motivo });
     localStorage.setItem('p2p_disputes', JSON.stringify(d));
     const h = JSON.parse(localStorage.getItem('p2p_history'));
     h.unshift({ id:'TX-'+Math.floor(Math.random()*9000+1000), seller, amount, currency, rate, status:'disputed', date:new Date().toISOString().split('T')[0] });
@@ -2418,6 +2889,10 @@ function setRating(val) {
 }
 function submitRating() {
     if (!currRating) { showToast('error', 'Selecciona una calificación.'); return; }
+    const comment = document.getElementById('rating-comment').value.trim() || 'Sin comentario.';
+    const reviews = JSON.parse(localStorage.getItem('p2p_reviews'));
+    reviews.unshift({ id:Date.now(), from:activeTx?.seller || 'Vendedor', stars:currRating, comment, date:new Date().toISOString().split('T')[0] });
+    localStorage.setItem('p2p_reviews', JSON.stringify(reviews));
     showToast('success', `Calificaste con ${currRating} ⭐. ¡Gracias!`);
     currRating = 0;
     document.querySelectorAll('.star').forEach(s => s.classList.remove('lit'));
@@ -2427,11 +2902,14 @@ function submitRating() {
 }
 
 // ══════════════════════════════════════════
-// HISTORY
+// HISTORY (enhanced with search + detail)
 // ══════════════════════════════════════════
 function loadHistory(filter) {
+    currentHistoryFilter = filter;
     const all = JSON.parse(localStorage.getItem('p2p_history'));
-    const data = filter === 'all' ? all : all.filter(h => h.status === filter);
+    const searchTerm = (document.getElementById('history-search')?.value || '').toLowerCase().trim();
+    let data = filter === 'all' ? all : all.filter(h => h.status === filter);
+    if (searchTerm) data = data.filter(h => h.id.toLowerCase().includes(searchTerm) || h.seller.toLowerCase().includes(searchTerm));
     const c = document.getElementById('history-list');
     c.innerHTML = '';
     if (!data.length) {
@@ -2444,7 +2922,7 @@ function loadHistory(filter) {
     const labels = { completed:'Completado', pending:'Pendiente', disputed:'En disputa', cancelled:'Cancelado' };
     data.forEach(h => {
         c.innerHTML += `
-        <div class="history-item">
+        <div class="history-item" onclick="openTxDetail('${h.id}')">
             <div>
                 <p style="font-size:13px; font-weight:700; color:var(--text-main);">${h.id}</p>
                 <p style="font-size:11px; color:var(--text-muted); margin-top:2px;">${h.seller} · ${h.date}</p>
@@ -2461,23 +2939,60 @@ function filterHistory(filter, el) {
     el.classList.add('active');
     loadHistory(filter);
 }
+function searchHistory() { loadHistory(currentHistoryFilter); }
+
+function openTxDetail(txId) {
+    const all = JSON.parse(localStorage.getItem('p2p_history'));
+    const tx = all.find(h => h.id === txId);
+    if (!tx) return;
+    const icons = { completed:'✅', pending:'⏳', disputed:'⚠️', cancelled:'❌' };
+    const labels = { completed:'Completado', pending:'Pendiente', disputed:'En disputa', cancelled:'Cancelado' };
+    document.getElementById('txd-id').innerText = tx.id;
+    const pill = document.getElementById('txd-status');
+    pill.className = `status-pill ${tx.status}`;
+    pill.innerText = `${icons[tx.status]} ${labels[tx.status]}`;
+    const rows = document.getElementById('txd-rows');
+    rows.innerHTML = `
+        <div class="tx-detail-row"><span class="tx-detail-label">Vendedor</span><span class="tx-detail-value">${tx.seller}</span></div>
+        <div class="tx-detail-row"><span class="tx-detail-label">Comprador</span><span class="tx-detail-value">${tx.buyer || 'Carlos Mendoza'}</span></div>
+        <div class="tx-detail-row"><span class="tx-detail-label">Monto</span><span class="tx-detail-value">${tx.amount} ${tx.currency}</span></div>
+        <div class="tx-detail-row"><span class="tx-detail-label">Tasa</span><span class="tx-detail-value">${tx.rate}</span></div>
+        <div class="tx-detail-row"><span class="tx-detail-label">Banco</span><span class="tx-detail-value">${tx.bank || 'N/A'}</span></div>
+        <div class="tx-detail-row"><span class="tx-detail-label">Fecha</span><span class="tx-detail-value">${tx.date}</span></div>
+        <div class="tx-detail-row"><span class="tx-detail-label">Total</span><span class="tx-detail-value" style="color:var(--success); font-size:14px;">${(tx.amount * tx.rate).toFixed(2)} PEN</span></div>`;
+    navigateTo('view-tx-detail');
+}
 
 // ══════════════════════════════════════════
-// CARDS
+// CARDS (enhanced with types + default + delete)
 // ══════════════════════════════════════════
-const bankBorder = { bcp:'var(--bcp)', interbank:'var(--interbank)', bbva:'var(--bbva)', yape:'var(--yape)', plin:'var(--plin)' };
+const bankColors = { bcp:'var(--bcp)', interbank:'var(--interbank)', bbva:'var(--bbva)', yape:'var(--yape)', plin:'var(--plin)' };
+const bankNames  = { bcp:'BCP', interbank:'Interbank', bbva:'BBVA', yape:'Yape', plin:'Plin' };
 function loadCards() {
     const cards = JSON.parse(localStorage.getItem('p2p_cards'));
     const c = document.getElementById('cards-list');
     c.innerHTML = '';
+    if (!cards.length) {
+        c.innerHTML = `<div class="card" style="text-align:center; padding:24px;">
+            <i class="fas fa-credit-card" style="font-size:28px; color:var(--border-color); display:block; margin-bottom:8px;"></i>
+            <p style="font-size:12px; color:var(--text-muted);">No tienes cuentas registradas.</p></div>`;
+        return;
+    }
     cards.forEach(card => {
+        const isDefault = card.isDefault;
         c.innerHTML += `
-        <div class="card" style="display:flex; justify-content:space-between; align-items:center; border-left:4px solid ${bankBorder[card.bank]||'var(--primary)'};">
-            <div>
-                <strong style="text-transform:uppercase; font-size:13px;">${card.bank}</strong>
-                <p style="font-size:11px; color:var(--text-muted); margin-top:2px;">${card.number}</p>
+        <div class="payment-card-item ${isDefault ? 'is-default' : ''}">
+            <div class="bank-logo-circle" style="background:${bankColors[card.bank]||'var(--primary)'}">
+                ${(bankNames[card.bank]||card.bank).substring(0,3).toUpperCase()}
             </div>
-            <i class="fas fa-check-circle" style="color:var(--success); font-size:16px;"></i>
+            <div class="payment-card-info">
+                <p class="payment-card-name">${bankNames[card.bank]||card.bank} ${card.type === 'wallet' ? '(Billetera)' : '(Cuenta)'}</p>
+                <p class="payment-card-num">${card.number}</p>
+            </div>
+            <div class="payment-card-actions">
+                ${isDefault ? '<span class="default-badge">PRINCIPAL</span>' : `<button class="set-default-btn" onclick="setDefaultCard(${card.id})" title="Marcar principal"><i class="fas fa-star"></i></button>`}
+                <button class="delete-card-btn" onclick="askDeleteCard(${card.id})" title="Eliminar"><i class="fas fa-trash"></i></button>
+            </div>
         </div>`;
     });
 }
@@ -2485,19 +3000,48 @@ function addCard() {
     const num  = document.getElementById('new-card-num').value.trim();
     const bank = document.getElementById('new-bank').value;
     if (!num) { showToast('error', 'Ingresa un número válido.'); return; }
+    if (num.length < 6) { showToast('error', 'El número debe tener al menos 6 dígitos.'); return; }
     const cards = JSON.parse(localStorage.getItem('p2p_cards'));
-    cards.push({ id:Date.now(), bank, number:num });
+    const type = ['yape','plin'].includes(bank) ? 'wallet' : 'bank';
+    cards.push({ id:Date.now(), bank, type, number:num, isDefault:cards.length===0 });
     localStorage.setItem('p2p_cards', JSON.stringify(cards));
     document.getElementById('new-card-num').value = '';
     loadCards();
     showToast('success', 'Cuenta agregada exitosamente.');
 }
+function setDefaultCard(id) {
+    const cards = JSON.parse(localStorage.getItem('p2p_cards'));
+    cards.forEach(c => c.isDefault = (c.id === id));
+    localStorage.setItem('p2p_cards', JSON.stringify(cards));
+    loadCards();
+    showToast('success', 'Cuenta principal actualizada.');
+}
+function askDeleteCard(id) {
+    confirmAction = () => {
+        let cards = JSON.parse(localStorage.getItem('p2p_cards'));
+        const wasDefault = cards.find(c => c.id === id)?.isDefault;
+        cards = cards.filter(c => c.id !== id);
+        if (wasDefault && cards.length) cards[0].isDefault = true;
+        localStorage.setItem('p2p_cards', JSON.stringify(cards));
+        loadCards();
+        showToast('success', 'Cuenta eliminada.');
+    };
+    document.getElementById('confirm-title').innerText = '¿Eliminar esta cuenta?';
+    document.getElementById('confirm-msg').innerText = 'Esta acción no se puede deshacer.';
+    document.getElementById('confirm-overlay').classList.remove('hidden');
+}
+function closeConfirm() {
+    document.getElementById('confirm-overlay').classList.add('hidden');
+    confirmAction = null;
+}
+function executeConfirm() {
+    if (confirmAction) confirmAction();
+    closeConfirm();
+}
 
 // ══════════════════════════════════════════
 // ADMIN BACKOFFICE — US-ADM-01 / ADM-02 / ADM-03
 // ══════════════════════════════════════════
-let currentDisputeId = null;  // disputa seleccionada
-let selectedResolution = null; // buyer | seller | review
 
 /* US-ADM-01 — Cargar y filtrar listado de disputas */
 function loadAdmin(filter = 'all') {
@@ -2697,6 +3241,138 @@ function resolveDispute(id, release) {
 }
 
 // ══════════════════════════════════════════
+// US-USER-01 — REGISTRO DE DISPUTA (usuario)
+// ══════════════════════════════════════════
+function loadRegisterDisputeView() {
+    selectedTxForDispute = null;
+    disputeEvidenceUploaded = false;
+    const history = JSON.parse(localStorage.getItem('p2p_history'));
+    const c = document.getElementById('dispute-tx-list');
+    c.innerHTML = '';
+    if (!history || !history.length) {
+        c.innerHTML = `<p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">No tienes transacciones previas para disputar.</p>`;
+        return;
+    }
+    history.slice(0, 5).forEach(tx => {
+        const statusColors = { completed: 'var(--success)', pending: 'var(--warning)', disputed: 'var(--danger)', cancelled: 'var(--text-muted)' };
+        c.innerHTML += `
+        <div class="tx-select-card" id="tx-sel-${tx.id}" onclick="selectTxForDispute('${tx.id}')">
+            <div style="flex:1;">
+                <p style="font-size:12px; font-weight:700; color:var(--text-main);">${tx.id}</p>
+                <p style="font-size:10px; color:var(--text-muted); margin-top:2px;">${tx.seller} &nbsp;·&nbsp; ${tx.date}</p>
+                <p style="font-size:11px; font-weight:700; color:var(--primary); margin-top:2px;">${tx.amount} ${tx.currency}</p>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:9px; font-weight:700; color:${statusColors[tx.status] || 'var(--text-muted)'};">${tx.status.toUpperCase()}</span>
+                <div class="tx-check" id="chk-tx-${tx.id}"></div>
+            </div>
+        </div>`;
+    });
+    // Reset fields
+    document.getElementById('dispute-motivo-tipo').value = '';
+    document.getElementById('dispute-motivo-detalle').value = '';
+    document.getElementById('dispute-uploader').className = 'evidence-uploader';
+    document.getElementById('dispute-evidence-preview').classList.add('hidden');
+}
+
+function selectTxForDispute(txId) {
+    selectedTxForDispute = txId;
+    document.querySelectorAll('.tx-select-card').forEach(el => {
+        el.classList.remove('selected');
+        const chk = el.querySelector('.tx-check');
+        if (chk) { chk.innerHTML = ''; chk.style.background = ''; chk.style.borderColor = ''; }
+    });
+    const card = document.getElementById(`tx-sel-${txId}`);
+    if (card) {
+        card.classList.add('selected');
+        const chk = document.getElementById(`chk-tx-${txId}`);
+        if (chk) { chk.innerHTML = '✓'; chk.style.background = 'var(--primary)'; chk.style.borderColor = 'var(--primary)'; chk.style.color = 'white'; chk.style.fontSize = '10px'; chk.style.display = 'flex'; chk.style.alignItems = 'center'; chk.style.justifyContent = 'center'; }
+    }
+}
+
+function updateMotivoPlaceholder() {
+    const val = document.getElementById('dispute-motivo-tipo').value;
+    const placeholders = {
+        no_libero: 'Ej. Realicé el pago hace 2 horas y el vendedor no ha liberado los fondos ni responde el chat...',
+        no_pago:   'Ej. El comprador indicó haber pagado pero no recibí transferencia en mi cuenta...',
+        monto_incorrecto: 'Ej. El comprador transfirió S/ 380 pero la operación era por S/ 400...',
+        voucher_falso: 'Ej. El voucher presentado tiene datos que no coinciden con una transferencia real...',
+        otro: 'Describe con detalle qué ocurrió en la transacción...',
+    };
+    document.getElementById('dispute-motivo-detalle').placeholder = placeholders[val] || 'Describe con detalle qué ocurrió...';
+}
+
+function simulateEvidenceUpload() {
+    const uploader = document.getElementById('dispute-uploader');
+    uploader.innerHTML = `<div style="width:24px;height:24px;border:3px solid var(--primary);border-top-color:transparent;border-radius:50%;animation:spin 0.75s linear infinite;margin:0 auto 8px;"></div><p style="font-size:12px; font-weight:700;">Subiendo...</p>`;
+    setTimeout(() => {
+        disputeEvidenceUploaded = true;
+        uploader.className = 'evidence-uploader uploaded';
+        uploader.innerHTML = `<i class="fas fa-check-circle" style="font-size:28px; color:var(--success); display:block; margin-bottom:6px;"></i><p style="font-size:12px; font-weight:700; color:var(--success);">Archivo listo</p>`;
+        const names = ['captura_voucher.png', 'comprobante.jpg', 'screenshot_chat.png', 'evidencia_001.pdf'];
+        const name = names[Math.floor(Math.random() * names.length)];
+        document.getElementById('dispute-evidence-name').innerText = `${name} · ${Math.floor(Math.random()*100+50)} KB`;
+        document.getElementById('dispute-evidence-preview').classList.remove('hidden');
+    }, 1400);
+}
+
+function removeEvidence() {
+    disputeEvidenceUploaded = false;
+    document.getElementById('dispute-uploader').className = 'evidence-uploader';
+    document.getElementById('dispute-uploader').innerHTML = `<i class="fas fa-cloud-upload-alt" style="font-size:28px; color:var(--text-muted); margin-bottom:8px; display:block;"></i><p style="font-size:12px; font-weight:700; color:var(--text-main);">Toca para adjuntar archivo</p><p style="font-size:10px; color:var(--text-muted); margin-top:3px;">Captura de pantalla, voucher o comprobante (PNG, JPG, PDF)</p>`;
+    document.getElementById('dispute-evidence-preview').classList.add('hidden');
+}
+
+function submitDisputeUser() {
+    if (!selectedTxForDispute) { showToast('error', 'Selecciona la transacción involucrada.'); return; }
+    const tipo   = document.getElementById('dispute-motivo-tipo').value;
+    const detalle = document.getElementById('dispute-motivo-detalle').value.trim();
+    if (!tipo)    { showToast('error', 'Selecciona el tipo de problema.'); return; }
+    if (!detalle) { showToast('error', 'Describe el motivo de la disputa.'); return; }
+
+    const history  = JSON.parse(localStorage.getItem('p2p_history'));
+    const tx       = history.find(h => h.id === selectedTxForDispute);
+    if (!tx) return;
+
+    const motiOptions = {
+        no_libero: 'Vendedor no liberó fondos',
+        no_pago:   'Comprador no realizó el pago',
+        monto_incorrecto: 'Monto recibido incorrecto',
+        voucher_falso: 'Voucher posiblemente falso',
+        otro: 'Otro motivo',
+    };
+    const disputes = JSON.parse(localStorage.getItem('p2p_disputes'));
+    const newId = Date.now();
+    disputes.push({
+        id: newId,
+        buyer:  currentUser.name,
+        seller: tx.seller,
+        amount: tx.amount,
+        curr:   tx.currency,
+        motivo: `[${motiOptions[tipo]}] ${detalle}`,
+        date:   new Date().toLocaleDateString('es-PE'),
+        estado: 'arbitraje',
+        evidencia: disputeEvidenceUploaded,
+    });
+    localStorage.setItem('p2p_disputes', JSON.stringify(disputes));
+
+    // Marcar tx en historial como disputed
+    const idx = history.findIndex(h => h.id === selectedTxForDispute);
+    if (idx >= 0) { history[idx].status = 'disputed'; localStorage.setItem('p2p_history', JSON.stringify(history)); }
+
+    showToast('success', '✅ Disputa registrada. El equipo revisará en 5 días hábiles.');
+    setTimeout(() => navigateTo('view-disputes-profile', document.getElementById('nav-profile')), 1400);
+}
+
+function resetDemoData() {
+    localStorage.removeItem('p2p_disputes');
+    localStorage.removeItem('p2p_history');
+    initDB();
+    loadAdmin();
+    showToast('success', 'Datos de demo restablecidos.');
+}
+
+// ══════════════════════════════════════════
 // VENDOR NOTIFICATIONS
 // ══════════════════════════════════════════
 function toggleVendorNotifications() {
@@ -2753,13 +3429,140 @@ function updateVendorNotifications() {
         });
     }
 }
-function resetDemoData() {
-    localStorage.removeItem('p2p_disputes');
-    localStorage.removeItem('p2p_history');
-    initDB();
-    loadAdmin();
-    showToast('success', 'Datos de demo restablecidos.');
+// ══════════════════════════════════════════
+// REVIEWS
+// ══════════════════════════════════════════
+function loadMyReviews() {
+    const reviews = JSON.parse(localStorage.getItem('p2p_reviews'));
+    // Star bars
+    const bars = document.getElementById('review-bars');
+    const counts = [0,0,0,0,0];
+    reviews.forEach(r => counts[r.stars - 1]++);
+    const total = reviews.length;
+    const avg = total ? (reviews.reduce((s,r) => s + r.stars, 0) / total).toFixed(1) : '0.0';
+    document.getElementById('review-avg').innerText = avg;
+    document.getElementById('review-total-count').innerText = `${total} reseñas`;
+    bars.innerHTML = '';
+    for (let i = 5; i >= 1; i--) {
+        const pct = total ? Math.round((counts[i-1] / total) * 100) : 0;
+        bars.innerHTML += `
+        <div class="star-bar">
+            <span class="star-bar-label">${i}</span>
+            <div class="star-bar-track"><div class="star-bar-fill" style="width:${pct}%"></div></div>
+            <span class="star-bar-count">${counts[i-1]}</span>
+        </div>`;
+    }
+    // Reviews list
+    const c = document.getElementById('reviews-list');
+    c.innerHTML = '';
+    if (!reviews.length) {
+        c.innerHTML = `<p style="text-align:center; padding:20px; font-size:12px; color:var(--text-muted);">Aún no tienes reseñas.</p>`;
+        return;
+    }
+    reviews.forEach(r => {
+        const starsHtml = '⭐'.repeat(r.stars) + '☆'.repeat(5 - r.stars);
+        c.innerHTML += `
+        <div class="review-item">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong style="font-size:12px; color:var(--text-main);">${r.from}</strong>
+                <span class="review-stars">${starsHtml}</span>
+            </div>
+            <p class="review-comment">${r.comment}</p>
+            <p class="review-meta">${r.date}</p>
+        </div>`;
+    });
 }
+
+// ══════════════════════════════════════════
+// MY OFFERS
+// ══════════════════════════════════════════
+function loadMyOffers() {
+    const offers = JSON.parse(localStorage.getItem('p2p_offers'));
+    const mine = offers.filter(o => o.seller.includes('(Tú)'));
+    const c = document.getElementById('my-offers-list');
+    c.innerHTML = '';
+    if (!mine.length) {
+        c.innerHTML = `<div class="card" style="text-align:center; padding:24px;">
+            <i class="fas fa-bullhorn" style="font-size:28px; color:var(--border-color); display:block; margin-bottom:8px;"></i>
+            <p style="font-size:12px; color:var(--text-muted);">No has publicado ofertas aún.</p>
+            <button class="btn btn-outline btn-sm" style="margin-top:12px;" onclick="navigateTo('view-publish',document.getElementById('nav-publish'))">
+                <i class="fas fa-plus"></i> Publicar Oferta
+            </button></div>`;
+        return;
+    }
+    mine.forEach(o => {
+        c.innerHTML += `
+        <div class="my-offer-card">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                <div>
+                    <span class="offer-owner-badge"><i class="fas fa-user"></i> Tu Oferta</span>
+                    <p style="font-size:14px; font-weight:800; color:var(--text-main); margin-top:5px;">${o.from} → ${o.to}</p>
+                </div>
+                <strong style="font-size:18px; font-weight:800; color:var(--primary);">S/ ${o.rate.toFixed(3)}</strong>
+            </div>
+            <div style="display:flex; gap:8px; font-size:11px; color:var(--text-muted); margin-bottom:10px;">
+                <span>💰 ${o.amount} ${o.from}</span>
+                <span>📏 Lím: ${o.min}–${o.max}</span>
+                <span>🏦 ${o.bankName}</span>
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="deleteOffer(${o.id})">
+                <i class="fas fa-trash"></i> Retirar Oferta
+            </button>
+        </div>`;
+    });
+}
+function deleteOffer(id) {
+    confirmAction = () => {
+        let offers = JSON.parse(localStorage.getItem('p2p_offers'));
+        offers = offers.filter(o => o.id !== id);
+        localStorage.setItem('p2p_offers', JSON.stringify(offers));
+        loadMyOffers();
+        showToast('success', 'Oferta retirada del mercado.');
+    };
+    document.getElementById('confirm-title').innerText = '¿Retirar esta oferta?';
+    document.getElementById('confirm-msg').innerText = 'La oferta será removida del mercado.';
+    document.getElementById('confirm-overlay').classList.remove('hidden');
+}
+
+// ══════════════════════════════════════════
+// COMPLAINTS
+// ══════════════════════════════════════════
+function loadComplaints() {
+    const complaints = JSON.parse(localStorage.getItem('p2p_complaints'));
+    const c = document.getElementById('complaints-list');
+    c.innerHTML = '';
+    if (!complaints.length) {
+        c.innerHTML = `<div class="card" style="text-align:center; padding:24px;">
+            <i class="fas fa-check-circle" style="font-size:28px; color:var(--success); display:block; margin-bottom:8px;"></i>
+            <p style="font-size:12px; color:var(--text-muted);">No tienes reclamos registrados.</p></div>`;
+        return;
+    }
+    const typeLabels = { tx:'Transacción', user:'Usuario', app:'Plataforma', other:'Otro' };
+    complaints.forEach(comp => {
+        c.innerHTML += `
+        <div class="complaint-card ${comp.status}">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <strong style="font-size:12px; color:var(--text-main);">RCL-${comp.id}</strong>
+                <span class="status-pill ${comp.status}">${comp.status === 'open' ? '⏳ Abierto' : '✅ Resuelto'}</span>
+            </div>
+            <p style="font-size:10px; color:var(--primary); font-weight:700; margin-bottom:4px;">${typeLabels[comp.type] || comp.type}</p>
+            <p style="font-size:11px; color:var(--text-muted); line-height:1.4;">${comp.desc}</p>
+            <p style="font-size:10px; color:#94A3B8; margin-top:6px;">${comp.date}</p>
+        </div>`;
+    });
+}
+function submitComplaint() {
+    const type = document.getElementById('complaint-type').value;
+    const desc = document.getElementById('complaint-desc').value.trim();
+    if (!desc) { showToast('error', 'Describe tu reclamo.'); return; }
+    const complaints = JSON.parse(localStorage.getItem('p2p_complaints'));
+    complaints.push({ id:Math.floor(Math.random()*9000+1000), type, desc, status:'open', date:new Date().toISOString().split('T')[0] });
+    localStorage.setItem('p2p_complaints', JSON.stringify(complaints));
+    document.getElementById('complaint-desc').value = '';
+    loadComplaints();
+    showToast('success', 'Reclamo registrado. Te responderemos en 5 días hábiles.');
+}
+
 </script>
 </body>
 </html>
