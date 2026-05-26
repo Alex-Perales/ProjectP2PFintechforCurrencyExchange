@@ -49,24 +49,11 @@ private val sampleOffers = listOf(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MarketScreen(
-    onNavigateToPublish: () -> Unit = {},
-    onNavigateToProfile: () -> Unit = {},
     onNavigateToNotifications: () -> Unit = {}
 ) {
-    var selectedTab by remember { mutableStateOf(0) }
-
     Scaffold(
         containerColor = BackgroundApp,
-        topBar = { MarketTopBar(onNavigateToNotifications = onNavigateToNotifications) },
-        bottomBar = {
-            MarketBottomBar(selectedTab) { tab ->
-                when (tab) {
-                    0 -> selectedTab = 0
-                    1 -> onNavigateToPublish()
-                    2 -> onNavigateToProfile()
-                }
-            }
-        }
+        topBar = { MarketTopBar(onNavigateToNotifications = onNavigateToNotifications) }
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
@@ -150,47 +137,6 @@ private fun TickerItem(currency: String, rate: String, up: Boolean) {
             color = if (up) PrimaryMint else DangerColor,
             fontSize = 10.sp,
             fontWeight = FontWeight.Bold
-        )
-    }
-}
-
-// ─── BottomBar ───────────────────────────────────────────────────────────────
-
-@Composable
-private fun MarketBottomBar(selected: Int, onSelect: (Int) -> Unit) {
-    NavigationBar(containerColor = SurfaceColor, tonalElevation = 8.dp) {
-        NavigationBarItem(
-            selected = selected == 0,
-            onClick = { onSelect(0) },
-            icon = { Icon(Icons.Default.BarChart, contentDescription = "Mercado") },
-            label = { Text("Mercado", fontSize = 11.sp) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Primary,
-                selectedTextColor = Primary,
-                indicatorColor = Primary.copy(alpha = 0.12f)
-            )
-        )
-        NavigationBarItem(
-            selected = selected == 1,
-            onClick = { onSelect(1) },
-            icon = { Icon(Icons.Default.AddCircle, contentDescription = "Publicar") },
-            label = { Text("Publicar", fontSize = 11.sp) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Primary,
-                selectedTextColor = Primary,
-                indicatorColor = Primary.copy(alpha = 0.12f)
-            )
-        )
-        NavigationBarItem(
-            selected = selected == 2,
-            onClick = { onSelect(2) },
-            icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
-            label = { Text("Perfil", fontSize = 11.sp) },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Primary,
-                selectedTextColor = Primary,
-                indicatorColor = Primary.copy(alpha = 0.12f)
-            )
         )
     }
 }
