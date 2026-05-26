@@ -203,6 +203,16 @@ Prefijo base: `/api/v1`
 | POST | `/transactions/{id}/confirm` | Vendedor confirma recepción y libera fondos | Sí |
 | POST | `/transactions/{id}/dispute` | Abrir disputa (comprador o vendedor) | Sí |
 
+### KYC (Verificación de identidad)
+
+| Método | Endpoint | Descripción | Auth |
+|---|---|---|---|
+| POST | `/kyc/documents` | Subir documentos KYC (DNI frontal/reverso, selfie). Multipart con `type` y `transactional_upload` opcional. | Sí |
+| GET  | `/kyc/status` | Consultar estado KYC del usuario (pending, verified, rejected) | Sí |
+| POST | `/kyc/verify` | Endpoint que lanza verificación biométrica/externa (opcional, async) | Sí |
+
+Nota: los uploads deben soportar presigned URLs para S3/environments de storage; el servicio backend debe encolar el trabajo de verificación (Celery) y notificar por Webhook/WebSocket cuando termine.
+
 ### Calificaciones y cuentas
 
 | Método | Endpoint | Descripción | Auth |
@@ -227,28 +237,104 @@ Prefijo base: `/api/v1`
 | GET | `/exchange/rates` | Obtener tasa de cambio actual (con caché de 5 min) | Sí |
 | GET | `/exchange/rates/historical` | Histórico de tasas para análisis | Sí |
 
+### Perfil de Usuario
 
-### 🔔 Sistema de Notificaciones de Vendor
-- **GET /api/v1/transactions/pending** - Obtener transacciones pendientes como vendedor
-- **POST /api/v1/transactions/{id}/confirm** - Confirmar y liberar fondos
-- **POST /api/v1/transactions/{id}/dispute** - Abrir disputa como vendedor
-- Notificaciones en tiempo real mediante WebSocket o polling
+| Método | Endpoint | Descripción | Auth |
+|---|---|---|---|
+| PATCH | `/users/profile` | Editar datos del perfil (nombre, teléfono, foto) | Sí |
+| GET | `/users/{id}/rating-summary` | Resumen de calificaciones del usuario | Sí |
 
-### ⏸️ Persistencia de Transacciones Pausadas
-- **POST /api/v1/transactions/{id}/pause** - Guardar estado de transacción en progreso
-- **GET /api/v1/transactions/{id}/resume** - Recuperar transacción pausada
-- Estado se guarda en Redis con TTL de 24 horas
-- Cliente restaura automáticamente al volver a la pantalla
+### Transacciones Avanzadas
 
-### 📋 Disputas Consolidadas
-- **GET /api/v1/disputes/my-disputes** - Obtener disputas del usuario (buyer + seller)
-- Filtrado por rol: comprador, vendedor o todas
-- Incluye información completa de la transacción original
+| Método | Endpoint | Descripción | Auth |
+|---|---|---|---|
+| POST | `/transactions/{id}/pause` | Pausar transacción en progreso (almacenar estado en Redis) | Sí |
+| GET | `/transactions/{id}/resume` | Recuperar transacción pausada (restaurar desde Redis) | Sí |
+| GET | `/transactions/pending` | Listar transacciones pendientes (para vendor inbox) | Sí |
+| GET | `/transactions/{id}/status-history` | Historial de cambios de estado de la transacción | Sí |
 
-### 💱 Sistema de Tasas de Cambio
-- **GET /api/v1/exchange/rates** - Tasas actuales (caché Redis 5 min)
-- **GET /api/v1/exchange/rates/historical** - Histórico diario de tasas
-- Tarea Celery actualiza cada 5 minutos
-- Soporta ExchangeRate.host (MVP) y Open Exchange Rates (producción)
+### Disputas Personales
+
+| Método | Endpoint | Descripción | Auth |
+|---|---|---|---|
+| GET | `/disputes/my-disputes` | Disputas del usuario actual (buyer + seller) | Sí |
+
+### Mis Ofertas
+
+| Método | Endpoint | Descripción | Auth |
+|---|---|---|---|
+| GET | `/offers/my-offers` | Listar ofertas publicadas por el usuario actual | Sí |
+
+### Comprobantes
+
+| Método | Endpoint | Descripción | Auth |
+|---|---|---|---|
+| GET | `/transactions/{id}/receipt/pdf` | Descargar comprobante de transacción en PDF | Sí |
+
+---
+
+## 📋 Especificaciones de Request/Response y Validación
+
+### ErrorResponse Estándar
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Email ya existe en el sistema",
+    "timestamp": "2026-05-25T14:30:00Z",
+    "details": {
+      "field": "email",
+      "reason": "unique_constraint"
+    }
+  }
+}
+```
+
+**Códigos HTTP comunes**: 401 UNAUTHORIZED | 403 FORBIDDEN | 404 NOT_FOUND | 422 VALIDATION_ERROR | 409 CONFLICT | 500 INTERNAL_ERROR
+
+### Validación de Campos
+
+- **email**: RFC 5322, único, max 255 chars
+- **password**: Min 8 chars, 1 mayúscula, 1 número, 1 símbolo
+- **phone**: Formato +51-xxxxxxxxx (Perú)
+- **dni**: 8 dígitos, único
+- **amount**: > 0, ≤ límite diario
+- **rate**: > 0, máximo 4 decimales
+- **account_number** (CCI): 20 dígitos con validación check digit
+- **kyc document**: Max 10 MB, jpeg/png/pdf
+
+### WebSocket: Notificaciones Tiempo Real
+
+```
+WS /api/v1/ws/notifications
+Authorization: Bearer {token}
+```
+
+Eventos: `transaction_status_changed`, `voucher_validated`, `dispute_resolved`, `kyc_verified`, `offer_matched`
+
+Fallback: `GET /api/v1/notifications?since={timestamp}` (polling)
+
+### Tareas Celery
+
+| Tarea | Trigger |
+|---|---|
+| `update_exchange_rates` | Scheduled 5 min |
+| `process_ocr_voucher` | POST /transactions/{id}/voucher |
+| `verify_kyc_documents` | POST /kyc/documents |
+| `resolve_disputes_auto` | Scheduled 1h |
+| `cleanup_expired_offers` | Scheduled 1h |
+
+### Idempotencia
+
+Header requerido: `Idempotency-Key: {uuid}` en POST sensibles. Respuesta 409 si duplicado con previous_response guardada.
+
+### Presigned URLs para Uploads
+
+1. `POST /transactions/{id}/voucher/presigned-url` → obtener URL de S3
+2. Cliente sube directo a S3
+3. `POST /transactions/{id}/voucher/complete` con s3_key
+4. Backend lanza OCR async
+5. Webhook notifica cuando esté listo
 
 ---

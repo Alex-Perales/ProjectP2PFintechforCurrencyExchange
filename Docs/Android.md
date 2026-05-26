@@ -215,3 +215,359 @@ android/
 | **BankAccountsScreen** | Lista de cuentas (BCP, Interbank, BBVA, Yape, Plin), agregar nueva |
 | **LegalScreens** | **NEW:** Términos y Condiciones, Política de Privacidad, Acerca de, Ayuda |
 | **AdminScreen** | Solo rol admin: stats globales, disputas activas, acciones Liberar o Revertir |
+
+---
+
+## Recomendaciones y mejoras (sugeridas)
+
+- **Seguridad móvil:** usar Android Keystore + EncryptedSharedPreferences para almacenar tokens; habilitar `BiometricPrompt` (huella/face) para acciones sensibles como liberar fondos o firmar contratos.
+- **Network security:** certificate pinning con OkHttp, timeouts explícitos, retries exponenciales y detección de redes no confiables.
+- **Idempotencia y reconexión:** diseñar endpoints que acepten `idempotency-key` para creación de transacciones; la app debe reintentar de forma segura sin duplicar operaciones.
+- **Offline-first:** cache en `Room` + sincronización con `WorkManager` para transacciones pausadas; mantener solo los metadatos necesarios localmente (no vouchers completos).
+- **Privacidad:** minimizar registro de PII en logs; usar redaction; petición de permisos contextual y cumplir políticas de retención definidas en `Docs/BD.md`.
+- **Testing & CI:** cubrir ViewModel y UseCases con unit tests, Compose UI tests e instrumented tests; integrar `GitHub Actions` para build/lint/tests y releases automáticos.
+- **Observabilidad:** integrar `Sentry` o `Firebase Crashlytics` y trazas básicas para errores críticos; permitir opt-in de analytics.
+- **Performance:** optimizar listas con `LazyColumn`, usar `Coil` con placeholders y límites de memoria; configurar `Proguard`/`R8` y mantener reglas mínimas para mantener nombres necesarios.
+- **Release & Play Store:** configurar `signingConfig`, versionamiento semántico, políticas de privacidad en la ficha y lista de permisos justificados para Play Console.
+- **Accesibilidad & localización:** usar `contentDescription`, contrastes adecuados, soporte TalkBack, y strings traducibles (es, en — posible expansión a otros países).
+
+---
+
+## 🔴 Manejo de Errores en UI
+
+### ErrorResponse del Backend
+```kotlin
+// data/remote/dto/ErrorResponse.kt
+data class ErrorResponse(
+    val error: ErrorDetails
+)
+
+data class ErrorDetails(
+    val code: String,                    // VALIDATION_ERROR, UNAUTHORIZED, etc.
+    val message: String,
+    val timestamp: String,
+    val details: Map<String, String>?    // field -> reason
+)
+```
+
+### UserMessage en ViewModel
+```kotlin
+// Sealed class para estados de error en presentación
+sealed class UiState<T> {
+    class Loading<T> : UiState<T>()
+    data class Success<T>(val data: T) : UiState<T>()
+    data class Error<T>(
+        val errorCode: String,
+        val userMessage: String,           // Mensaje amigable para el usuario
+        val details: String? = null
+    ) : UiState<T>()
+}
+
+// ViewModel mapea errores
+fun handleError(throwable: Throwable): Error<Unit> {
+    return when {
+        throwable is HttpException && throwable.code() == 422 -> {
+            val errorResponse = parseErrorResponse(throwable)
+            Error(
+                errorCode = errorResponse.error.code,
+                userMessage = "Datos inválidos: ${errorResponse.error.details?.values?.firstOrNull()}",
+                details = errorResponse.error.message
+            )
+        }
+        throwable is HttpException && throwable.code() == 401 -> {
+            Error(
+                errorCode = "UNAUTHORIZED",
+                userMessage = "Tu sesión expiró. Por favor, vuelve a iniciar sesión."
+            )
+        }
+        throwable is SocketTimeoutException -> {
+            Error(
+                errorCode = "TIMEOUT",
+                userMessage = "La conexión tardó demasiado. Verifica tu conexión e intenta de nuevo."
+            )
+        }
+        else -> {
+            Error(
+                errorCode = "UNKNOWN_ERROR",
+                userMessage = "Algo salió mal. Intenta de nuevo."
+            )
+        }
+    }
+}
+```
+
+### UI Toast/Snackbar
+```kotlin
+// presentation/transaction/TransactionScreen.kt
+when (val uiState = transactionState.collectAsState().value) {
+    is UiState.Error -> {
+        LaunchedEffect(uiState.errorCode) {
+            snackbarHostState.showSnackbar(
+                message = uiState.userMessage,
+                duration = SnackbarDuration.Long,
+                actionLabel = "Reintentar"
+            )
+        }
+    }
+    is UiState.Success -> { ... }
+    is UiState.Loading -> { ... }
+}
+```
+
+---
+
+## 🔄 WebSocket: Notificaciones en Tiempo Real
+
+### Conexión y Reconexión Automática
+```kotlin
+// core/network/WebSocketManager.kt
+class WebSocketManager(
+    private val tokenManager: TokenManager,
+    private val logger: Logger
+) {
+    private var webSocket: WebSocket? = null
+    private val reconnectJob: Job? = null
+    private val backoffMs = mutableListOf<Long>()  // Exponential backoff
+
+    fun connect(onEvent: (NotificationEvent) -> Unit) {
+        val token = tokenManager.getAccessToken()
+        val request = Request.Builder()
+            .url("wss://api.peruexchange.com/api/v1/ws/notifications")
+            .addHeader("Authorization", "Bearer $token")
+            .build()
+
+        webSocket = OkHttpClient().newWebSocket(request, object : WebSocketListener() {
+            override fun onOpen(ws: WebSocket, response: Response) {
+                logger.d("WebSocket connected")
+                backoffMs.clear()
+            }
+
+            override fun onMessage(ws: WebSocket, text: String) {
+                val event = parseNotificationEvent(text)
+                onEvent(event)
+            }
+
+            override fun onFailure(ws: WebSocket, t: Throwable, response: Response?) {
+                logger.e("WebSocket error: ${t.message}")
+                scheduleReconnect()
+            }
+
+            override fun onClosed(ws: WebSocket, code: Int, reason: String) {
+                if (code != 1000) {  // 1000 = normal close
+                    scheduleReconnect()
+                }
+            }
+        })
+    }
+
+    private fun scheduleReconnect() {
+        val delay = if (backoffMs.size < 5) {
+            (1000L * Math.pow(2.0, backoffMs.size.toDouble())).toLong()
+        } else {
+            30_000L  // Max 30 segundos
+        }
+        backoffMs.add(delay)
+        reconnectJob?.cancel()
+        reconnectJob = GlobalScope.launch {
+            delay(delay)
+            connect { /* reuse callback */ }
+        }
+    }
+
+    fun disconnect() {
+        webSocket?.close(1000, "User disconnect")
+    }
+}
+
+// Notificaciones parseadas
+data class NotificationEvent(
+    val eventType: String,  // transaction_status_changed, voucher_validated, etc.
+    val transactionId: String,
+    val newStatus: String?,
+    val timestamp: String
+)
+```
+
+### Fallback a Polling
+```kotlin
+// domain/usecase/PollNotificationsUseCase.kt
+class PollNotificationsUseCase(
+    private val transactionApi: TransactionApi
+) {
+    operator fun invoke(since: Long): Flow<List<NotificationEvent>> = flow {
+        while (currentCoroutineContext().isActive) {
+            try {
+                val notifications = transactionApi.getNotifications(since)
+                emit(notifications)
+                delay(5_000)  // Poll cada 5 segundos
+            } catch (e: Exception) {
+                // Emitir error pero continuar retentando
+                delay(10_000)  // Back off 10 segundos en error
+            }
+        }
+    }
+}
+
+// En ViewModel: intentar WebSocket, fallback a polling
+val notificationFlow = if (isWebSocketAvailable()) {
+    wsManager.connectAndObserve()
+} else {
+    pollNotificationsUseCase(since = System.currentTimeMillis() / 1000)
+}
+```
+
+---
+
+## 💾 WorkManager: Pausas de Transacciones
+
+### Guardar Transacción Pausada en Local + Redis
+```kotlin
+// data/local/model/PausedTransaction.kt
+@Entity(tableName = "paused_transactions")
+data class PausedTransactionEntity(
+    @PrimaryKey val id: String,           // transaction_id
+    val offerData: String,                // JSON serializado
+    val currentStep: Int,                 // 0-3
+    val voucherPath: String?,             // Ruta local del comprobante en progreso
+    val cciEntered: String?,              // CCI del comprador
+    val pausedAt: Long,                   // timestamp
+    val expiresAt: Long                   // timestamp + 24h
+)
+
+// TransactionRepositoryImpl
+suspend fun pauseTransaction(txId: String, metadata: PausedMetadata) {
+    // 1. Guardar en Room
+    val entity = mapToEntity(txId, metadata)
+    transactionDao.insertPaused(entity)
+
+    // 2. Sincronizar a Backend (opcional)
+    try {
+        transactionApi.pauseTransaction(
+            txId = txId,
+            body = PauseRequest(
+                paused_metadata = metadata.toJson()
+            )
+        )
+    } catch (e: Exception) {
+        // Si falla backend, ya tenemos en local. WorkManager retentará later.
+    }
+}
+
+suspend fun resumeTransaction(txId: String): Result<Transaction> {
+    // 1. Recuperar de Room
+    val pausedTx = transactionDao.getPaused(txId) ?: return Result.failure(Exception("Not found"))
+
+    // 2. Recuperar del Backend (más actualizado)
+    return try {
+        val updated = transactionApi.resumeTransaction(txId)
+        Result.success(updated)
+    } catch (e: Exception) {
+        // Fallback a local
+        Result.success(mapFromEntity(pausedTx))
+    }
+}
+```
+
+### WorkManager para Sincronizar Pausadas
+```kotlin
+// di/WorkModule.kt
+class PauseTransactionSyncWorker(
+    context: Context,
+    params: WorkerParameters,
+    private val transactionRepository: TransactionRepository
+) : CoroutineWorker(context, params) {
+
+    override suspend fun doWork(): Result = try {
+        val pausedTxs = transactionRepository.getAllPausedLocal()
+
+        pausedTxs.forEach { tx ->
+            if (tx.expiresAt < System.currentTimeMillis()) {
+                // Expirada, eliminar
+                transactionRepository.deletePaused(tx.id)
+            } else {
+                try {
+                    transactionRepository.syncPauseToBackend(tx.id)
+                } catch (e: Exception) {
+                    // Reintentar después
+                    return@forEach
+                }
+            }
+        }
+
+        Result.success()
+    } catch (e: Exception) {
+        // Reintentar después (BackoffPolicy.EXPONENTIAL)
+        Result.retry()
+    }
+}
+
+// En app startup (MainActivity o Application)
+val syncRequest = PeriodicWorkRequestBuilder<PauseTransactionSyncWorker>(
+    repeatInterval = 30,
+    repeatIntervalTimeUnit = TimeUnit.MINUTES
+).build()
+
+WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+    "pause_sync",
+    ExistingPeriodicWorkPolicy.KEEP,
+    syncRequest
+)
+```
+
+### UI: Banner de Transacción Pausada
+```kotlin
+// presentation/market/MarketScreen.kt
+@Composable
+fun MarketScreen(viewModel: MarketViewModel) {
+    val pausedTx by viewModel.pausedTransaction.collectAsState()
+    val offers by viewModel.offers.collectAsState()
+
+    Column {
+        // Banner si hay pausada
+        pausedTx?.let { tx ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .clickable {
+                        // Navegar a TransactionScreen con ID
+                        navController.navigate(
+                            Screen.Transaction.createRoute(tx.id)
+                        )
+                    },
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text("Transacción en progreso", style = MaterialTheme.typography.labelMedium)
+                        Text("${tx.amount} ${tx.currency}", style = MaterialTheme.typography.bodyMedium)
+                    }
+                    Button(onClick = { /* continue */ }) {
+                        Text("Continuar")
+                    }
+                }
+            }
+        }
+
+        // Lista de ofertas
+        LazyColumn {
+            items(offers) { offer ->
+                OfferCard(offer = offer)
+            }
+        }
+    }
+}
+```
+
+---
+
+## 📋 Roadmap de Implementación (8 Fases Independientes)
+

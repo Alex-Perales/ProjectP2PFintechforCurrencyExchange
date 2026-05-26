@@ -189,6 +189,46 @@
 
 ---
 
+### `kyc_documents`
+| Columna | Tipo | Descripción |
+|---|---|---|
+| `id` | UUID PK | Identificador único |
+| `user_id` | UUID FK → users | Propietario del documento |
+| `type` | VARCHAR(20) NOT NULL | `dni_front`, `dni_back`, `selfie` |
+| `file_url` | TEXT NOT NULL | URL en storage externo (S3) |
+| `status` | VARCHAR(20) DEFAULT 'pending' | `pending`, `processing`, `verified`, `rejected` |
+| `confidence` | NUMERIC(5,2) | Confianza del procesado biométrico/ocr |
+| `review_notes` | TEXT | Notas del revisor o razón de rechazo |
+| `created_at` | TIMESTAMPTZ DEFAULT NOW() | Fecha de subida |
+
+---
+
+### `vendor_notifications`
+| Columna | Tipo | Descripción |
+|---|---|---|
+| `id` | UUID PK | Identificador único |
+| `transaction_id` | UUID FK → transactions | Transacción relacionada |
+| `seller_id` | UUID FK → users | Vendedor que debe confirmar |
+| `type` | VARCHAR(50) | `pending_voucher`, `timeout`, `escalation` |
+| `status` | VARCHAR(20) DEFAULT 'pending' | `pending`, `sent`, `acknowledged`, `resolved` |
+| `expires_at` | TIMESTAMPTZ | TTL para la notificación en la UI |
+| `payload` | JSONB | Datos adicionales (previews, links) |
+| `created_at` | TIMESTAMPTZ DEFAULT NOW() | Fecha de creación |
+
+---
+
+### `user_contracts`
+| Columna | Tipo | Descripción |
+|---|---|---|
+| `id` | UUID PK | Identificador único |
+| `user_id` | UUID FK → users | Usuario que firma |
+| `signed_at` | TIMESTAMPTZ | Fecha de firma digital |
+| `signature_method` | VARCHAR(30) | `click_to_sign`, `biometric` |
+| `document_url` | TEXT | URL del contrato firmado (opcional) |
+| `ip_address` | VARCHAR(45) | IP del firmante |
+| `created_at` | TIMESTAMPTZ DEFAULT NOW() | Registro |
+
+
 ### `ratings`
 | Columna | Tipo | Descripción |
 |---|---|---|
@@ -213,3 +253,219 @@
 | `details` | JSONB | Payload o contexto adicional |
 | `ip_address` | VARCHAR(45) | IP del cliente |
 | `created_at` | TIMESTAMPTZ DEFAULT NOW() | Momento del evento |
+
+---
+
+## 🔧 Migraciones Alembic Requeridas
+
+### Migración 008: Tablas KYC, Notificaciones y Contratos ✅
+
+```python
+# migrations/versions/008_kyc_notifications_contracts.py
+# Crea: kyc_documents, vendor_notifications, user_contracts
+
+def upgrade():
+    op.create_table('kyc_documents', ...)
+    op.create_table('vendor_notifications', ...)
+    op.create_table('user_contracts', ...)
+```
+
+### Migración 009: Índices de Performance 🏃
+
+```python
+# migrations/versions/009_add_performance_indexes.py
+
+# Índices para búsquedas rápidas
+CREATE INDEX idx_transactions_buyer_seller_status 
+  ON transactions(buyer_id, seller_id, status);
+
+CREATE INDEX idx_offers_seller_currencies_status 
+  ON offers(seller_id, from_currency, to_currency, status);
+
+CREATE INDEX idx_disputes_status_opened_by 
+  ON disputes(status, opened_by);
+
+CREATE INDEX idx_exchange_rates_currencies_date 
+  ON exchange_rates(from_currency, to_currency, captured_at DESC);
+
+CREATE INDEX idx_kyc_user_status 
+  ON kyc_documents(user_id, status);
+
+CREATE INDEX idx_bank_accounts_user 
+  ON bank_accounts(user_id, is_active);
+
+CREATE INDEX idx_ratings_rated 
+  ON ratings(rated_id);
+
+CREATE INDEX idx_transaction_history_transaction 
+  ON transaction_status_history(transaction_id);
+```
+
+### Migración 010: Campos Adicionales 📝
+
+```python
+# migrations/versions/010_add_missing_fields.py
+
+# En transactions
+ALTER TABLE transactions 
+  ADD COLUMN paused_metadata JSONB,           -- Estado guardado cuando se pausa
+  ADD COLUMN paused_at TIMESTAMPTZ,           -- Timestamp de pausa
+  ADD COLUMN resumed_at TIMESTAMPTZ,          -- Timestamp de reanudación
+  ADD COLUMN idempotency_key VARCHAR(100) UNIQUE;  -- Prevenir duplicados
+
+# En offers
+ALTER TABLE offers 
+  ADD COLUMN expires_at TIMESTAMPTZ,          -- Auto-expiración de ofertas
+  ADD COLUMN is_default BOOLEAN DEFAULT FALSE; -- Oferta por defecto del vendedor
+
+# En bank_accounts
+ALTER TABLE bank_accounts 
+  ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW(),  -- Auditoría
+  ADD COLUMN is_default BOOLEAN DEFAULT FALSE;  -- Cuenta por defecto
+
+# En vouchers
+ALTER TABLE vouchers 
+  ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW();  -- Timestamp de actualización
+
+# En disputes
+ALTER TABLE disputes 
+  ADD COLUMN appeal_count SMALLINT DEFAULT 0,    -- Contador de apelaciones
+  ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW(); -- Auditoría
+
+# En kyc_documents
+ALTER TABLE kyc_documents 
+  ADD COLUMN updated_at TIMESTAMPTZ DEFAULT NOW();  -- Auditoría
+
+# En users
+ALTER TABLE users 
+  ADD COLUMN last_login_at TIMESTAMPTZ;            -- Analytics
+```
+
+---
+
+## 🔐 Soft Deletes (Eliminación Lógica)
+
+Para datos sensibles como usuarios y cuentas bancarias:
+
+```python
+# Agregar columna a usuarios
+ALTER TABLE users 
+  ADD COLUMN deleted_at TIMESTAMPTZ;
+
+# En queries, filtrar siempre:
+SELECT * FROM users WHERE deleted_at IS NULL;
+
+# Para eliminar (no physico):
+UPDATE users SET deleted_at = NOW() WHERE id = ?;
+```
+
+---
+
+## 📊 Relaciones y Restricciones
+
+### Foreign Keys
+
+```sql
+ALTER TABLE bank_accounts ADD CONSTRAINT fk_bank_user 
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
+ALTER TABLE offers ADD CONSTRAINT fk_offer_seller 
+  FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE;
+
+ALTER TABLE transactions ADD CONSTRAINT fk_tx_offer 
+  FOREIGN KEY (offer_id) REFERENCES offers(id);
+
+-- Etc. (todas las FK definen comportamiento CASCADE o SET NULL)
+```
+
+### Check Constraints
+
+```sql
+-- Validar tasas positivas
+ALTER TABLE exchange_rates ADD CONSTRAINT check_positive_rate 
+  CHECK (rate > 0);
+
+-- Validar calificaciones 1-5
+ALTER TABLE ratings ADD CONSTRAINT check_rating_range 
+  CHECK (score >= 1 AND score <= 5);
+
+-- Validar montos
+ALTER TABLE offers ADD CONSTRAINT check_amounts 
+  CHECK (min_amount > 0 AND max_amount >= min_amount);
+```
+
+---
+
+## 🔄 Estados y Máquinas de Estado
+
+### Transactions (Estados Completos)
+
+```
+pending_payment 
+  ↓
+paused_in_progress (OPCIONAL - usuario puede pausar aquí)
+  ↓
+voucher_uploaded 
+  ↓
+confirmed 
+  ↓ (exitoso)
+completed
+  ↓ (problema)
+disputed
+  ↓ (cancelado)
+cancelled
+```
+
+### Disputes (Estados Actualizados)
+
+```
+open 
+  ↓
+under_review 
+  ↓
+resolved 
+  ↓ (posible apelación)
+resolved_under_appeal (NEW)
+  ↓
+final_resolution
+```
+
+### KYC Documents (Estados Actualizados)
+
+```
+pending 
+  ↓
+processing 
+  ↓ (aprobado)
+verified 
+  ↓ (rechazado - puede reintentarse)
+rejected 
+  ↓ (reintento después de correcciones)
+resubmitted
+```
+
+---
+
+## 🧹 Limpieza y Mantenimiento
+
+### Rotación de Histórico
+
+```sql
+-- Mantener histórico de tasas últimos 90 días
+DELETE FROM exchange_rates 
+  WHERE captured_at < NOW() - INTERVAL '90 days';
+
+-- Archivar transacciones completadas hace 1 año
+DELETE FROM transactions 
+  WHERE status = 'completed' 
+    AND completed_at < NOW() - INTERVAL '1 year';
+```
+
+### Índices de Análisis
+
+```sql
+-- Para reportes y analytics (bajo impacto)
+CREATE INDEX idx_audit_logs_date 
+  ON audit_logs(created_at DESC) 
+  WHERE action IN ('transaction_completed', 'dispute_resolved');
+```
