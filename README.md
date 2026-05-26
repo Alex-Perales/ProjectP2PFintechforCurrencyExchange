@@ -37,6 +37,25 @@ Este proyecto toma como base el PDF del curso y usa `Maquetado.html` como refere
 - Historial y calificacion de usuarios.
 
 
+## Distribución de Historias de Usuario
+
+| Integrante | Historias de Usuario |
+|------------|----------------------|
+| Shirley    | US01 → US02 → US03   |
+| Emily      | US04 → US12          |
+| Andres     | US17 → US18 → US19   |
+| Alex       | US05 → US06 → US07 → US16 |
+| Jasmín     | US08 → US09 → US10   |
+| Mateo      | US11 → US13 → US14 → US15 |
+
+## Credenciales de Prueba
+
+| Rol       | Email                      | Contraseña    |
+|-----------|----------------------------|---------------|
+| Comprador | comprador@peruexchange.com | Comprador123! |
+| Vendedor  | vendedor@peruexchange.com  | Vendedor123!  |
+| Admin     | admin@peruexchange.com     | Admin123!     |
+
 ## Nota
 
 El archivo `Maquetado.html` no es el producto final. Solo define la interfaz y el orden de pantallas para construir la app Android y la API.
