@@ -95,23 +95,30 @@ fun HistoryScreen(
             id = "#TX-${dto.id.takeLast(4).uppercase()}",
             status = statusName,
             statusColor = sColor,
-            from = "Yo",
-            to = "Otro",
-            amount = "$ ${dto.amount_to}",
-            rate = "S/ ${dto.exchange_rate}",
+            from = dto.buyer_name?.split(" ")?.firstOrNull() ?: dto.buyer_id.take(6).uppercase(),
+            to = dto.vendor_name?.split(" ")?.firstOrNull() ?: dto.vendor_id.take(6).uppercase(),
+            amount = "${String.format("%.2f", dto.amount_from)} USD",
+            rate = "S/ ${String.format("%.3f", dto.exchange_rate)}",
             date = formattedDate,
             icon = icon
         )
     }
 
-    val filteredList = if (selectedFilter == 0) transactions else transactions.filter {
-        when (selectedFilter) {
-            1 -> it.status == "Completado"
-            2 -> it.status == "Pendiente" || it.status == "En Proceso"
-            3 -> it.status == "Disputa"
-            else -> true
+    val filteredList = transactions
+        .filter {
+            when (selectedFilter) {
+                1 -> it.status == "Completado"
+                2 -> it.status == "Pendiente" || it.status == "En Proceso"
+                3 -> it.status == "Disputa"
+                else -> true
+            }
         }
-    }
+        .filter { tx ->
+            if (searchQuery.isBlank()) true
+            else tx.id.contains(searchQuery, ignoreCase = true) ||
+                tx.from.contains(searchQuery, ignoreCase = true) ||
+                tx.to.contains(searchQuery, ignoreCase = true)
+        }
 
     Scaffold(
         containerColor = BackgroundApp,

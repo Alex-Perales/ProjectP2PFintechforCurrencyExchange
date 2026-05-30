@@ -65,4 +65,43 @@ class OfferRepositoryImpl(
             NetworkResult.Error(-1, e.message ?: "An error occurred")
         }
     }
+
+    override suspend fun pauseOffer(offerId: String): NetworkResult<OfferDto> {
+        return try {
+            val response = api.updateOffer(offerId, mapOf("status" to "paused"))
+            if (response.isSuccessful && response.body() != null) {
+                NetworkResult.Success(response.body()!!)
+            } else {
+                NetworkResult.Error(response.code(), response.message())
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(-1, e.message ?: "An error occurred")
+        }
+    }
+
+    override suspend fun resumeOffer(offerId: String): NetworkResult<OfferDto> {
+        return try {
+            val response = api.updateOffer(offerId, mapOf("status" to "active"))
+            if (response.isSuccessful && response.body() != null) {
+                NetworkResult.Success(response.body()!!)
+            } else {
+                NetworkResult.Error(response.code(), response.message())
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(-1, e.message ?: "An error occurred")
+        }
+    }
+
+    override suspend fun deleteOffer(offerId: String): NetworkResult<Unit> {
+        return try {
+            val response = api.deleteOffer(offerId)
+            if (response.isSuccessful) {
+                NetworkResult.Success(Unit)
+            } else {
+                NetworkResult.Error(response.code(), response.message())
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(-1, e.message ?: "An error occurred")
+        }
+    }
 }

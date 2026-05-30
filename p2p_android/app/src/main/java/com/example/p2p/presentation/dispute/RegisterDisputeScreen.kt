@@ -32,7 +32,15 @@ fun RegisterDisputeScreen(
     val context = LocalContext.current
     val uiState by viewModel?.uiState?.collectAsState() ?: remember { mutableStateOf(DisputesUiState()) }
 
-    var reason by remember { mutableStateOf("El vendedor no liberó los fondos") }
+    val reasons = listOf(
+        "El vendedor no liberó los fondos",
+        "El comprador no realizó el pago",
+        "El voucher no corresponde al monto",
+        "Fondos enviados al banco incorrecto",
+        "Otro motivo"
+    )
+    var reason by remember { mutableStateOf(reasons[0]) }
+    var reasonExpanded by remember { mutableStateOf(false) }
     var description by remember { mutableStateOf("") }
 
     Scaffold(
@@ -115,32 +123,44 @@ fun RegisterDisputeScreen(
                 )
 
                 // Dropdown reason selector
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
-                        .clickable {
-                            // Expand/toggle reason if needed. 
-                            // For simplicity, we toggle between common reasons or allow free text.
-                        }
-                        .padding(horizontal = 14.dp, vertical = 14.dp)
+                ExposedDropdownMenuBox(
+                    expanded = reasonExpanded,
+                    onExpandedChange = { reasonExpanded = it }
                 ) {
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                            .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
+                            .padding(horizontal = 14.dp, vertical = 14.dp)
                     ) {
-                        Text(
-                            reason,
-                            fontSize = 13.sp,
-                            color = TextMain
-                        )
-                        Icon(
-                            Icons.Default.KeyboardArrowDown,
-                            contentDescription = null,
-                            tint = TextMuted,
-                            modifier = Modifier.size(20.dp)
-                        )
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(reason, fontSize = 13.sp, color = TextMain, modifier = Modifier.weight(1f))
+                            Icon(
+                                if (reasonExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                contentDescription = null,
+                                tint = TextMuted,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                    ExposedDropdownMenu(
+                        expanded = reasonExpanded,
+                        onDismissRequest = { reasonExpanded = false }
+                    ) {
+                        reasons.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option, fontSize = 13.sp) },
+                                onClick = {
+                                    reason = option
+                                    reasonExpanded = false
+                                }
+                            )
+                        }
                     }
                 }
 

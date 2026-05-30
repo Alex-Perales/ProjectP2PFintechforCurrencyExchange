@@ -22,4 +22,13 @@ interface OfferApi {
 
     @POST("offers/match")
     suspend fun matchOffer(@Body body: Map<String, String>): Response<OfferDto>
+
+    @PATCH("offers/{id}")
+    suspend fun updateOffer(
+        @Path("id") offerId: String,
+        @Body body: Map<String, String>
+    ): Response<OfferDto>
+
+    @DELETE("offers/{id}")
+    suspend fun deleteOffer(@Path("id") offerId: String): Response<Unit>
 }

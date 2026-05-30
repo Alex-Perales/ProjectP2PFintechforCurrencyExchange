@@ -1,5 +1,7 @@
 package com.example.p2p.presentation.help
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -14,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,6 +46,7 @@ fun HelpScreen(onBack: () -> Unit = {}) {
         },
         containerColor = BackgroundApp
     ) { innerPadding ->
+        val context = LocalContext.current
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -74,7 +78,11 @@ fun HelpScreen(onBack: () -> Unit = {}) {
                     ) {
                         // WhatsApp button
                         Button(
-                            onClick = {},
+                            onClick = {
+                                val intent = Intent(Intent.ACTION_VIEW,
+                                    Uri.parse("https://wa.me/51999999999?text=Hola,%20necesito%20ayuda%20con%20PeruExchange"))
+                                context.startActivity(intent)
+                            },
                             modifier = Modifier
                                 .weight(1f)
                                 .height(50.dp),
@@ -101,7 +109,13 @@ fun HelpScreen(onBack: () -> Unit = {}) {
                         }
                         // Email button
                         Button(
-                            onClick = {},
+                            onClick = {
+                                val intent = Intent(Intent.ACTION_SENDTO).apply {
+                                    data = Uri.parse("mailto:support@peruexchange.com")
+                                    putExtra(Intent.EXTRA_SUBJECT, "Soporte PeruExchange")
+                                }
+                                context.startActivity(intent)
+                            },
                             modifier = Modifier
                                 .weight(1f)
                                 .height(50.dp),

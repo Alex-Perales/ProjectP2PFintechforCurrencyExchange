@@ -152,7 +152,14 @@ fun MyOffersScreen(
                     Spacer(Modifier.height(4.dp))
                 }
                 items(uiState.offers) { offer ->
-                    OfferCard(offer = offer)
+                    OfferCard(
+                        offer = offer,
+                        onPauseResume = {
+                            if (offer.status == "active") viewModel?.pauseOffer(offer.id)
+                            else viewModel?.resumeOffer(offer.id)
+                        },
+                        onDelete = { viewModel?.deleteOffer(offer.id) }
+                    )
                 }
             }
         }
@@ -160,7 +167,11 @@ fun MyOffersScreen(
 }
 
 @Composable
-private fun OfferCard(offer: OfferDto) {
+private fun OfferCard(
+    offer: OfferDto,
+    onPauseResume: () -> Unit = {},
+    onDelete: () -> Unit = {}
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -243,7 +254,7 @@ private fun OfferCard(offer: OfferDto) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 val isActive = offer.status == "active"
                 OutlinedButton(
-                    onClick = {},
+                    onClick = onPauseResume,
                     shape = RoundedCornerShape(8.dp),
                     border = BorderStroke(1.dp, WarningColor),
                     contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
@@ -256,7 +267,7 @@ private fun OfferCard(offer: OfferDto) {
                     )
                 }
                 OutlinedButton(
-                    onClick = {},
+                    onClick = onDelete,
                     shape = RoundedCornerShape(8.dp),
                     border = BorderStroke(1.dp, DangerColor),
                     contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),

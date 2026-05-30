@@ -53,6 +53,7 @@ import com.example.p2p.presentation.rating.RatingScreen
 import com.example.p2p.presentation.rating.RatingViewModel
 import com.example.p2p.presentation.receipt.ReceiptScreen
 import com.example.p2p.presentation.reviews.ReviewsScreen
+import com.example.p2p.presentation.reviews.ReviewsViewModel
 import com.example.p2p.presentation.transaction.TransactionDetailScreen
 import com.example.p2p.presentation.transaction.TransactionScreen
 import com.example.p2p.presentation.vendor.VendorInboxScreen
@@ -279,7 +280,10 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
             }
 
             composable(Screen.Reviews.route) {
-                ReviewsScreen(onBack = { navController.popBackStack() })
+                val vm: ReviewsViewModel = viewModel(
+                    factory = ReviewsViewModel.Factory(com.example.p2p.core.network.ApiClient.ratingApi)
+                )
+                ReviewsScreen(viewModel = vm, onBack = { navController.popBackStack() })
             }
 
             composable(Screen.MyOffers.route) {
@@ -293,7 +297,7 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
             }
 
             composable(Screen.Complaints.route) {
-                ComplaintsScreen()
+                ComplaintsScreen(onBack = { navController.popBackStack() })
             }
 
             // ── Disputes ─────────────────────────────────────────────────────────

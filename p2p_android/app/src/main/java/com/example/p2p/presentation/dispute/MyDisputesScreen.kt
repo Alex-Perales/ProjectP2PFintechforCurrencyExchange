@@ -69,6 +69,7 @@ private data class Dispute(
     val statusColor: Color,
     val reason: String,
     val transactionId: String,
+    val rawTransactionId: String,
     val date: String,
     val unreadMessages: Int
 )
@@ -114,6 +115,7 @@ fun MyDisputesScreen(
             statusColor = sColor,
             reason = dto.reason,
             transactionId = "#TX-${dto.transaction_id.takeLast(4).uppercase()}",
+            rawTransactionId = dto.transaction_id,
             date = formattedDate,
             unreadMessages = 0
         )
@@ -216,7 +218,12 @@ fun MyDisputesScreen(
 
             // Dispute cards
             items(filteredList.size) { index ->
-                DisputeCard(dispute = filteredList[index])
+                DisputeCard(
+                    dispute = filteredList[index],
+                    onViewDetail = { txnId ->
+                        onNavigate(com.example.p2p.navigation.Screen.TransactionDetail.createRoute(txnId))
+                    }
+                )
             }
         }
     }
@@ -227,7 +234,7 @@ fun MyDisputesScreen(
 // ---------------------------------------------------------------------------
 
 @Composable
-private fun DisputeCard(dispute: Dispute) {
+private fun DisputeCard(dispute: Dispute, onViewDetail: (String) -> Unit = {}) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -285,7 +292,7 @@ private fun DisputeCard(dispute: Dispute) {
 
             // Ver detalle button
             OutlinedButton(
-                onClick = {},
+                onClick = { onViewDetail(dispute.rawTransactionId) },
                 shape = RoundedCornerShape(8.dp),
                 border = BorderStroke(1.dp, Primary),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),

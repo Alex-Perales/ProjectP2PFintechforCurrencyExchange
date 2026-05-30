@@ -10,6 +10,35 @@ from app.models.user import User
 ratings_bp = Blueprint('ratings', __name__, url_prefix='/ratings')
 
 
+@ratings_bp.route('/received', methods=['GET'])
+@jwt_required()
+def get_received_ratings():
+    user_id = get_jwt_identity()
+    ratings = Rating.query.filter_by(ratee_id=user_id).order_by(Rating.created_at.desc()).all()
+
+    result = []
+    for r in ratings:
+        rater = db.session.get(User, r.rater_id)
+        result.append({
+            'id': str(r.id),
+            'score': r.score,
+            'comment': r.comment,
+            'rater_name': rater.full_name if rater else 'Anónimo',
+            'created_at': r.created_at.isoformat() if r.created_at else None,
+        })
+
+    total = len(result)
+    avg = sum(x['score'] for x in result) / total if total > 0 else 0.0
+    dist = {i: sum(1 for x in result if x['score'] == i) for i in range(1, 6)}
+
+    return {
+        'ratings': result,
+        'average': round(avg, 2),
+        'total': total,
+        'distribution': dist,
+    }, 200
+
+
 @ratings_bp.route('', methods=['POST'])
 @ratings_bp.route('/', methods=['POST'])
 @jwt_required()

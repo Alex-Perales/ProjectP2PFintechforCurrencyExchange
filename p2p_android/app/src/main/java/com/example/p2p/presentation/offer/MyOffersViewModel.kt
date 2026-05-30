@@ -39,6 +39,33 @@ class MyOffersViewModel(
         }
     }
 
+    fun pauseOffer(offerId: String) {
+        viewModelScope.launch {
+            when (offerRepository.pauseOffer(offerId)) {
+                is NetworkResult.Success -> loadMyOffers()
+                else -> Unit
+            }
+        }
+    }
+
+    fun resumeOffer(offerId: String) {
+        viewModelScope.launch {
+            when (offerRepository.resumeOffer(offerId)) {
+                is NetworkResult.Success -> loadMyOffers()
+                else -> Unit
+            }
+        }
+    }
+
+    fun deleteOffer(offerId: String) {
+        viewModelScope.launch {
+            when (offerRepository.deleteOffer(offerId)) {
+                is NetworkResult.Success -> loadMyOffers()
+                else -> Unit
+            }
+        }
+    }
+
     class Factory(private val offerRepository: OfferRepository) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
