@@ -2,6 +2,7 @@ package com.example.p2p.presentation.offer
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,14 +24,50 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.p2p.ui.theme.*
 
+import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.p2p.data.remote.dto.CreateOfferRequest
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PublishScreen() {
+fun PublishScreen(
+    viewModel: PublishViewModel? = null,
+    onNavigateBack: () -> Unit = {}
+) {
+    val uiState by viewModel?.uiState?.collectAsState(initial = PublishUiState()) ?: remember { mutableStateOf(PublishUiState()) }
+    val context = LocalContext.current
+
+    LaunchedEffect(uiState.success) {
+        if (uiState.success) {
+            Toast.makeText(context, "Oferta publicada con éxito", Toast.LENGTH_SHORT).show()
+            viewModel?.resetState()
+            onNavigateBack()
+        }
+    }
+
+    LaunchedEffect(uiState.error) {
+        if (uiState.error != null) {
+            Toast.makeText(context, uiState.error, Toast.LENGTH_LONG).show()
+            viewModel?.resetState()
+        }
+    }
+
     var amountText by remember { mutableStateOf("") }
     var selectedSaleMode by remember { mutableStateOf(0) } // 0 = Completa, 1 = Por Partes
     var selectedRate by remember { mutableStateOf(0) }     // 0 = Mercado, 1 = Rápida
     var customRateEnabled by remember { mutableStateOf(false) }
     var customRateText by remember { mutableStateOf("3.780") }
+    var minTransactionText by remember { mutableStateOf("") }
+    var maxTransactionText by remember { mutableStateOf("") }
+
+    val currentRate = if (customRateEnabled) {
+        customRateText.toDoubleOrNull() ?: 3.780
+    } else {
+        if (selectedRate == 0) 3.780 else 3.772
+    }
+    val amountDouble = amountText.toDoubleOrNull() ?: 0.0
+    val amountToReceive = amountDouble * currentRate
 
     Scaffold(
         topBar = {
@@ -44,7 +81,7 @@ fun PublishScreen() {
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
                             contentDescription = "Volver",
@@ -178,6 +215,51 @@ fun PublishScreen() {
                         cursorColor = Primary
                     )
                 )
+
+                if (selectedSaleMode == 1) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "Límites por transacción (Opcional)",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = TextMuted
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = minTransactionText,
+                            onValueChange = { minTransactionText = it },
+                            placeholder = { Text("Mínimo", color = TextMuted, fontSize = 13.sp) },
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(10.dp),
+                            singleLine = true,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Primary,
+                                unfocusedBorderColor = BorderColor,
+                                focusedTextColor = TextMain,
+                                unfocusedTextColor = TextMain,
+                                cursorColor = Primary
+                            )
+                        )
+                        OutlinedTextField(
+                            value = maxTransactionText,
+                            onValueChange = { maxTransactionText = it },
+                            placeholder = { Text("Máximo", color = TextMuted, fontSize = 13.sp) },
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(10.dp),
+                            singleLine = true,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Primary,
+                                unfocusedBorderColor = BorderColor,
+                                focusedTextColor = TextMain,
+                                unfocusedTextColor = TextMain,
+                                cursorColor = Primary
+                            )
+                        )
+                    }
+                }
             }
 
             // --- Sale mode card ---
@@ -313,7 +395,7 @@ fun PublishScreen() {
                 ) {
                     Text(text = "Recibirás:", fontSize = 13.sp, color = TextMuted)
                     Text(
-                        text = "S/ 3,780.00",
+                        text = "S/ ${String.format("%.2f", amountToReceive)}",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         color = SuccessColor
@@ -326,7 +408,7 @@ fun PublishScreen() {
                 ) {
                     Text(text = "Tasa:", fontSize = 13.sp, color = TextMuted)
                     Text(
-                        text = "3.780",
+                        text = String.format("%.3f", currentRate),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = TextMain
@@ -336,24 +418,59 @@ fun PublishScreen() {
 
             // --- Publish button ---
             Button(
-                onClick = {},
+                onClick = {
+                    val minVal = if (selectedSaleMode == 0) amountDouble else (minTransactionText.toDoubleOrNull() ?: 50.0)
+                    val maxVal = if (selectedSaleMode == 0) amountDouble else (maxTransactionText.toDoubleOrNull() ?: amountDouble)
+
+                    if (amountDouble <= 0) {
+                        Toast.makeText(context, "Ingresa un monto válido.", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+                    if (selectedSaleMode == 1) {
+                        if (minVal > maxVal) {
+                            Toast.makeText(context, "El mínimo no puede ser mayor al máximo.", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                        if (maxVal > amountDouble) {
+                            Toast.makeText(context, "El máximo no puede superar el monto disponible.", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+                    }
+
+                    val req = CreateOfferRequest(
+                        currency = "USD",
+                        fiat_currency = "PEN",
+                        amount = amountDouble,
+                        price_per_unit = currentRate,
+                        offer_type = if (selectedSaleMode == 0) "full" else "partial",
+                        min_transaction = minVal,
+                        max_transaction = maxVal,
+                        payment_methods = listOf("BCP")
+                    )
+                    viewModel?.publishOffer(req)
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Primary)
+                colors = ButtonDefaults.buttonColors(containerColor = Primary),
+                enabled = !uiState.isLoading && amountText.isNotEmpty()
             ) {
-                Icon(
-                    imageVector = Icons.Filled.Campaign,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Publicar Anuncio",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                if (uiState.isLoading) {
+                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                } else {
+                    Icon(
+                        imageVector = Icons.Filled.Campaign,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Publicar Anuncio",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -408,6 +525,7 @@ private fun SaleModeOption(
                 color = borderColor,
                 shape = RoundedCornerShape(12.dp)
             )
+            .clickable { onClick() }
             .padding(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -455,6 +573,7 @@ private fun RateOption(
                 color = borderColor,
                 shape = RoundedCornerShape(12.dp)
             )
+            .clickable { onClick() }
             .padding(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp)

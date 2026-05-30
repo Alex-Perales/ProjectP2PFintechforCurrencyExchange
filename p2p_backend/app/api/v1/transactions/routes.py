@@ -79,18 +79,35 @@ def create_transaction():
     if offer.vendor_id == user_id:
         raise AppException('OWN_OFFER', 'Cannot buy your own offer', 400)
 
+    amount_from = data.get('amount_from', 0)
+    amount_to = data.get('amount_to', 0)
+
+    if offer.offer_type == 'full':
+        if amount_from != offer.available_amount:
+            raise AppException('INVALID_AMOUNT', 'Must buy the full available amount', 400)
+    else:
+        if amount_from < offer.min_transaction or amount_from > offer.max_transaction:
+            raise AppException('INVALID_AMOUNT', f'Amount must be between {offer.min_transaction} and {offer.max_transaction}', 400)
+        if amount_from > offer.available_amount:
+            raise AppException('INVALID_AMOUNT', 'Amount exceeds available amount', 400)
+
     txn = Transaction(
         offer_id=offer.id,
         buyer_id=user_id,
         vendor_id=offer.vendor_id,
-        amount_from=data.get('amount_from', 0),
-        amount_to=data.get('amount_to', 0),
+        amount_from=amount_from,
+        amount_to=amount_to,
         exchange_rate=offer.price_per_unit,
         status='pending',
         buyer_payment_account=data.get('buyer_payment_account'),
         vendor_payment_account=data.get('vendor_payment_account'),
     )
     db.session.add(txn)
+
+    offer.available_amount -= amount_from
+    if offer.available_amount <= 0:
+        offer.status = 'closed'
+
     db.session.commit()
     return _txn_dict(txn), 201
 
@@ -179,7 +196,6 @@ def update_status(txn_id):
     if txn.buyer_id != user_id and txn.vendor_id != user_id:
         raise AuthorizationError('Not your transaction')
 
-    data = request.get_json() or {}
     new_status = data.get('status')
     if new_status not in ('cancelled', 'paused'):
         raise AppException('INVALID_STATUS', 'Status must be cancelled or paused', 400)
@@ -187,3 +203,26 @@ def update_status(txn_id):
     txn.status = new_status
     db.session.commit()
     return _txn_dict(txn), 200
+
+
+@transactions_bp.route('/disputes', methods=['GET'])
+@jwt_required()
+def list_disputes():
+    user_id = get_jwt_identity()
+    # Find all disputes where the user is either the buyer or vendor of the transaction
+    disputes = db.session.query(Dispute).join(Transaction).filter(
+        (Transaction.buyer_id == user_id) | (Transaction.vendor_id == user_id)
+    ).all()
+    
+    result = []
+    for d in disputes:
+        result.append({
+            'id': d.id,
+            'transaction_id': d.transaction_id,
+            'initiator_id': d.initiator_id,
+            'reason': d.reason,
+            'description': d.description,
+            'status': d.status,
+            'created_at': d.created_at.isoformat(),
+        })
+    return {'disputes': result}, 200

@@ -25,7 +25,7 @@ import com.example.p2p.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReviewsScreen() {
+fun ReviewsScreen(onBack: () -> Unit = {}) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -38,7 +38,7 @@ fun ReviewsScreen() {
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = TextMain)
                     }
                 },

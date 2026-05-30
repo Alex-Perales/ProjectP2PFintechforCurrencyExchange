@@ -8,10 +8,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.CloudUpload
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,10 +24,59 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.p2p.ui.theme.*
+import androidx.compose.ui.platform.LocalContext
+import android.widget.Toast
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TransactionScreen(transactionId: String? = null) {
+fun TransactionScreen(
+    transactionId: String? = null,
+    viewModel: TransactionViewModel? = null,
+    onNavigateToDispute: (String) -> Unit = {},
+    onNavigateToReceipt: (String) -> Unit = {},
+    onNavigateBack: () -> Unit = {}
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val uiState by viewModel?.uiState?.collectAsState(initial = TransactionUiState()) ?: remember { mutableStateOf(TransactionUiState()) }
+    var timeLeft by remember { mutableStateOf(15 * 60) } // 15 minutes
+    var isReadingOcr by remember { mutableStateOf(false) }
+
+    LaunchedEffect(transactionId) {
+        if (transactionId != null) {
+            viewModel?.loadTransaction(transactionId)
+        }
+    }
+
+    // Auto-refresh transaction status every 5 seconds to catch vendor confirmations
+    LaunchedEffect(transactionId) {
+        while (true) {
+            delay(5000L)
+            if (transactionId != null) {
+                viewModel?.loadTransaction(transactionId)
+            }
+        }
+    }
+
+    LaunchedEffect(timeLeft, uiState.transaction?.status, isReadingOcr) {
+        if (timeLeft > 0 && uiState.transaction?.status == "pending" && !isReadingOcr) {
+            delay(1000L)
+            timeLeft--
+        }
+    }
+
+    val txn = uiState.transaction
+    val statusText = when (txn?.status) {
+        "pending" -> "ORDEN P2P EN CURSO"
+        "voucher_uploaded" -> "VERIFICANDO PAGO"
+        "completed" -> "COMPLETADA"
+        "cancelled" -> "CANCELADA"
+        "disputed" -> "EN DISPUTA"
+        else -> "ORDEN P2P EN CURSO"
+    }
+
+    val amountTo = txn?.amount_to ?: 741.60
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -39,7 +89,7 @@ fun TransactionScreen(transactionId: String? = null) {
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = onNavigateBack) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBack,
                             contentDescription = "Volver",
@@ -88,7 +138,7 @@ fun TransactionScreen(transactionId: String? = null) {
                             .padding(horizontal = 12.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = "ORDEN P2P EN CURSO",
+                            text = statusText,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             color = PrimaryMint,
@@ -99,13 +149,25 @@ fun TransactionScreen(transactionId: String? = null) {
                     Spacer(modifier = Modifier.height(14.dp))
 
                     // Timer
-                    Text(
-                        text = "14:23",
-                        fontSize = 36.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                        letterSpacing = 2.sp
-                    )
+                    if (txn?.status == "voucher_uploaded" || txn?.status == "completed") {
+                        Text(
+                            text = "VOUCHER SUBIDO",
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = PrimaryMint,
+                            letterSpacing = 1.sp
+                        )
+                    } else {
+                        val minutes = timeLeft / 60
+                        val seconds = timeLeft % 60
+                        Text(
+                            text = String.format("%02d:%02d", minutes, seconds),
+                            fontSize = 36.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            letterSpacing = 2.sp
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(6.dp))
 
@@ -117,6 +179,14 @@ fun TransactionScreen(transactionId: String? = null) {
                         textAlign = TextAlign.Center
                     )
                 }
+            }
+
+            val currentStep = when (txn?.status) {
+                "pending" -> if (isReadingOcr) 1 else 0
+                "voucher_uploaded" -> 1
+                "completed" -> 3
+                "disputed" -> 2
+                else -> 0
             }
 
             // Timeline Row
@@ -139,11 +209,11 @@ fun TransactionScreen(transactionId: String? = null) {
                                 .size(32.dp)
                                 .clip(CircleShape)
                                 .background(
-                                    if (index == 0) Primary
+                                    if (index <= currentStep) Primary
                                     else Color.Transparent
                                 )
                                 .then(
-                                    if (index != 0) Modifier.border(2.dp, Primary, CircleShape)
+                                    if (index > currentStep) Modifier.border(2.dp, Primary, CircleShape)
                                     else Modifier
                                 ),
                             contentAlignment = Alignment.Center
@@ -152,7 +222,7 @@ fun TransactionScreen(transactionId: String? = null) {
                                 text = "${index + 1}",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (index == 0) Color.White else Primary
+                                color = if (index <= currentStep) Color.White else Primary
                             )
                         }
 
@@ -163,7 +233,7 @@ fun TransactionScreen(transactionId: String? = null) {
                                     .weight(1f)
                                     .height(2.dp)
                                     .background(
-                                        if (index == 0) Primary.copy(alpha = 0.5f)
+                                        if (index < currentStep) Primary.copy(alpha = 0.5f)
                                         else BorderColor
                                     )
                             )
@@ -178,12 +248,13 @@ fun TransactionScreen(transactionId: String? = null) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    listOf("Pagar", "Voucher", "Confirmar", "Liberado").forEachIndexed { index, label ->
+                    val steps = listOf("Pagar", "Voucher", "Confirmar", "Liberado")
+                    steps.forEachIndexed { index, label ->
                         Text(
                             text = label,
                             fontSize = 10.sp,
-                            fontWeight = if (index == 0) FontWeight.Bold else FontWeight.Normal,
-                            color = if (index == 0) Primary else TextMuted,
+                            fontWeight = if (index <= currentStep) FontWeight.Bold else FontWeight.Normal,
+                            color = if (index <= currentStep) Primary else TextMuted,
                             textAlign = TextAlign.Center,
                             modifier = Modifier.weight(1f)
                         )
@@ -254,67 +325,157 @@ fun TransactionScreen(transactionId: String? = null) {
                     color = TextMuted
                 )
                 Text(
-                    text = "S/ 741.60",
+                    text = "S/ $amountTo",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = SuccessColor
                 )
             }
 
-            // Upload zone
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(110.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(SurfaceColor)
-                    .border(
-                        width = 1.5.dp,
-                        color = BorderColor,
-                        shape = RoundedCornerShape(12.dp)
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
+            // Upload Zone (only active when pending)
+            if (txn?.status == "pending") {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(110.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(SurfaceColor)
+                        .border(
+                            width = 1.5.dp,
+                            color = BorderColor,
+                            shape = RoundedCornerShape(12.dp)
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Filled.CloudUpload,
-                        contentDescription = "Subir",
-                        tint = Primary,
-                        modifier = Modifier.size(32.dp)
-                    )
-                    Text(
-                        text = "Subir Comprobante de Pago",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextMain
-                    )
-                    Text(
-                        text = "IA OCR · Validación automática en segundos",
-                        fontSize = 11.sp,
-                        color = TextMuted
-                    )
+                    if (isReadingOcr) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(28.dp),
+                                color = Primary,
+                                strokeWidth = 3.dp
+                            )
+                            Text(
+                                text = "IA OCR leyendo voucher...",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = TextMain
+                            )
+                        }
+                    } else {
+                        Button(onClick = {
+                            if (transactionId != null) {
+                                scope.launch {
+                                    isReadingOcr = true
+                                    delay(1900L)
+                                    isReadingOcr = false
+                                    viewModel?.uploadVoucher(transactionId, "http://dummyimage.com/voucher.jpg")
+                                    Toast.makeText(context, "OCR validado. Cambia a modo Vendedor para confirmar.", Toast.LENGTH_LONG).show()
+                                }
+                            }
+                        }, colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.CloudUpload,
+                                    contentDescription = "Subir",
+                                    tint = Primary,
+                                    modifier = Modifier.size(32.dp)
+                                )
+                                Text(
+                                    text = "Subir Comprobante de Pago",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = TextMain
+                                )
+                                Text(
+                                    text = "IA OCR · Validación automática en segundos",
+                                    fontSize = 11.sp,
+                                    color = TextMuted
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
-            // Cancel button
-            OutlinedButton(
-                onClick = {},
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = DangerColor
-                ),
-                border = androidx.compose.foundation.BorderStroke(1.dp, DangerColor)
-            ) {
-                Text(
-                    text = "Cancelar Transacción",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(vertical = 4.dp)
-                )
+            // Waiting box / Dispute flow
+            if (txn?.status == "voucher_uploaded") {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = WarningColor.copy(alpha = 0.1f)),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, WarningColor.copy(alpha = 0.3f)),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(14.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Icon(Icons.Filled.Schedule, contentDescription = null, tint = WarningColor)
+                            Column {
+                                Text("Esperando confirmación del vendedor...", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = TextMain)
+                                Text("El vendedor está verificando el pago en su cuenta bancaria. Cambia a modo vendedor para simular la liberación.", fontSize = 10.sp, color = TextMuted)
+                            }
+                        }
+                    }
+
+                    Button(
+                        onClick = { onNavigateToDispute(transactionId ?: "") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = DangerColor),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(Icons.Filled.Warning, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text("Abrir Disputa (vendedor no responde)", color = Color.White, fontSize = 13.sp)
+                    }
+                }
+            }
+
+            // Success View Receipt Option
+            if (txn?.status == "completed") {
+                Button(
+                    onClick = { onNavigateToReceipt(transactionId ?: "") },
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = SuccessColor)
+                ) {
+                    Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = Color.White)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Ver Comprobante Exitoso", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            }
+
+            // Cancel button (only when pending)
+            if (txn?.status == "pending") {
+                OutlinedButton(
+                    onClick = {
+                        if (transactionId != null) {
+                            viewModel?.updateStatus(transactionId, "cancelled")
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = DangerColor
+                    ),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, DangerColor)
+                ) {
+                    Text(
+                        text = "Cancelar Transacción",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))

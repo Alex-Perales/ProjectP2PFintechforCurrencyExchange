@@ -1,105 +1,46 @@
 package com.example.p2p.presentation.admin
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Security
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.p2p.ui.theme.BackgroundApp
-import com.example.p2p.ui.theme.BorderColor
-import com.example.p2p.ui.theme.DangerColor
-import com.example.p2p.ui.theme.Primary
-import com.example.p2p.ui.theme.PrimaryMint
-import com.example.p2p.ui.theme.SuccessColor
-import com.example.p2p.ui.theme.SurfaceColor
-import com.example.p2p.ui.theme.TextMain
-import com.example.p2p.ui.theme.TextMuted
-import com.example.p2p.ui.theme.WarningColor
-
-// ---------------------------------------------------------------------------
-// Data model
-// ---------------------------------------------------------------------------
-
-private data class DisputeItem(
-    val txId: String,
-    val status: String,
-    val statusColor: Color,
-    val buyer: String,
-    val seller: String,
-    val amount: String,
-    val date: String,
-)
-
-private val sampleDisputes = listOf(
-    DisputeItem(
-        txId = "#TX-9982",
-        status = "EN ARBITRAJE",
-        statusColor = DangerColor,
-        buyer = "Carlos Mendoza",
-        seller = "Victor V.",
-        amount = "\$200 USD",
-        date = "25 May 2026",
-    ),
-    DisputeItem(
-        txId = "#TX-9756",
-        status = "EN REVISIÓN",
-        statusColor = WarningColor,
-        buyer = "Luis R.",
-        seller = "Ana M.",
-        amount = "\$500 USD",
-        date = "23 May 2026",
-    ),
-)
-
-// ---------------------------------------------------------------------------
-// Screen
-// ---------------------------------------------------------------------------
+import com.example.p2p.data.remote.api.AdminDisputeDto
+import com.example.p2p.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AdminScreen() {
+fun AdminScreen(
+    viewModel: AdminViewModel,
+    onBack: () -> Unit = {}
+) {
+    val context = LocalContext.current
+    val uiState by viewModel.uiState.collectAsState()
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Todas", "Arbitraje", "Revisión", "Resuelta")
+
+    LaunchedEffect(Unit) {
+        viewModel.loadData()
+    }
 
     Scaffold(
         topBar = {
@@ -112,12 +53,13 @@ fun AdminScreen() {
                     )
                 },
                 navigationIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.Security,
-                        contentDescription = "Admin",
-                        tint = Primary,
-                        modifier = Modifier.padding(start = 16.dp),
-                    )
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Atrás",
+                            tint = TextMain,
+                        )
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceColor),
             )
@@ -132,12 +74,20 @@ fun AdminScreen() {
         ) {
             // Admin header card
             item {
-                AdminHeaderCard(modifier = Modifier.padding(16.dp))
+                AdminHeaderCard(
+                    volume = uiState.stats?.total_volume ?: 142000.0,
+                    disputesCount = uiState.stats?.pending_disputes ?: 0,
+                    usersCount = uiState.stats?.total_users ?: 284,
+                    modifier = Modifier.padding(16.dp)
+                )
             }
 
             // Status pills
             item {
-                StatusPillsRow(modifier = Modifier.padding(horizontal = 16.dp))
+                StatusPillsRow(
+                    disputesCount = uiState.stats?.pending_disputes ?: 0,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
             }
 
             // Filter tabs
@@ -165,23 +115,56 @@ fun AdminScreen() {
             }
 
             // Dispute cards
-            items(sampleDisputes.size) { index ->
-                DisputeCard(
-                    dispute = sampleDisputes[index],
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                )
-                Spacer(Modifier.height(12.dp))
+            if (uiState.isLoading && uiState.disputes.isEmpty()) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = Primary)
+                    }
+                }
+            } else if (uiState.disputes.isEmpty()) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                        Text("No hay disputas registradas", color = TextMuted)
+                    }
+                }
+            } else {
+                val filteredDisputes = when (selectedTab) {
+                    1 -> uiState.disputes.filter { it.status == "open" }
+                    2 -> uiState.disputes.filter { it.status == "review" }
+                    3 -> uiState.disputes.filter { it.status == "resolved" }
+                    else -> uiState.disputes
+                }
+                items(filteredDisputes) { dispute ->
+                    DisputeCard(
+                        dispute = dispute,
+                        onResolve = {
+                            viewModel.resolveDispute(
+                                disputeId = dispute.id,
+                                resolution = "favour_buyer",
+                                onSuccess = {
+                                    Toast.makeText(context, "Disputa resuelta como Favour Buyer", Toast.LENGTH_SHORT).show()
+                                },
+                                onError = { err ->
+                                    Toast.makeText(context, "Error: $err", Toast.LENGTH_LONG).show()
+                                }
+                            )
+                        },
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                    )
+                    Spacer(Modifier.height(12.dp))
+                }
             }
         }
     }
 }
 
-// ---------------------------------------------------------------------------
-// Admin Header Card
-// ---------------------------------------------------------------------------
-
 @Composable
-private fun AdminHeaderCard(modifier: Modifier = Modifier) {
+private fun AdminHeaderCard(
+    volume: Double,
+    disputesCount: Int,
+    usersCount: Int,
+    modifier: Modifier = Modifier
+) {
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -194,7 +177,6 @@ private fun AdminHeaderCard(modifier: Modifier = Modifier) {
             .padding(20.dp),
     ) {
         Column {
-            // "CONTROL DE OPERACIONES" badge
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(50.dp))
@@ -221,17 +203,16 @@ private fun AdminHeaderCard(modifier: Modifier = Modifier) {
 
             Spacer(Modifier.height(16.dp))
 
-            // Stats row — 3 columns separated by thin dividers
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                AdminStat(value = "\$142K", label = "Volumen", valueColor = Color.White)
+                AdminStat(value = "S/ ${String.format("%.1fK", volume / 1000)}", label = "Volumen", valueColor = Color.White)
                 StatDivider()
-                AdminStat(value = "2", label = "Disputas", valueColor = DangerColor)
+                AdminStat(value = disputesCount.toString(), label = "Disputas", valueColor = DangerColor)
                 StatDivider()
-                AdminStat(value = "284", label = "Usuarios", valueColor = Color.White)
+                AdminStat(value = usersCount.toString(), label = "Usuarios", valueColor = Color.White)
             }
         }
     }
@@ -264,18 +245,14 @@ private fun StatDivider() {
     )
 }
 
-// ---------------------------------------------------------------------------
-// Status Pills Row
-// ---------------------------------------------------------------------------
-
 @Composable
-private fun StatusPillsRow(modifier: Modifier = Modifier) {
+private fun StatusPillsRow(disputesCount: Int, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier.horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        StatusPill(label = "⚖ 1 En arbitraje", bgColor = DangerColor)
-        StatusPill(label = "🔍 1 En revisión", bgColor = WarningColor)
+        StatusPill(label = "⚖ $disputesCount En arbitraje", bgColor = DangerColor)
+        StatusPill(label = "🔍 0 En revisión", bgColor = WarningColor)
         StatusPill(label = "✅ 0 Resueltas", bgColor = SuccessColor)
     }
 }
@@ -296,10 +273,6 @@ private fun StatusPill(label: String, bgColor: Color) {
         )
     }
 }
-
-// ---------------------------------------------------------------------------
-// Filter Tabs
-// ---------------------------------------------------------------------------
 
 @Composable
 private fun FilterTabsRow(
@@ -323,6 +296,7 @@ private fun FilterTabsRow(
                         color = if (isSelected) Primary else BorderColor,
                         shape = RoundedCornerShape(50.dp),
                     )
+                    .clickable { onTabSelected(index) }
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 contentAlignment = Alignment.Center,
             ) {
@@ -337,12 +311,8 @@ private fun FilterTabsRow(
     }
 }
 
-// ---------------------------------------------------------------------------
-// Dispute Card
-// ---------------------------------------------------------------------------
-
 @Composable
-private fun DisputeCard(dispute: DisputeItem, modifier: Modifier = Modifier) {
+private fun DisputeCard(dispute: AdminDisputeDto, onResolve: () -> Unit, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -350,71 +320,49 @@ private fun DisputeCard(dispute: DisputeItem, modifier: Modifier = Modifier) {
         border = BorderStroke(1.dp, BorderColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            // TX id + status badge
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
-                    text = dispute.txId,
+                    text = dispute.transaction_id.take(8).uppercase(),
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp,
                     color = DangerColor,
                 )
-                StatusBadge(label = dispute.status, color = dispute.statusColor)
+                StatusBadge(label = dispute.status.uppercase(), color = if (dispute.status == "open") DangerColor else SuccessColor)
             }
 
-            Spacer(Modifier.height(8.dp))
-
-            // Buyer + Seller
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Text(text = "Comprador: ${dispute.buyer}", fontSize = 12.sp, color = TextMuted)
-                Text(text = "Vendedor: ${dispute.seller}", fontSize = 12.sp, color = TextMuted)
+            Text(text = "Motivo: ${dispute.reason}", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextMain)
+            dispute.description?.let {
+                Text(text = it, fontSize = 12.sp, color = TextMuted)
             }
 
-            Spacer(Modifier.height(8.dp))
-
-            // Amount + date
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = dispute.amount,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
-                    color = Primary,
+                    text = dispute.created_at.take(10),
+                    fontSize = 12.sp,
+                    color = TextMuted
                 )
-                Text(text = dispute.date, fontSize = 12.sp, color = TextMuted)
             }
 
-            Spacer(Modifier.height(12.dp))
-
-            // Action buttons
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(
-                    onClick = {},
-                    shape = RoundedCornerShape(8.dp),
-                    border = BorderStroke(1.dp, Primary),
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-                    modifier = Modifier.height(34.dp),
-                ) {
-                    Text(text = "Ver Detalle", fontSize = 12.sp, color = Primary)
-                }
-                Button(
-                    onClick = {},
-                    shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = SuccessColor),
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-                    modifier = Modifier.height(34.dp),
-                ) {
-                    Text(text = "Resolver", fontSize = 12.sp, color = Color.White)
+            if (dispute.status == "open") {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 4.dp)) {
+                    Button(
+                        onClick = onResolve,
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = SuccessColor),
+                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
+                        modifier = Modifier.height(34.dp),
+                    ) {
+                        Text(text = "Resolver a Favor del Comprador", fontSize = 12.sp, color = Color.White)
+                    }
                 }
             }
         }
@@ -437,14 +385,4 @@ private fun StatusBadge(label: String, color: Color) {
             color = color,
         )
     }
-}
-
-// ---------------------------------------------------------------------------
-// Preview
-// ---------------------------------------------------------------------------
-
-@Preview(showBackground = true)
-@Composable
-fun AdminScreenPreview() {
-    AdminScreen()
 }

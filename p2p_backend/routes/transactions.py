@@ -16,6 +16,8 @@ def _txn_dict(t):
         'vendor_id': str(t.vendor_id),
         'amount_crypto': t.amount_crypto,
         'amount_fiat': t.amount_fiat,
+        'amount_from': t.amount_crypto,
+        'amount_to': t.amount_fiat,
         'exchange_rate': t.exchange_rate,
         'status': t.status,
         'buyer_payment_account': t.buyer_payment_account,
@@ -23,6 +25,7 @@ def _txn_dict(t):
         'created_at': t.created_at.isoformat(),
         'updated_at': t.updated_at.isoformat() if t.updated_at else None
     }
+
 
 
 @transactions_bp.route('/transactions', methods=['GET'])
@@ -92,13 +95,14 @@ def create_transaction():
         offer_id=offer.id,
         buyer_id=UUID(user_id),
         vendor_id=offer.vendor_id,
-        amount_crypto=data.get('amount_crypto', 0),
-        amount_fiat=data.get('amount_fiat', 0),
+        amount_crypto=data.get('amount_crypto') or data.get('amount_from') or 0,
+        amount_fiat=data.get('amount_fiat') or data.get('amount_to') or 0,
         exchange_rate=offer.price_per_unit,
         status='pending',
         buyer_payment_account=data.get('buyer_payment_account'),
         vendor_payment_account=data.get('vendor_payment_account')
     )
+
 
     db.session.add(txn)
     db.session.commit()

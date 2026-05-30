@@ -12,6 +12,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import java.text.SimpleDateFormat
+import java.util.Locale
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,9 +52,66 @@ private val filterChips = listOf("Todos", "Completados", "Pendientes", "Disputas
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HistoryScreen() {
+fun HistoryScreen(
+    viewModel: HistoryViewModel? = null,
+    onBack: () -> Unit = {}
+) {
+    val uiState by viewModel?.uiState?.collectAsState(initial = HistoryUiState()) ?: remember { mutableStateOf(HistoryUiState()) }
     var selectedFilter by remember { mutableStateOf(0) }
     var searchQuery by remember { mutableStateOf("") }
+
+    val transactions = uiState.transactions.map { dto ->
+        val statusName = when (dto.status) {
+            "completed" -> "Completado"
+            "pending" -> "Pendiente"
+            "voucher_uploaded" -> "En Proceso"
+            "cancelled" -> "Cancelado"
+            "disputed" -> "Disputa"
+            else -> dto.status
+        }
+        val sColor = when (dto.status) {
+            "completed" -> SuccessColor
+            "pending", "voucher_uploaded" -> WarningColor
+            "cancelled", "disputed" -> DangerColor
+            else -> TextMuted
+        }
+        val icon = when (dto.status) {
+            "completed" -> Icons.Default.SwapHoriz
+            "pending", "voucher_uploaded" -> Icons.Default.Schedule
+            "cancelled" -> Icons.Default.Cancel
+            "disputed" -> Icons.Default.Gavel
+            else -> Icons.Default.Info
+        }
+        val formattedDate = try {
+            val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+            val formatter = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+            val date = parser.parse(dto.created_at.substringBefore("."))
+            if (date != null) formatter.format(date) else dto.created_at.take(10)
+        } catch (e: Exception) {
+            dto.created_at.take(10)
+        }
+
+        Transaction(
+            id = "#TX-${dto.id.takeLast(4).uppercase()}",
+            status = statusName,
+            statusColor = sColor,
+            from = "Yo",
+            to = "Otro",
+            amount = "$ ${dto.amount_to}",
+            rate = "S/ ${dto.exchange_rate}",
+            date = formattedDate,
+            icon = icon
+        )
+    }
+
+    val filteredList = if (selectedFilter == 0) transactions else transactions.filter {
+        when (selectedFilter) {
+            1 -> it.status == "Completado"
+            2 -> it.status == "Pendiente" || it.status == "En Proceso"
+            3 -> it.status == "Disputa"
+            else -> true
+        }
+    }
 
     Scaffold(
         containerColor = BackgroundApp,
@@ -67,7 +126,7 @@ fun HistoryScreen() {
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = Color.White)
                     }
                 },
@@ -154,10 +213,10 @@ fun HistoryScreen() {
                     .padding(bottom = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                SummaryChip("5 Total", Primary)
-                SummaryChip("3 Completados", SuccessColor)
-                SummaryChip("1 Pendiente", WarningColor)
-                SummaryChip("1 Disputa", DangerColor)
+                SummaryChip("${transactions.size} Total", Primary)
+                SummaryChip("${transactions.count { it.status == "Completado" }} Completados", SuccessColor)
+                SummaryChip("${transactions.count { it.status == "Pendiente" || it.status == "En Proceso" }} Pendientes", WarningColor)
+                SummaryChip("${transactions.count { it.status == "Disputa" }} Disputas", DangerColor)
             }
 
             // ── Transaction list ──────────────────────────────────────────────
@@ -168,7 +227,7 @@ fun HistoryScreen() {
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 contentPadding = PaddingValues(bottom = 24.dp)
             ) {
-                items(sampleTransactions) { tx ->
+                items(filteredList) { tx ->
                     TransactionCard(tx)
                 }
             }

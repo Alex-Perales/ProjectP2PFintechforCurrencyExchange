@@ -3,6 +3,7 @@ package com.example.p2p.presentation.cards
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -39,18 +41,20 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.p2p.data.remote.dto.BankAccountDto
 import com.example.p2p.ui.theme.BackgroundApp
 import com.example.p2p.ui.theme.BbvaColor
 import com.example.p2p.ui.theme.BcpColor
@@ -64,32 +68,6 @@ import com.example.p2p.ui.theme.TextMain
 import com.example.p2p.ui.theme.TextMuted
 import com.example.p2p.ui.theme.YapeColor
 
-// ---------------------------------------------------------------------------
-// Data model
-// ---------------------------------------------------------------------------
-
-private data class BankAccount(
-    val bankName: String,
-    val accountNumber: String,
-    val cci: String,
-    val color: Color,
-)
-
-private val sampleAccounts = listOf(
-    BankAccount(
-        bankName = "BCP",
-        accountNumber = "002-1910098765432",
-        cci = "002-191-0098765432-12",
-        color = BcpColor,
-    ),
-    BankAccount(
-        bankName = "Interbank",
-        accountNumber = "898-333-1234567890",
-        cci = "003-898-333123456-78",
-        color = InterbankColor,
-    ),
-)
-
 private data class BankChip(val name: String, val color: Color)
 
 private val bankChips = listOf(
@@ -100,15 +78,35 @@ private val bankChips = listOf(
     BankChip("Plin", PlinColor),
 )
 
-// ---------------------------------------------------------------------------
-// Screen
-// ---------------------------------------------------------------------------
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BankAccountsScreen(onBack: () -> Unit = {}) {
+fun BankAccountsScreen(
+    viewModel: BankAccountsViewModel? = null,
+    onBack: () -> Unit = {}
+) {
     var selectedBank by remember { mutableStateOf("BCP") }
     var accountNumber by remember { mutableStateOf("") }
+    val uiState by viewModel?.uiState?.collectAsState(initial = BankAccountsUiState()) ?: remember { mutableStateOf(BankAccountsUiState()) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel?.loadBankAccounts()
+    }
+
+    LaunchedEffect(uiState.successMessage) {
+        uiState.successMessage?.let {
+            android.widget.Toast.makeText(context, it, android.widget.Toast.LENGTH_SHORT).show()
+            viewModel?.clearMessages()
+            accountNumber = ""
+        }
+    }
+
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let {
+            android.widget.Toast.makeText(context, it, android.widget.Toast.LENGTH_LONG).show()
+            viewModel?.clearMessages()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -142,8 +140,25 @@ fun BankAccountsScreen(onBack: () -> Unit = {}) {
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             // Existing accounts
-            items(sampleAccounts.size) { index ->
-                BankAccountCard(account = sampleAccounts[index])
+            if (uiState.isLoading && uiState.accounts.isEmpty()) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().height(100.dp), contentAlignment = Alignment.Center) {
+                        androidx.compose.material3.CircularProgressIndicator(color = Primary)
+                    }
+                }
+            } else if (uiState.accounts.isEmpty()) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().height(100.dp), contentAlignment = Alignment.Center) {
+                        Text(text = "No tienes cuentas bancarias registradas.", color = TextMuted)
+                    }
+                }
+            } else {
+                items(uiState.accounts) { account ->
+                    BankAccountCard(
+                        account = account,
+                        onDelete = { viewModel?.deleteBankAccount(account.id) }
+                    )
+                }
             }
 
             // Divider + add section
@@ -184,6 +199,7 @@ fun BankAccountsScreen(onBack: () -> Unit = {}) {
                                     color = if (isSelected) Primary else BorderColor,
                                     shape = RoundedCornerShape(50.dp),
                                 )
+                                .clickable { selectedBank = chip.name }
                                 .padding(horizontal = 14.dp, vertical = 8.dp),
                             contentAlignment = Alignment.Center,
                         ) {
@@ -228,7 +244,15 @@ fun BankAccountsScreen(onBack: () -> Unit = {}) {
             item {
                 Spacer(Modifier.height(4.dp))
                 Button(
-                    onClick = {},
+                    onClick = {
+                        if (accountNumber.isNotBlank()) {
+                            viewModel?.addBankAccount(
+                                bankName = selectedBank,
+                                accountNumber = accountNumber,
+                                accountHolder = "Titular P2P"
+                            )
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),
@@ -254,12 +278,16 @@ fun BankAccountsScreen(onBack: () -> Unit = {}) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// Bank Account Card
-// ---------------------------------------------------------------------------
-
 @Composable
-private fun BankAccountCard(account: BankAccount) {
+private fun BankAccountCard(account: BankAccountDto, onDelete: () -> Unit) {
+    val color = when (account.bank_name) {
+        "BCP" -> BcpColor
+        "Interbank" -> InterbankColor
+        "BBVA" -> BbvaColor
+        "Yape" -> YapeColor
+        "Plin" -> PlinColor
+        else -> Primary
+    }
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -273,16 +301,15 @@ private fun BankAccountCard(account: BankAccount) {
                 .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Bank initial circle
             Box(
                 modifier = Modifier
                     .size(44.dp)
                     .clip(CircleShape)
-                    .background(account.color),
+                    .background(color),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = account.bankName.first().toString(),
+                    text = account.bank_name.firstOrNull()?.toString() ?: "B",
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
@@ -291,29 +318,29 @@ private fun BankAccountCard(account: BankAccount) {
 
             Spacer(Modifier.width(14.dp))
 
-            // Bank name + numbers
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = account.bankName,
+                    text = account.bank_name,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 14.sp,
                     color = TextMain,
                 )
                 Text(
-                    text = account.accountNumber,
+                    text = account.account_number,
                     fontSize = 13.sp,
                     color = TextMuted,
                 )
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    text = "CCI: ${account.cci}",
-                    fontSize = 11.sp,
-                    color = TextMuted.copy(alpha = 0.7f),
-                )
+                if (!account.account_holder.isNullOrBlank()) {
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        text = "Titular: ${account.account_holder}",
+                        fontSize = 11.sp,
+                        color = TextMuted.copy(alpha = 0.7f),
+                    )
+                }
             }
 
-            // Delete button
-            IconButton(onClick = {}) {
+            IconButton(onClick = onDelete) {
                 Icon(
                     imageVector = Icons.Filled.Delete,
                     contentDescription = "Eliminar",
@@ -322,14 +349,4 @@ private fun BankAccountCard(account: BankAccount) {
             }
         }
     }
-}
-
-// ---------------------------------------------------------------------------
-// Preview
-// ---------------------------------------------------------------------------
-
-@Preview(showBackground = true)
-@Composable
-fun BankAccountsScreenPreview() {
-    BankAccountsScreen()
 }

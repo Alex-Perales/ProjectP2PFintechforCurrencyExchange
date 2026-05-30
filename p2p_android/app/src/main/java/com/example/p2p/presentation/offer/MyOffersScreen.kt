@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -32,14 +33,19 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.p2p.data.remote.dto.OfferDto
 import com.example.p2p.ui.theme.BackgroundApp
 import com.example.p2p.ui.theme.BorderColor
 import com.example.p2p.ui.theme.DangerColor
@@ -50,53 +56,19 @@ import com.example.p2p.ui.theme.TextMain
 import com.example.p2p.ui.theme.TextMuted
 import com.example.p2p.ui.theme.WarningColor
 
-// ---------------------------------------------------------------------------
-// Data model
-// ---------------------------------------------------------------------------
-
-private data class OfferItem(
-    val pair: String,
-    val status: String,
-    val isActive: Boolean,
-    val rate: String,
-    val available: String,
-    val minMax: String,
-)
-
-private val sampleOffers = listOf(
-    OfferItem(
-        pair = "USD→PEN",
-        status = "Activa",
-        isActive = true,
-        rate = "S/ 3.780",
-        available = "\$1,200 disponibles",
-        minMax = "Min \$50 · Max \$500",
-    ),
-    OfferItem(
-        pair = "EUR→PEN",
-        status = "Activa",
-        isActive = true,
-        rate = "S/ 4.110",
-        available = "€800 disponibles",
-        minMax = "Min €50 · Max €400",
-    ),
-    OfferItem(
-        pair = "USD→PEN",
-        status = "Pausada",
-        isActive = false,
-        rate = "S/ 3.775",
-        available = "\$500 disponibles",
-        minMax = "Min \$50 · Max \$300",
-    ),
-)
-
-// ---------------------------------------------------------------------------
-// Screen
-// ---------------------------------------------------------------------------
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyOffersScreen(onBack: () -> Unit = {}) {
+fun MyOffersScreen(
+    viewModel: MyOffersViewModel? = null,
+    onBack: () -> Unit = {},
+    onPublishClick: () -> Unit = {}
+) {
+    val uiState by viewModel?.uiState?.collectAsState(initial = MyOffersUiState()) ?: remember { mutableStateOf(MyOffersUiState()) }
+
+    LaunchedEffect(Unit) {
+        viewModel?.loadMyOffers()
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -127,7 +99,7 @@ fun MyOffersScreen(onBack: () -> Unit = {}) {
                     .padding(horizontal = 16.dp, vertical = 12.dp),
             ) {
                 Button(
-                    onClick = {},
+                    onClick = onPublishClick,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(52.dp),
@@ -158,27 +130,37 @@ fun MyOffersScreen(onBack: () -> Unit = {}) {
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            item {
-                Text(
-                    text = "${sampleOffers.size} ofertas publicadas",
-                    fontSize = 13.sp,
-                    color = TextMuted,
-                )
-                Spacer(Modifier.height(4.dp))
-            }
-            items(sampleOffers.size) { index ->
-                OfferCard(offer = sampleOffers[index])
+            if (uiState.isLoading && uiState.offers.isEmpty()) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
+                        androidx.compose.material3.CircularProgressIndicator(color = Primary)
+                    }
+                }
+            } else if (uiState.offers.isEmpty()) {
+                item {
+                    Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
+                        Text(text = "No tienes ofertas publicadas", color = TextMuted)
+                    }
+                }
+            } else {
+                item {
+                    Text(
+                        text = "${uiState.offers.size} ofertas publicadas",
+                        fontSize = 13.sp,
+                        color = TextMuted,
+                    )
+                    Spacer(Modifier.height(4.dp))
+                }
+                items(uiState.offers) { offer ->
+                    OfferCard(offer = offer)
+                }
             }
         }
     }
 }
 
-// ---------------------------------------------------------------------------
-// Offer Card
-// ---------------------------------------------------------------------------
-
 @Composable
-private fun OfferCard(offer: OfferItem) {
+private fun OfferCard(offer: OfferDto) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -200,14 +182,16 @@ private fun OfferCard(offer: OfferItem) {
                         .padding(horizontal = 10.dp, vertical = 5.dp),
                 ) {
                     Text(
-                        text = offer.pair,
+                        text = "${offer.currency}→${offer.fiat_currency}",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
                     )
                 }
 
-                val statusColor = if (offer.isActive) SuccessColor else WarningColor
+                val isActive = offer.status == "active"
+                val statusText = if (isActive) "Activa" else "Pausada"
+                val statusColor = if (isActive) SuccessColor else WarningColor
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(50.dp))
@@ -216,7 +200,7 @@ private fun OfferCard(offer: OfferItem) {
                         .padding(horizontal = 10.dp, vertical = 4.dp),
                 ) {
                     Text(
-                        text = offer.status,
+                        text = statusText,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = statusColor,
@@ -233,13 +217,13 @@ private fun OfferCard(offer: OfferItem) {
                 verticalAlignment = Alignment.Bottom,
             ) {
                 Text(
-                    text = offer.rate,
+                    text = "S/ ${offer.price_per_unit}",
                     fontWeight = FontWeight.Bold,
                     fontSize = 22.sp,
                     color = TextMain,
                 )
                 Text(
-                    text = offer.available,
+                    text = "${offer.available_amount} disponibles",
                     fontSize = 13.sp,
                     color = TextMuted,
                 )
@@ -248,7 +232,7 @@ private fun OfferCard(offer: OfferItem) {
             Spacer(Modifier.height(6.dp))
 
             Text(
-                text = offer.minMax,
+                text = "Min S/ ${offer.min_transaction} · Max S/ ${offer.max_transaction ?: offer.amount}",
                 fontSize = 12.sp,
                 color = TextMuted,
             )
@@ -257,6 +241,7 @@ private fun OfferCard(offer: OfferItem) {
 
             // Action buttons
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                val isActive = offer.status == "active"
                 OutlinedButton(
                     onClick = {},
                     shape = RoundedCornerShape(8.dp),
@@ -265,7 +250,7 @@ private fun OfferCard(offer: OfferItem) {
                     modifier = Modifier.height(36.dp),
                 ) {
                     Text(
-                        text = if (offer.isActive) "Pausar" else "Reanudar",
+                        text = if (isActive) "Pausar" else "Reanudar",
                         fontSize = 12.sp,
                         color = WarningColor,
                     )
@@ -282,14 +267,4 @@ private fun OfferCard(offer: OfferItem) {
             }
         }
     }
-}
-
-// ---------------------------------------------------------------------------
-// Preview
-// ---------------------------------------------------------------------------
-
-@Preview(showBackground = true)
-@Composable
-fun MyOffersScreenPreview() {
-    MyOffersScreen()
 }

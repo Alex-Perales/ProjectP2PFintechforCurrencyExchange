@@ -24,6 +24,7 @@ import com.example.p2p.core.security.TokenManager
 import com.example.p2p.data.repository.AuthRepositoryImpl
 import com.example.p2p.presentation.about.AboutScreen
 import com.example.p2p.presentation.admin.AdminScreen
+import com.example.p2p.presentation.admin.AdminViewModel
 import com.example.p2p.presentation.auth.ForgotPasswordScreen
 import com.example.p2p.presentation.auth.LoginScreen
 import com.example.p2p.presentation.auth.LoginViewModel
@@ -44,10 +45,12 @@ import com.example.p2p.presentation.offer.PublishScreen
 import com.example.p2p.presentation.profile.EditProfileScreen
 import com.example.p2p.presentation.profile.ProfileScreen
 import com.example.p2p.presentation.rating.RatingScreen
+import com.example.p2p.presentation.rating.RatingViewModel
 import com.example.p2p.presentation.receipt.ReceiptScreen
 import com.example.p2p.presentation.reviews.ReviewsScreen
 import com.example.p2p.presentation.transaction.TransactionDetailScreen
 import com.example.p2p.presentation.transaction.TransactionScreen
+import com.example.p2p.presentation.vendor.VendorInboxScreen
 import com.example.p2p.ui.theme.Primary
 import com.example.p2p.ui.theme.SurfaceColor
 import kotlinx.coroutines.launch
@@ -129,47 +132,110 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
 
             // ── Main ─────────────────────────────────────────────────────────────
             composable(Screen.Market.route) {
+                val offerRepo = com.example.p2p.data.repository.OfferRepositoryImpl(com.example.p2p.core.network.ApiClient.offerApi)
+                val txnRepo = com.example.p2p.data.repository.TransactionRepositoryImpl(com.example.p2p.core.network.ApiClient.transactionApi)
+                val vm: com.example.p2p.presentation.market.MarketViewModel = viewModel(factory = com.example.p2p.presentation.market.MarketViewModel.Factory(offerRepo, txnRepo))
                 MarketScreen(
-                    onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) }
+                    viewModel = vm,
+                    onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) },
+                    onNavigateToTransaction = { txnId -> navController.navigate(Screen.Transaction.createRoute(txnId)) }
                 )
             }
 
             composable(Screen.Publish.route) {
-                PublishScreen()
+                val offerRepo = com.example.p2p.data.repository.OfferRepositoryImpl(com.example.p2p.core.network.ApiClient.offerApi)
+                val vm: com.example.p2p.presentation.offer.PublishViewModel = viewModel(factory = com.example.p2p.presentation.offer.PublishViewModel.Factory(offerRepo))
+                PublishScreen(
+                    viewModel = vm,
+                    onNavigateBack = { navController.popBackStack() }
+                )
             }
 
             composable(Screen.History.route) {
-                HistoryScreen()
+                val txnRepo = com.example.p2p.data.repository.TransactionRepositoryImpl(com.example.p2p.core.network.ApiClient.transactionApi)
+                val vm: com.example.p2p.presentation.history.HistoryViewModel = viewModel(factory = com.example.p2p.presentation.history.HistoryViewModel.Factory(txnRepo))
+                HistoryScreen(
+                    viewModel = vm,
+                    onBack = { navController.popBackStack() }
+                )
             }
 
-            composable(Screen.Rating.route) {
-                RatingScreen()
+            composable(
+                route = Screen.Rating.route,
+                arguments = listOf(navArgument("transactionId") { type = NavType.StringType })
+            ) { backStack ->
+                val ratingRepo = com.example.p2p.data.repository.RatingRepositoryImpl(com.example.p2p.core.network.ApiClient.ratingApi)
+                val vm: com.example.p2p.presentation.rating.RatingViewModel = viewModel(factory = com.example.p2p.presentation.rating.RatingViewModel.Factory(ratingRepo))
+                val id = backStack.arguments?.getString("transactionId") ?: ""
+                RatingScreen(
+                    transactionId = id,
+                    viewModel = vm,
+                    onSuccess = {
+                        navController.navigate(Screen.Market.route) {
+                            popUpTo(Screen.Market.route) { inclusive = true }
+                        }
+                    },
+                    onSkip = {
+                        navController.navigate(Screen.Market.route) {
+                            popUpTo(Screen.Market.route) { inclusive = true }
+                        }
+                    }
+                )
             }
 
             composable(
                 route = Screen.Transaction.route,
                 arguments = listOf(navArgument("transactionId") { type = NavType.StringType })
             ) { backStack ->
-                TransactionScreen(transactionId = backStack.arguments?.getString("transactionId"))
+                val txnRepo = com.example.p2p.data.repository.TransactionRepositoryImpl(com.example.p2p.core.network.ApiClient.transactionApi)
+                val vm: com.example.p2p.presentation.transaction.TransactionViewModel = viewModel(factory = com.example.p2p.presentation.transaction.TransactionViewModel.Factory(txnRepo))
+                val id = backStack.arguments?.getString("transactionId") ?: ""
+                TransactionScreen(
+                    transactionId = id,
+                    viewModel = vm,
+                    onNavigateToDispute = { txnId -> navController.navigate(Screen.RegisterDispute.createRoute(txnId)) },
+                    onNavigateToReceipt = { txnId -> navController.navigate(Screen.Receipt.createRoute(txnId)) },
+                    onNavigateBack = { navController.popBackStack() }
+                )
             }
 
             composable(
                 route = Screen.Receipt.route,
                 arguments = listOf(navArgument("transactionId") { type = NavType.StringType })
             ) { backStack ->
-                ReceiptScreen(transactionId = backStack.arguments?.getString("transactionId"))
+                val txnRepo = com.example.p2p.data.repository.TransactionRepositoryImpl(com.example.p2p.core.network.ApiClient.transactionApi)
+                val vm: com.example.p2p.presentation.transaction.TransactionViewModel = viewModel(factory = com.example.p2p.presentation.transaction.TransactionViewModel.Factory(txnRepo))
+                val id = backStack.arguments?.getString("transactionId") ?: ""
+                ReceiptScreen(
+                    transactionId = id,
+                    viewModel = vm,
+                    onNavigateToRating = { txnId -> navController.navigate(Screen.Rating.createRoute(txnId)) },
+                    onNavigateToMarket = {
+                        navController.navigate(Screen.Market.route) {
+                            popUpTo(Screen.Market.route) { inclusive = true }
+                        }
+                    }
+                )
             }
 
             composable(
                 route = Screen.TransactionDetail.route,
                 arguments = listOf(navArgument("transactionId") { type = NavType.StringType })
             ) { backStack ->
-                TransactionDetailScreen(transactionId = backStack.arguments?.getString("transactionId"))
+                val txnRepo = com.example.p2p.data.repository.TransactionRepositoryImpl(com.example.p2p.core.network.ApiClient.transactionApi)
+                val vm: com.example.p2p.presentation.transaction.TransactionViewModel = viewModel(factory = com.example.p2p.presentation.transaction.TransactionViewModel.Factory(txnRepo))
+                TransactionDetailScreen(
+                    transactionId = backStack.arguments?.getString("transactionId"),
+                    viewModel = vm
+                )
             }
 
             // ── Profile ──────────────────────────────────────────────────────────
             composable(Screen.Profile.route) {
+                val userRepo = com.example.p2p.data.repository.UserRepositoryImpl(com.example.p2p.core.network.ApiClient.userApi)
+                val vm: com.example.p2p.presentation.profile.ProfileViewModel = viewModel(factory = com.example.p2p.presentation.profile.ProfileViewModel.Factory(userRepo))
                 ProfileScreen(
+                    viewModel = vm,
                     onNavigate = { route -> navController.navigate(route) },
                     onLogout = {
                         scope.launch {
@@ -183,11 +249,16 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
             }
 
             composable(Screen.EditProfile.route) {
-                EditProfileScreen()
+                EditProfileScreen(onBack = { navController.popBackStack() })
             }
 
             composable(Screen.BankAccounts.route) {
-                BankAccountsScreen()
+                val bankRepo = com.example.p2p.data.repository.BankAccountRepositoryImpl(com.example.p2p.core.network.ApiClient.bankAccountsApi)
+                val vm: com.example.p2p.presentation.cards.BankAccountsViewModel = viewModel(factory = com.example.p2p.presentation.cards.BankAccountsViewModel.Factory(bankRepo))
+                BankAccountsScreen(
+                    viewModel = vm,
+                    onBack = { navController.popBackStack() }
+                )
             }
 
             composable(Screen.Notifications.route) {
@@ -195,11 +266,17 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
             }
 
             composable(Screen.Reviews.route) {
-                ReviewsScreen()
+                ReviewsScreen(onBack = { navController.popBackStack() })
             }
 
             composable(Screen.MyOffers.route) {
-                MyOffersScreen()
+                val repo = com.example.p2p.data.repository.OfferRepositoryImpl(com.example.p2p.core.network.ApiClient.offerApi)
+                val vm: com.example.p2p.presentation.offer.MyOffersViewModel = viewModel(factory = com.example.p2p.presentation.offer.MyOffersViewModel.Factory(repo))
+                MyOffersScreen(
+                    viewModel = vm,
+                    onBack = { navController.popBackStack() },
+                    onPublishClick = { navController.navigate(Screen.Publish.route) }
+                )
             }
 
             composable(Screen.Complaints.route) {
@@ -208,33 +285,61 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
 
             // ── Disputes ─────────────────────────────────────────────────────────
             composable(Screen.MyDisputes.route) {
-                MyDisputesScreen()
+                val repo = com.example.p2p.data.repository.DisputeRepositoryImpl(com.example.p2p.core.network.ApiClient.disputeApi)
+                val vm: com.example.p2p.presentation.dispute.DisputesViewModel = viewModel(factory = com.example.p2p.presentation.dispute.DisputesViewModel.Factory(repo))
+                MyDisputesScreen(
+                    viewModel = vm,
+                    onNavigate = { route -> navController.navigate(route) },
+                    onBack = { navController.popBackStack() }
+                )
             }
-
-            composable(Screen.RegisterDispute.route) {
-                RegisterDisputeScreen()
+            composable(
+                route = Screen.RegisterDispute.route,
+                arguments = listOf(navArgument("transactionId") { type = NavType.StringType })
+            ) { backStack ->
+                val disputeRepo = com.example.p2p.data.repository.DisputeRepositoryImpl(com.example.p2p.core.network.ApiClient.disputeApi)
+                val vm: com.example.p2p.presentation.dispute.DisputesViewModel = viewModel(factory = com.example.p2p.presentation.dispute.DisputesViewModel.Factory(disputeRepo))
+                RegisterDisputeScreen(
+                    transactionId = backStack.arguments?.getString("transactionId"),
+                    viewModel = vm,
+                    onNavigateBack = { navController.popBackStack() }
+                )
             }
 
             // ── Admin ─────────────────────────────────────────────────────────────
             composable(Screen.Admin.route) {
-                AdminScreen()
+                val adminRepo = com.example.p2p.data.repository.AdminRepositoryImpl(com.example.p2p.core.network.ApiClient.adminApi)
+                val vm: com.example.p2p.presentation.admin.AdminViewModel = viewModel(factory = com.example.p2p.presentation.admin.AdminViewModel.Factory(adminRepo))
+                AdminScreen(
+                    viewModel = vm,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Screen.Vendor.route) {
+                val txnRepo = com.example.p2p.data.repository.TransactionRepositoryImpl(com.example.p2p.core.network.ApiClient.transactionApi)
+                val vm: com.example.p2p.presentation.transaction.TransactionViewModel = viewModel(factory = com.example.p2p.presentation.transaction.TransactionViewModel.Factory(txnRepo))
+                VendorInboxScreen(
+                    viewModel = vm,
+                    onBack = { navController.popBackStack() }
+                )
             }
 
             // ── Legal / Info ──────────────────────────────────────────────────────
             composable(Screen.Terms.route) {
-                TermsScreen()
+                TermsScreen(onBack = { navController.popBackStack() })
             }
 
             composable(Screen.Privacy.route) {
-                PrivacyScreen()
+                PrivacyScreen(onBack = { navController.popBackStack() })
             }
 
             composable(Screen.About.route) {
-                AboutScreen()
+                AboutScreen(onBack = { navController.popBackStack() })
             }
 
             composable(Screen.Help.route) {
-                HelpScreen()
+                HelpScreen(onBack = { navController.popBackStack() })
             }
         }
     }

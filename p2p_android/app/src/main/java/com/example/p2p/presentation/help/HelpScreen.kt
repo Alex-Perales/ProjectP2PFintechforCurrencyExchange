@@ -21,7 +21,7 @@ import com.example.p2p.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HelpScreen() {
+fun HelpScreen(onBack: () -> Unit = {}) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -34,7 +34,7 @@ fun HelpScreen() {
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = TextMain)
                     }
                 },

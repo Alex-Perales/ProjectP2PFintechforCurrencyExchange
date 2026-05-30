@@ -66,6 +66,44 @@ def seed():
                 print(f"  + User {ud['email']} [{ud['role']}]")
 
         db.session.commit()
+
+        # ── Test Offers ──────────────────────────────────────
+        vendor = User.query.filter_by(email='vendedor@peruexchange.com').first()
+        if vendor:
+            from app.models import Offer
+            import json
+            if not Offer.query.filter_by(vendor_id=vendor.id).first():
+                # 1. Partial Offer
+                db.session.add(Offer(
+                    vendor_id=vendor.id,
+                    from_currency='USD',
+                    to_currency='PEN',
+                    amount=1200.0,
+                    available_amount=1200.0,
+                    price_per_unit=3.780,
+                    offer_type='partial',
+                    status='active',
+                    min_transaction=50.0,
+                    max_transaction=600.0,
+                    payment_methods=json.dumps(['BCP', 'Yape'])
+                ))
+                # 2. Full Offer
+                db.session.add(Offer(
+                    vendor_id=vendor.id,
+                    from_currency='USD',
+                    to_currency='PEN',
+                    amount=800.0,
+                    available_amount=800.0,
+                    price_per_unit=3.750,
+                    offer_type='full',
+                    status='active',
+                    min_transaction=800.0,
+                    max_transaction=800.0,
+                    payment_methods=json.dumps(['BCP'])
+                ))
+                print('  + Seeded 2 active offers for Victor Vendedor')
+
+        db.session.commit()
         print('Seed completed.')
 
 

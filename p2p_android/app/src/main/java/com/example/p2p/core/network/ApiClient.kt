@@ -2,7 +2,14 @@ package com.example.p2p.core.network
 
 import android.content.Context
 import com.example.p2p.core.security.TokenManager
+import com.example.p2p.data.remote.api.AdminApi
 import com.example.p2p.data.remote.api.AuthApi
+import com.example.p2p.data.remote.api.BankAccountsApi
+import com.example.p2p.data.remote.api.DisputeApi
+import com.example.p2p.data.remote.api.OfferApi
+import com.example.p2p.data.remote.api.RatingApi
+import com.example.p2p.data.remote.api.TransactionApi
+import com.example.p2p.data.remote.api.UserApi
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -56,4 +63,11 @@ object ApiClient {
     }
 
     val authApi: AuthApi by lazy { retrofit.create(AuthApi::class.java) }
+    val offerApi: OfferApi by lazy { retrofit.create(OfferApi::class.java) }
+    val transactionApi: TransactionApi by lazy { retrofit.create(TransactionApi::class.java) }
+    val userApi: UserApi by lazy { retrofit.create(UserApi::class.java) }
+    val disputeApi: DisputeApi by lazy { retrofit.create(DisputeApi::class.java) }
+    val adminApi: AdminApi by lazy { retrofit.create(AdminApi::class.java) }
+    val ratingApi: RatingApi by lazy { retrofit.create(RatingApi::class.java) }
+    val bankAccountsApi: BankAccountsApi by lazy { retrofit.create(BankAccountsApi::class.java) }
 }

@@ -21,7 +21,10 @@ import com.example.p2p.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TransactionDetailScreen(transactionId: String?) {
+fun TransactionDetailScreen(
+    transactionId: String?,
+    viewModel: TransactionViewModel? = null
+) {
     Scaffold(
         topBar = {
             TopAppBar(

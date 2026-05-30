@@ -16,7 +16,7 @@ import com.example.p2p.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TermsScreen() {
+fun TermsScreen(onBack: () -> Unit = {}) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -29,7 +29,7 @@ fun TermsScreen() {
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = TextMain)
                     }
                 },

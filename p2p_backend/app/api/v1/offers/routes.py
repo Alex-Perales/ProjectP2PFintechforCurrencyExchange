@@ -14,8 +14,8 @@ def _offer_dict(o, with_vendor=False):
     d = {
         'id': o.id,
         'vendor_id': o.vendor_id,
-        'currency': o.currency,
-        'fiat_currency': o.fiat_currency,
+        'currency': o.from_currency,
+        'fiat_currency': o.to_currency,
         'amount': o.amount,
         'available_amount': o.available_amount,
         'price_per_unit': o.price_per_unit,
@@ -41,9 +41,9 @@ def list_offers():
 
     query = Offer.query.filter_by(status='active')
     if currency:
-        query = query.filter_by(currency=currency)
+        query = query.filter_by(from_currency=currency)
     if fiat:
-        query = query.filter_by(fiat_currency=fiat)
+        query = query.filter_by(to_currency=fiat)
     if offer_type:
         query = query.filter_by(offer_type=offer_type)
 
@@ -71,8 +71,8 @@ def create_offer():
     data = request.get_json() or {}
     offer = Offer(
         vendor_id=user_id,
-        currency=data.get('currency', 'USD'),
-        fiat_currency=data.get('fiat_currency', 'PEN'),
+        from_currency=data.get('currency', 'USD'),
+        to_currency=data.get('fiat_currency', 'PEN'),
         amount=data.get('amount', 0),
         available_amount=data.get('amount', 0),
         price_per_unit=data.get('price_per_unit', 0),
@@ -104,8 +104,8 @@ def match_offer():
     amount = data.get('amount', 0)
 
     query = Offer.query.filter_by(
-        status='active', currency=currency,
-        fiat_currency=fiat_currency, offer_type=offer_type
+        status='active', from_currency=currency,
+        to_currency=fiat_currency, offer_type=offer_type
     )
     if amount:
         query = query.filter(
