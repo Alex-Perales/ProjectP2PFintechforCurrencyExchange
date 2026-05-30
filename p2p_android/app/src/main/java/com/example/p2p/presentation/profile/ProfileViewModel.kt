@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.p2p.core.network.NetworkResult
-import com.example.p2p.data.remote.model.UserDto
+import com.example.p2p.data.remote.model.User
 import com.example.p2p.domain.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 data class ProfileUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
-    val user: UserDto? = null
+    val user: User? = null
 )
 
 class ProfileViewModel(

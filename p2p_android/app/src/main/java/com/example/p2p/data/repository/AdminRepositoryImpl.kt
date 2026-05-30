@@ -3,7 +3,7 @@ package com.example.p2p.data.repository
 import com.example.p2p.core.network.NetworkResult
 import com.example.p2p.data.remote.api.AdminApi
 import com.example.p2p.data.remote.api.AdminDashboardResponse
-import com.example.p2p.data.remote.api.AdminDisputeDto
+import com.example.p2p.data.remote.api.AdminDispute
 import com.example.p2p.domain.repository.AdminRepository
 
 class AdminRepositoryImpl(
@@ -23,7 +23,7 @@ class AdminRepositoryImpl(
         }
     }
 
-    override suspend fun getDisputes(): NetworkResult<List<AdminDisputeDto>> {
+    override suspend fun getDisputes(): NetworkResult<List<AdminDispute>> {
         return try {
             val response = api.getDisputes()
             if (response.isSuccessful && response.body() != null) {

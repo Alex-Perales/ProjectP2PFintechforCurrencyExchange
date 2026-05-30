@@ -1,6 +1,6 @@
 package com.example.p2p.data.remote.model
 
-data class ExchangeRateDto(
+data class ExchangeRate(
     val id: String,
     val from_currency: String,
     val to_currency: String,
@@ -9,5 +9,5 @@ data class ExchangeRateDto(
 )
 
 data class ExchangeRatesResponse(
-    val rates: List<ExchangeRateDto>
+    val rates: List<ExchangeRate>
 )

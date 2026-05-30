@@ -10,7 +10,7 @@ data class AdminDashboardResponse(
     val total_volume: Double
 )
 
-data class AdminDisputeDto(
+data class AdminDispute(
     val id: String,
     val transaction_id: String,
     val initiator_id: String,
@@ -21,7 +21,7 @@ data class AdminDisputeDto(
 )
 
 data class AdminDisputesResponse(
-    val disputes: List<AdminDisputeDto>
+    val disputes: List<AdminDispute>
 )
 
 interface AdminApi {

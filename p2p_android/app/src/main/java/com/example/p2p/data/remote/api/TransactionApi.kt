@@ -1,7 +1,7 @@
 package com.example.p2p.data.remote.api
 
 import com.example.p2p.data.remote.model.CreateTransactionRequest
-import com.example.p2p.data.remote.model.TransactionDto
+import com.example.p2p.data.remote.model.Transaction
 import com.example.p2p.data.remote.model.TransactionsResponse
 import retrofit2.Response
 import retrofit2.http.*
@@ -16,10 +16,10 @@ interface TransactionApi {
     suspend fun pendingTransactions(): Response<TransactionsResponse>
 
     @GET("transactions/{id}")
-    suspend fun getTransaction(@Path("id") id: String): Response<TransactionDto>
+    suspend fun getTransaction(@Path("id") id: String): Response<Transaction>
 
     @POST("transactions")
-    suspend fun createTransaction(@Body request: CreateTransactionRequest): Response<TransactionDto>
+    suspend fun createTransaction(@Body request: CreateTransactionRequest): Response<Transaction>
 
     @POST("transactions/{id}/voucher")
     suspend fun uploadVoucher(
@@ -31,7 +31,7 @@ interface TransactionApi {
     suspend fun updateStatus(
         @Path("id") id: String,
         @Body request: Map<String, String>
-    ): Response<TransactionDto>
+    ): Response<Transaction>
 
     @POST("transactions/{id}/confirm")
     suspend fun confirmTransaction(

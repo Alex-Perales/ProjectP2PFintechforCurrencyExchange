@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.p2p.core.network.NetworkResult
 import com.example.p2p.data.remote.api.ExchangeApi
-import com.example.p2p.data.remote.model.ExchangeRateDto
-import com.example.p2p.data.remote.model.OfferDto
+import com.example.p2p.data.remote.model.ExchangeRate
+import com.example.p2p.data.remote.model.Offer
 import com.example.p2p.domain.repository.OfferRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,8 +18,8 @@ import com.example.p2p.data.remote.model.CreateTransactionRequest
 data class MarketUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
-    val offers: List<OfferDto> = emptyList(),
-    val exchangeRates: List<ExchangeRateDto> = emptyList()
+    val offers: List<Offer> = emptyList(),
+    val exchangeRates: List<ExchangeRate> = emptyList()
 )
 
 class MarketViewModel(
@@ -87,7 +87,7 @@ class MarketViewModel(
         }
     }
 
-    fun matchOffer(currency: String, fiatCurrency: String, onMatched: (OfferDto) -> Unit, onError: (String) -> Unit) {
+    fun matchOffer(currency: String, fiatCurrency: String, onMatched: (Offer) -> Unit, onError: (String) -> Unit) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
             when (val result = offerRepository.matchOffer(currency, fiatCurrency)) {

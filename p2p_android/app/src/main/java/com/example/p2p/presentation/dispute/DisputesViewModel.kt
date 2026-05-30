@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.p2p.core.network.NetworkResult
-import com.example.p2p.data.remote.model.DisputeDto
+import com.example.p2p.data.remote.model.Dispute
 import com.example.p2p.domain.repository.DisputeRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 data class DisputesUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
-    val disputes: List<DisputeDto> = emptyList()
+    val disputes: List<Dispute> = emptyList()
 )
 
 class DisputesViewModel(

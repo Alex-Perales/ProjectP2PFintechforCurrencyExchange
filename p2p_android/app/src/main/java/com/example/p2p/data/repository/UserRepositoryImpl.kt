@@ -2,14 +2,14 @@ package com.example.p2p.data.repository
 
 import com.example.p2p.core.network.NetworkResult
 import com.example.p2p.data.remote.api.UserApi
-import com.example.p2p.data.remote.model.UserDto
+import com.example.p2p.data.remote.model.User
 import com.example.p2p.domain.repository.UserRepository
 
 class UserRepositoryImpl(
     private val api: UserApi
 ) : UserRepository {
 
-    override suspend fun getMe(): NetworkResult<UserDto> {
+    override suspend fun getMe(): NetworkResult<User> {
         return try {
             val response = api.getMe()
             if (response.isSuccessful && response.body() != null) {
@@ -22,7 +22,7 @@ class UserRepositoryImpl(
         }
     }
 
-    override suspend fun updateProfile(fullName: String, phone: String?): NetworkResult<UserDto> {
+    override suspend fun updateProfile(fullName: String, phone: String?): NetworkResult<User> {
         return try {
             val body = buildMap<String, String?> {
                 put("full_name", fullName)

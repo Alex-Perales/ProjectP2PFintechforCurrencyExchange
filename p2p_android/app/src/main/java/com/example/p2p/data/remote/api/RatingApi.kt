@@ -17,7 +17,7 @@ data class RatingResponse(
     val message: String
 )
 
-data class ReceivedRatingDto(
+data class ReceivedRating(
     val id: String,
     val score: Int,
     val comment: String?,
@@ -26,7 +26,7 @@ data class ReceivedRatingDto(
 )
 
 data class ReceivedRatingsResponse(
-    val ratings: List<ReceivedRatingDto>,
+    val ratings: List<ReceivedRating>,
     val average: Double,
     val total: Int,
     val distribution: Map<String, Int>

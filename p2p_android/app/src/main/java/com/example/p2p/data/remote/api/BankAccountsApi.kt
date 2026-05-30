@@ -1,6 +1,6 @@
 package com.example.p2p.data.remote.api
 
-import com.example.p2p.data.remote.model.BankAccountDto
+import com.example.p2p.data.remote.model.BankAccount
 import com.example.p2p.data.remote.model.BankAccountsResponse
 import com.example.p2p.data.remote.model.CreateBankAccountRequest
 import retrofit2.Response
@@ -16,7 +16,7 @@ interface BankAccountsApi {
     suspend fun listAccounts(): Response<BankAccountsResponse>
 
     @POST("bank-accounts")
-    suspend fun createAccount(@Body request: CreateBankAccountRequest): Response<BankAccountDto>
+    suspend fun createAccount(@Body request: CreateBankAccountRequest): Response<BankAccount>
 
     @DELETE("bank-accounts/{id}")
     suspend fun deleteAccount(@Path("id") id: String): Response<Unit>

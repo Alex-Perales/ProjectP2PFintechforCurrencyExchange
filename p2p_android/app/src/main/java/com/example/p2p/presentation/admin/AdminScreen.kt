@@ -24,7 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.p2p.data.remote.api.AdminDisputeDto
+import com.example.p2p.data.remote.api.AdminDispute
 import com.example.p2p.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -312,7 +312,7 @@ private fun FilterTabsRow(
 }
 
 @Composable
-private fun DisputeCard(dispute: AdminDisputeDto, onResolve: () -> Unit, modifier: Modifier = Modifier) {
+private fun DisputeCard(dispute: AdminDispute, onResolve: () -> Unit, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),

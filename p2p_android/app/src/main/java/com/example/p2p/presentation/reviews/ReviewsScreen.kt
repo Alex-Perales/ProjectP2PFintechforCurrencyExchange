@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.p2p.data.remote.api.ReceivedRatingDto
+import com.example.p2p.data.remote.api.ReceivedRating
 import com.example.p2p.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -167,7 +167,7 @@ private fun RatingBar(stars: Int, count: Int, total: Int) {
 }
 
 @Composable
-private fun ReviewItem(rating: ReceivedRatingDto) {
+private fun ReviewItem(rating: ReceivedRating) {
     val name = rating.rater_name ?: "Anónimo"
     val initials = name.trim().split(" ")
         .filter { it.isNotEmpty() }

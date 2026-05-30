@@ -1,6 +1,6 @@
 package com.example.p2p.data.remote.model
 
-data class UserDto(
+data class User(
     val id: String,
     val email: String,
     val full_name: String?,

@@ -1,6 +1,6 @@
 package com.example.p2p.data.remote.model
 
-data class DisputeDto(
+data class Dispute(
     val id: String,
     val transaction_id: String,
     val initiator_id: String,
@@ -11,7 +11,7 @@ data class DisputeDto(
 )
 
 data class DisputesResponse(
-    val disputes: List<DisputeDto>
+    val disputes: List<Dispute>
 )
 
 data class CreateDisputeRequest(

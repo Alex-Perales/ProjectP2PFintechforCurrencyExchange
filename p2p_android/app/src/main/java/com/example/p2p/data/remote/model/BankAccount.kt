@@ -1,6 +1,6 @@
 package com.example.p2p.data.remote.model
 
-data class BankAccountDto(
+data class BankAccount(
     val id: String,
     val user_id: String,
     val bank_name: String,
@@ -14,7 +14,7 @@ data class BankAccountDto(
 )
 
 data class BankAccountsResponse(
-    val bank_accounts: List<BankAccountDto>
+    val bank_accounts: List<BankAccount>
 )
 
 data class CreateBankAccountRequest(

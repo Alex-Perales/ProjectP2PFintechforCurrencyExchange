@@ -3,7 +3,7 @@ package com.example.p2p.data.repository
 import com.example.p2p.core.network.NetworkResult
 import com.example.p2p.data.remote.api.OfferApi
 import com.example.p2p.data.remote.model.CreateOfferRequest
-import com.example.p2p.data.remote.model.OfferDto
+import com.example.p2p.data.remote.model.Offer
 import com.example.p2p.domain.repository.OfferRepository
 
 class OfferRepositoryImpl(
@@ -14,7 +14,7 @@ class OfferRepositoryImpl(
         currency: String?,
         fiatCurrency: String?,
         offerType: String?
-    ): NetworkResult<List<OfferDto>> {
+    ): NetworkResult<List<Offer>> {
         return try {
             val response = api.listOffers(currency, fiatCurrency, offerType)
             if (response.isSuccessful && response.body() != null) {
@@ -27,7 +27,7 @@ class OfferRepositoryImpl(
         }
     }
 
-    override suspend fun createOffer(request: CreateOfferRequest): NetworkResult<OfferDto> {
+    override suspend fun createOffer(request: CreateOfferRequest): NetworkResult<Offer> {
         return try {
             val response = api.createOffer(request)
             if (response.isSuccessful && response.body() != null) {
@@ -40,7 +40,7 @@ class OfferRepositoryImpl(
         }
     }
 
-    override suspend fun getMyOffers(): NetworkResult<List<OfferDto>> {
+    override suspend fun getMyOffers(): NetworkResult<List<Offer>> {
         return try {
             val response = api.myOffers()
             if (response.isSuccessful && response.body() != null) {
@@ -53,7 +53,7 @@ class OfferRepositoryImpl(
         }
     }
 
-    override suspend fun matchOffer(currency: String, fiatCurrency: String): NetworkResult<OfferDto> {
+    override suspend fun matchOffer(currency: String, fiatCurrency: String): NetworkResult<Offer> {
         return try {
             val response = api.matchOffer(mapOf("currency" to currency, "fiat_currency" to fiatCurrency))
             if (response.isSuccessful && response.body() != null) {
@@ -66,7 +66,7 @@ class OfferRepositoryImpl(
         }
     }
 
-    override suspend fun pauseOffer(offerId: String): NetworkResult<OfferDto> {
+    override suspend fun pauseOffer(offerId: String): NetworkResult<Offer> {
         return try {
             val response = api.updateOffer(offerId, mapOf("status" to "paused"))
             if (response.isSuccessful && response.body() != null) {
@@ -79,7 +79,7 @@ class OfferRepositoryImpl(
         }
     }
 
-    override suspend fun resumeOffer(offerId: String): NetworkResult<OfferDto> {
+    override suspend fun resumeOffer(offerId: String): NetworkResult<Offer> {
         return try {
             val response = api.updateOffer(offerId, mapOf("status" to "active"))
             if (response.isSuccessful && response.body() != null) {

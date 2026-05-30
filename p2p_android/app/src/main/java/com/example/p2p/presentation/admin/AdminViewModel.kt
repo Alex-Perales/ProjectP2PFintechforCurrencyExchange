@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.p2p.core.network.NetworkResult
 import com.example.p2p.data.remote.api.AdminDashboardResponse
-import com.example.p2p.data.remote.api.AdminDisputeDto
+import com.example.p2p.data.remote.api.AdminDispute
 import com.example.p2p.domain.repository.AdminRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +16,7 @@ data class AdminUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val stats: AdminDashboardResponse? = null,
-    val disputes: List<AdminDisputeDto> = emptyList()
+    val disputes: List<AdminDispute> = emptyList()
 )
 
 class AdminViewModel(

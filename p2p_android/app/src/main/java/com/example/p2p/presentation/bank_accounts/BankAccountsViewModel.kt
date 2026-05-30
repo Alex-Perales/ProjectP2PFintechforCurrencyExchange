@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.p2p.core.network.NetworkResult
-import com.example.p2p.data.remote.model.BankAccountDto
+import com.example.p2p.data.remote.model.BankAccount
 import com.example.p2p.data.remote.model.CreateBankAccountRequest
 import com.example.p2p.domain.repository.BankAccountRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 
 data class BankAccountsUiState(
     val isLoading: Boolean = false,
-    val accounts: List<BankAccountDto> = emptyList(),
+    val accounts: List<BankAccount> = emptyList(),
     val error: String? = null,
     val successMessage: String? = null
 )

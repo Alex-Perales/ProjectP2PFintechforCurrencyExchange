@@ -1,6 +1,6 @@
 package com.example.p2p.data.remote.model
 
-data class TransactionDto(
+data class Transaction(
     val id: String,
     val offer_id: String,
     val buyer_id: String,
@@ -18,7 +18,7 @@ data class TransactionDto(
 )
 
 data class TransactionsResponse(
-    val transactions: List<TransactionDto>
+    val transactions: List<Transaction>
 )
 
 data class CreateTransactionRequest(

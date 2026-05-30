@@ -1,6 +1,6 @@
 package com.example.p2p.data.remote.api
 
-import com.example.p2p.data.remote.model.DisputeDto
+import com.example.p2p.data.remote.model.Dispute
 import com.example.p2p.data.remote.model.DisputesResponse
 import com.example.p2p.data.remote.model.CreateDisputeRequest
 import retrofit2.Response
@@ -17,5 +17,5 @@ interface DisputeApi {
     suspend fun createDispute(
         @Path("id") transactionId: String,
         @Body request: CreateDisputeRequest
-    ): Response<DisputeDto>
+    ): Response<Dispute>
 }

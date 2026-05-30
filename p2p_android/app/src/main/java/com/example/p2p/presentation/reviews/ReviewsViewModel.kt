@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.p2p.data.remote.api.RatingApi
-import com.example.p2p.data.remote.api.ReceivedRatingDto
+import com.example.p2p.data.remote.api.ReceivedRating
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 
 data class ReviewsUiState(
     val isLoading: Boolean = false,
-    val ratings: List<ReceivedRatingDto> = emptyList(),
+    val ratings: List<ReceivedRating> = emptyList(),
     val average: Double = 0.0,
     val total: Int = 0,
     val distribution: Map<String, Int> = emptyMap(),

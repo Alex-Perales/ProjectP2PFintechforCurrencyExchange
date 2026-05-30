@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.p2p.core.network.NetworkResult
-import com.example.p2p.data.remote.model.TransactionDto
+import com.example.p2p.data.remote.model.Transaction
 import com.example.p2p.domain.repository.TransactionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 data class HistoryUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
-    val transactions: List<TransactionDto> = emptyList()
+    val transactions: List<Transaction> = emptyList()
 )
 
 class HistoryViewModel(

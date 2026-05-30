@@ -2,7 +2,7 @@ package com.example.p2p.data.repository
 
 import com.example.p2p.core.network.NetworkResult
 import com.example.p2p.data.remote.api.DisputeApi
-import com.example.p2p.data.remote.model.DisputeDto
+import com.example.p2p.data.remote.model.Dispute
 import com.example.p2p.data.remote.model.CreateDisputeRequest
 import com.example.p2p.domain.repository.DisputeRepository
 
@@ -10,7 +10,7 @@ class DisputeRepositoryImpl(
     private val api: DisputeApi
 ) : DisputeRepository {
 
-    override suspend fun getDisputes(): NetworkResult<List<DisputeDto>> {
+    override suspend fun getDisputes(): NetworkResult<List<Dispute>> {
         return try {
             val response = api.getDisputes()
             if (response.isSuccessful && response.body() != null) {
@@ -23,7 +23,7 @@ class DisputeRepositoryImpl(
         }
     }
 
-    override suspend fun createDispute(transactionId: String, request: CreateDisputeRequest): NetworkResult<DisputeDto> {
+    override suspend fun createDispute(transactionId: String, request: CreateDisputeRequest): NetworkResult<Dispute> {
         return try {
             val response = api.createDispute(transactionId, request)
             if (response.isSuccessful && response.body() != null) {

@@ -2,7 +2,7 @@ package com.example.p2p.data.repository
 
 import com.example.p2p.core.network.NetworkResult
 import com.example.p2p.data.remote.api.BankAccountsApi
-import com.example.p2p.data.remote.model.BankAccountDto
+import com.example.p2p.data.remote.model.BankAccount
 import com.example.p2p.data.remote.model.CreateBankAccountRequest
 import com.example.p2p.domain.repository.BankAccountRepository
 
@@ -10,7 +10,7 @@ class BankAccountRepositoryImpl(
     private val api: BankAccountsApi
 ) : BankAccountRepository {
 
-    override suspend fun listAccounts(): NetworkResult<List<BankAccountDto>> {
+    override suspend fun listAccounts(): NetworkResult<List<BankAccount>> {
         return try {
             val response = api.listAccounts()
             if (response.isSuccessful && response.body() != null) {
@@ -23,7 +23,7 @@ class BankAccountRepositoryImpl(
         }
     }
 
-    override suspend fun createAccount(request: CreateBankAccountRequest): NetworkResult<BankAccountDto> {
+    override suspend fun createAccount(request: CreateBankAccountRequest): NetworkResult<BankAccount> {
         return try {
             val response = api.createAccount(request)
             if (response.isSuccessful && response.body() != null) {

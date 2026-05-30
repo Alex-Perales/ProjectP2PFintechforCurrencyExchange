@@ -1,6 +1,6 @@
 package com.example.p2p.data.remote.model
 
-data class OfferDto(
+data class Offer(
     val id: String,
     val vendor_id: String,
     val currency: String,
@@ -14,11 +14,11 @@ data class OfferDto(
     val max_transaction: Double?,
     val payment_methods: List<String>?,
     val created_at: String,
-    val vendor: UserDto? = null
+    val vendor: User? = null
 )
 
 data class OffersResponse(
-    val offers: List<OfferDto>
+    val offers: List<Offer>
 )
 
 data class CreateOfferRequest(

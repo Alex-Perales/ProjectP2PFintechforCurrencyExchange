@@ -28,8 +28,8 @@ import com.example.p2p.ui.theme.*
 
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.p2p.presentation.market.MarketViewModel
-import com.example.p2p.data.remote.model.ExchangeRateDto
-import com.example.p2p.data.remote.model.OfferDto
+import com.example.p2p.data.remote.model.ExchangeRate
+import com.example.p2p.data.remote.model.Offer
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 
@@ -47,7 +47,7 @@ private data class Offer(
     val bankColor: Color
 )
 
-private fun OfferDto.toUiOffer(): Offer {
+private fun Offer.toUiOffer(): Offer {
     val bName = payment_methods?.firstOrNull() ?: "Banco"
     val bColor = when(bName.uppercase()) {
         "BCP" -> BcpColor
@@ -81,7 +81,7 @@ fun MarketScreen(
     onNavigateToTransaction: (String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var showBuyDialog by remember { mutableStateOf<com.example.p2p.data.remote.model.OfferDto?>(null) }
+    var showBuyDialog by remember { mutableStateOf<com.example.p2p.data.remote.model.Offer?>(null) }
     var buyAmount by remember { mutableStateOf("") }
     val context = LocalContext.current
 
@@ -306,7 +306,7 @@ fun MarketScreen(
 
 @Composable
 private fun MarketTopBar(
-    exchangeRates: List<ExchangeRateDto> = emptyList(),
+    exchangeRates: List<ExchangeRate> = emptyList(),
     onNavigateToNotifications: () -> Unit = {}
 ) {
     // Build ticker items from real rates (X→PEN), fallback to hardcoded defaults
@@ -529,7 +529,7 @@ private fun OffersHeader(count: Int) {
 
 @Composable
 private fun OfferCard(
-    offer: com.example.p2p.data.remote.model.OfferDto,
+    offer: com.example.p2p.data.remote.model.Offer,
     isBestRate: Boolean = false,
     onConfirmBuy: (Double) -> Unit
 ) {

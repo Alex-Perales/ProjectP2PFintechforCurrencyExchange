@@ -54,7 +54,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.p2p.data.remote.model.BankAccountDto
+import com.example.p2p.data.remote.model.BankAccount
 import com.example.p2p.ui.theme.BackgroundApp
 import com.example.p2p.ui.theme.BbvaColor
 import com.example.p2p.ui.theme.BcpColor
@@ -279,7 +279,7 @@ fun BankAccountsScreen(
 }
 
 @Composable
-private fun BankAccountCard(account: BankAccountDto, onDelete: () -> Unit) {
+private fun BankAccountCard(account: BankAccount, onDelete: () -> Unit) {
     val color = when (account.bank_name) {
         "BCP" -> BcpColor
         "Interbank" -> InterbankColor

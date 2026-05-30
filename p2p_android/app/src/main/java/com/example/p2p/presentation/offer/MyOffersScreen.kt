@@ -45,7 +45,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.p2p.data.remote.model.OfferDto
+import com.example.p2p.data.remote.model.Offer
 import com.example.p2p.ui.theme.BackgroundApp
 import com.example.p2p.ui.theme.BorderColor
 import com.example.p2p.ui.theme.DangerColor
@@ -168,7 +168,7 @@ fun MyOffersScreen(
 
 @Composable
 private fun OfferCard(
-    offer: OfferDto,
+    offer: Offer,
     onPauseResume: () -> Unit = {},
     onDelete: () -> Unit = {}
 ) {
