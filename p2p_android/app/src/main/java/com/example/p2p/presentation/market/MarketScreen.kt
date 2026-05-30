@@ -33,43 +33,6 @@ import com.example.p2p.data.remote.model.Offer
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 
-// ─── Data ───────────────────────────────────────────────────────────────────
-
-private data class Offer(
-    val initials: String,
-    val seller: String,
-    val pair: String,
-    val rate: String,
-    val min: String,
-    val max: String,
-    val amount: String,
-    val bank: String,
-    val bankColor: Color
-)
-
-private fun Offer.toUiOffer(): Offer {
-    val bName = payment_methods?.firstOrNull() ?: "Banco"
-    val bColor = when(bName.uppercase()) {
-        "BCP" -> BcpColor
-        "INTERBANK" -> InterbankColor
-        "BBVA" -> BbvaColor
-        "YAPE" -> YapeColor
-        else -> Primary
-    }
-    val typeStr = if (offer_type == "sell") "Vende" else "Compra"
-    return Offer(
-        initials = vendor?.full_name?.take(2)?.uppercase() ?: "NN",
-        seller = vendor?.full_name ?: "Desconocido",
-        pair = "$typeStr $currency → $fiat_currency",
-        rate = "S/ $price_per_unit",
-        min = "Min: $min_transaction",
-        max = max_transaction?.let { "Max: $it" } ?: "Max: --",
-        amount = "Monto: $available_amount",
-        bank = bName,
-        bankColor = bColor
-    )
-}
-
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
 @OptIn(ExperimentalMaterial3Api::class)

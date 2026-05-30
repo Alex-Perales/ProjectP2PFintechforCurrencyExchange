@@ -75,9 +75,9 @@ fun AdminScreen(
             // Admin header card
             item {
                 AdminHeaderCard(
-                    volume = uiState.stats?.total_volume ?: 142000.0,
+                    volume = uiState.stats?.total_volume ?: 0.0,
                     disputesCount = uiState.stats?.pending_disputes ?: 0,
-                    usersCount = uiState.stats?.total_users ?: 284,
+                    usersCount = uiState.stats?.total_users ?: 0,
                     modifier = Modifier.padding(16.dp)
                 )
             }

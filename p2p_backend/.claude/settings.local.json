@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Mobile/ProyectoFinal/ProjectP2PFintechforCurrencyExchange/p2p_android/**)",
+      "Bash(./gradlew assembleDebug)",
+      "Bash(adb devices *)"
+    ]
+  }
+}
