@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.p2p.core.network.NetworkResult
-import com.example.p2p.data.remote.dto.OfferDto
+import com.example.p2p.data.remote.model.OfferDto
 import com.example.p2p.domain.repository.OfferRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.p2p.core.network.NetworkResult
-import com.example.p2p.data.remote.dto.DisputeDto
+import com.example.p2p.data.remote.model.DisputeDto
 import com.example.p2p.domain.repository.DisputeRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -52,7 +52,7 @@ class DisputesViewModel(
     ) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-            val request = com.example.p2p.data.remote.dto.CreateDisputeRequest(reason, description)
+            val request = com.example.p2p.data.remote.model.CreateDisputeRequest(reason, description)
             when (val result = disputeRepository.createDispute(transactionId, request)) {
                 is NetworkResult.Success -> {
                     _uiState.value = _uiState.value.copy(isLoading = false)

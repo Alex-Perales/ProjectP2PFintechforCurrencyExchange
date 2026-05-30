@@ -2,8 +2,8 @@ package com.example.p2p.data.repository
 
 import com.example.p2p.core.network.NetworkResult
 import com.example.p2p.data.remote.api.DisputeApi
-import com.example.p2p.data.remote.dto.DisputeDto
-import com.example.p2p.data.remote.dto.CreateDisputeRequest
+import com.example.p2p.data.remote.model.DisputeDto
+import com.example.p2p.data.remote.model.CreateDisputeRequest
 import com.example.p2p.domain.repository.DisputeRepository
 
 class DisputeRepositoryImpl(

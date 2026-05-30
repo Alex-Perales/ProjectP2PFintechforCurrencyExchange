@@ -1,8 +1,8 @@
 package com.example.p2p.domain.repository
 
 import com.example.p2p.core.network.NetworkResult
-import com.example.p2p.data.remote.dto.CreateOfferRequest
-import com.example.p2p.data.remote.dto.OfferDto
+import com.example.p2p.data.remote.model.CreateOfferRequest
+import com.example.p2p.data.remote.model.OfferDto
 
 interface OfferRepository {
     suspend fun listOffers(currency: String? = null, fiatCurrency: String? = null, offerType: String? = null): NetworkResult<List<OfferDto>>

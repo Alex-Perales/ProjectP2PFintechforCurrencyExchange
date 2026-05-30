@@ -33,7 +33,7 @@ import com.example.p2p.presentation.auth.ForgotPasswordScreen
 import com.example.p2p.presentation.auth.LoginScreen
 import com.example.p2p.presentation.auth.LoginViewModel
 import com.example.p2p.presentation.auth.RegisterScreen
-import com.example.p2p.presentation.cards.BankAccountsScreen
+import com.example.p2p.presentation.bank_accounts.BankAccountsScreen
 import com.example.p2p.presentation.complaints.ComplaintsScreen
 import com.example.p2p.presentation.dispute.MyDisputesScreen
 import com.example.p2p.presentation.dispute.RegisterDisputeScreen
@@ -268,7 +268,7 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
 
             composable(Screen.BankAccounts.route) {
                 val bankRepo = com.example.p2p.data.repository.BankAccountRepositoryImpl(com.example.p2p.core.network.ApiClient.bankAccountsApi)
-                val vm: com.example.p2p.presentation.cards.BankAccountsViewModel = viewModel(factory = com.example.p2p.presentation.cards.BankAccountsViewModel.Factory(bankRepo))
+                val vm: com.example.p2p.presentation.bank_accounts.BankAccountsViewModel = viewModel(factory = com.example.p2p.presentation.bank_accounts.BankAccountsViewModel.Factory(bankRepo))
                 BankAccountsScreen(
                     viewModel = vm,
                     onBack = { navController.popBackStack() }

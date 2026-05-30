@@ -28,8 +28,8 @@ import com.example.p2p.ui.theme.*
 
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.p2p.presentation.market.MarketViewModel
-import com.example.p2p.data.remote.dto.ExchangeRateDto
-import com.example.p2p.data.remote.dto.OfferDto
+import com.example.p2p.data.remote.model.ExchangeRateDto
+import com.example.p2p.data.remote.model.OfferDto
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 
@@ -81,7 +81,7 @@ fun MarketScreen(
     onNavigateToTransaction: (String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var showBuyDialog by remember { mutableStateOf<com.example.p2p.data.remote.dto.OfferDto?>(null) }
+    var showBuyDialog by remember { mutableStateOf<com.example.p2p.data.remote.model.OfferDto?>(null) }
     var buyAmount by remember { mutableStateOf("") }
     val context = LocalContext.current
 
@@ -134,7 +134,7 @@ fun MarketScreen(
                         offer = offer,
                         isBestRate = index == 0,
                         onConfirmBuy = { amount ->
-                            val req = com.example.p2p.data.remote.dto.CreateTransactionRequest(
+                            val req = com.example.p2p.data.remote.model.CreateTransactionRequest(
                                 offer_id = offer.id,
                                 amount_from = amount,
                                 amount_to = amount * offer.price_per_unit,
@@ -270,7 +270,7 @@ fun MarketScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        val req = com.example.p2p.data.remote.dto.CreateTransactionRequest(
+                        val req = com.example.p2p.data.remote.model.CreateTransactionRequest(
                             offer_id = offer.id,
                             amount_from = matchAmountDouble,
                             amount_to = matchAmountDouble * offer.price_per_unit,
@@ -529,7 +529,7 @@ private fun OffersHeader(count: Int) {
 
 @Composable
 private fun OfferCard(
-    offer: com.example.p2p.data.remote.dto.OfferDto,
+    offer: com.example.p2p.data.remote.model.OfferDto,
     isBestRate: Boolean = false,
     onConfirmBuy: (Double) -> Unit
 ) {

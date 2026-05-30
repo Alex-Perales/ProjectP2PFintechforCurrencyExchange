@@ -1,8 +1,8 @@
 package com.example.p2p.data.remote.api
 
-import com.example.p2p.data.remote.dto.BankAccountDto
-import com.example.p2p.data.remote.dto.BankAccountsResponse
-import com.example.p2p.data.remote.dto.CreateBankAccountRequest
+import com.example.p2p.data.remote.model.BankAccountDto
+import com.example.p2p.data.remote.model.BankAccountsResponse
+import com.example.p2p.data.remote.model.CreateBankAccountRequest
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE

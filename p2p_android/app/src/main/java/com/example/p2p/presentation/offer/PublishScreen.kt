@@ -27,7 +27,7 @@ import com.example.p2p.ui.theme.*
 import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.p2p.data.remote.dto.CreateOfferRequest
+import com.example.p2p.data.remote.model.CreateOfferRequest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

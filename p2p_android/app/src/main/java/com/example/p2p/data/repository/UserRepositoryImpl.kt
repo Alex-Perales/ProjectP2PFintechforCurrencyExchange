@@ -2,7 +2,7 @@ package com.example.p2p.data.repository
 
 import com.example.p2p.core.network.NetworkResult
 import com.example.p2p.data.remote.api.UserApi
-import com.example.p2p.data.remote.dto.UserDto
+import com.example.p2p.data.remote.model.UserDto
 import com.example.p2p.domain.repository.UserRepository
 
 class UserRepositoryImpl(

@@ -1,8 +1,8 @@
 package com.example.p2p.data.remote.api
 
-import com.example.p2p.data.remote.dto.CreateOfferRequest
-import com.example.p2p.data.remote.dto.OfferDto
-import com.example.p2p.data.remote.dto.OffersResponse
+import com.example.p2p.data.remote.model.CreateOfferRequest
+import com.example.p2p.data.remote.model.OfferDto
+import com.example.p2p.data.remote.model.OffersResponse
 import retrofit2.Response
 import retrofit2.http.*
 

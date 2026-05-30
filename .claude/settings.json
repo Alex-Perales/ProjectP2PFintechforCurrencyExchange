@@ -20,7 +20,14 @@
       "Bash(curl -sf -X POST http://localhost:5000/api/v1/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"admin@peruexchange.com\",\"password\":\"Admin123!\"}')",
       "Bash(docker rmi *)",
       "Bash(docker network *)",
-      "Bash(docker volume *)"
+      "Bash(docker volume *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Mobile\\\\ProyectoFinal\\\\ProjectP2PFintechforCurrencyExchange\\\\p2p_android\" -Recurse -Force)",
+      "Bash(Select-Object -Property FullName)",
+      "Bash(Sort-Object FullName)",
+      "Bash(Out-String -Width 500)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Mobile\\\\ProyectoFinal\\\\ProjectP2PFintechforCurrencyExchange\\\\p2p_backend\\\\app\\\\services\" -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object Name)",
+      "Bash(curl -sf -X POST http://localhost:5000/api/v1/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"comprador@peruexchange.com\",\"password\":\"Comprador123!\"}')"
     ]
   }
 }

@@ -1,11 +1,11 @@
-package com.example.p2p.presentation.cards
+package com.example.p2p.presentation.bank_accounts
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.p2p.core.network.NetworkResult
-import com.example.p2p.data.remote.dto.BankAccountDto
-import com.example.p2p.data.remote.dto.CreateBankAccountRequest
+import com.example.p2p.data.remote.model.BankAccountDto
+import com.example.p2p.data.remote.model.CreateBankAccountRequest
 import com.example.p2p.domain.repository.BankAccountRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -3,9 +3,9 @@ package com.example.p2p.data.repository
 import com.example.p2p.core.network.ApiClient
 import com.example.p2p.core.network.NetworkResult
 import com.example.p2p.core.security.TokenManager
-import com.example.p2p.data.remote.dto.ErrorBody
-import com.example.p2p.data.remote.dto.LoginRequest
-import com.example.p2p.data.remote.dto.LoginResponse
+import com.example.p2p.data.remote.model.ErrorBody
+import com.example.p2p.data.remote.model.LoginRequest
+import com.example.p2p.data.remote.model.LoginResponse
 import com.example.p2p.domain.repository.AuthRepository
 import com.google.gson.Gson
 

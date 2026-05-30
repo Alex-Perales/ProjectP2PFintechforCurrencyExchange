@@ -1,8 +1,8 @@
 package com.example.p2p.domain.repository
 
 import com.example.p2p.core.network.NetworkResult
-import com.example.p2p.data.remote.dto.BankAccountDto
-import com.example.p2p.data.remote.dto.CreateBankAccountRequest
+import com.example.p2p.data.remote.model.BankAccountDto
+import com.example.p2p.data.remote.model.CreateBankAccountRequest
 
 interface BankAccountRepository {
     suspend fun listAccounts(): NetworkResult<List<BankAccountDto>>

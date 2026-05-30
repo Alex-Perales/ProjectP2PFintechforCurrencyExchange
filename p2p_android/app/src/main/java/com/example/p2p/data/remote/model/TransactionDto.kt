@@ -1,4 +1,4 @@
-package com.example.p2p.data.remote.dto
+package com.example.p2p.data.remote.model
 
 data class TransactionDto(
     val id: String,

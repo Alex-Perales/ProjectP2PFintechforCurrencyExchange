@@ -2,8 +2,8 @@ package com.example.p2p.data.repository
 
 import com.example.p2p.core.network.NetworkResult
 import com.example.p2p.data.remote.api.OfferApi
-import com.example.p2p.data.remote.dto.CreateOfferRequest
-import com.example.p2p.data.remote.dto.OfferDto
+import com.example.p2p.data.remote.model.CreateOfferRequest
+import com.example.p2p.data.remote.model.OfferDto
 import com.example.p2p.domain.repository.OfferRepository
 
 class OfferRepositoryImpl(

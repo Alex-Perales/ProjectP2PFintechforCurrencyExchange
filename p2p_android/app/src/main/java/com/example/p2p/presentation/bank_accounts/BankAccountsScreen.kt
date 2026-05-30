@@ -1,4 +1,4 @@
-package com.example.p2p.presentation.cards
+package com.example.p2p.presentation.bank_accounts
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -54,7 +54,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.p2p.data.remote.dto.BankAccountDto
+import com.example.p2p.data.remote.model.BankAccountDto
 import com.example.p2p.ui.theme.BackgroundApp
 import com.example.p2p.ui.theme.BbvaColor
 import com.example.p2p.ui.theme.BcpColor

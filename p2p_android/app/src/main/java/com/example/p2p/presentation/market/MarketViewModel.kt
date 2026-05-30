@@ -5,15 +5,15 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.p2p.core.network.NetworkResult
 import com.example.p2p.data.remote.api.ExchangeApi
-import com.example.p2p.data.remote.dto.ExchangeRateDto
-import com.example.p2p.data.remote.dto.OfferDto
+import com.example.p2p.data.remote.model.ExchangeRateDto
+import com.example.p2p.data.remote.model.OfferDto
 import com.example.p2p.domain.repository.OfferRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import com.example.p2p.domain.repository.TransactionRepository
-import com.example.p2p.data.remote.dto.CreateTransactionRequest
+import com.example.p2p.data.remote.model.CreateTransactionRequest
 
 data class MarketUiState(
     val isLoading: Boolean = false,
