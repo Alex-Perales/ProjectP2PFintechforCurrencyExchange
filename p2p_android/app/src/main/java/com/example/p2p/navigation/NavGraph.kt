@@ -33,6 +33,7 @@ import com.example.p2p.presentation.auth.ForgotPasswordScreen
 import com.example.p2p.presentation.auth.LoginScreen
 import com.example.p2p.presentation.auth.LoginViewModel
 import com.example.p2p.presentation.auth.RegisterScreen
+import com.example.p2p.presentation.auth.RegisterViewModel
 import com.example.p2p.presentation.bank_accounts.BankAccountsScreen
 import com.example.p2p.presentation.complaints.ComplaintsScreen
 import com.example.p2p.presentation.dispute.MyDisputesScreen
@@ -114,11 +115,19 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
             }
 
             composable(Screen.Register.route) {
+                val authRepo = AuthRepositoryImpl(tokenManager)
+                val vm: RegisterViewModel = viewModel(factory = RegisterViewModel.Factory(authRepo))
                 RegisterScreen(
+                    viewModel = vm,
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToLogin = {
                         navController.navigate(Screen.Login.route) {
                             popUpTo(Screen.Register.route) { inclusive = true }
+                        }
+                    },
+                    onRegisterSuccess = {
+                        navController.navigate(Screen.Market.route) {
+                            popUpTo(Screen.Login.route) { inclusive = true }
                         }
                     }
                 )

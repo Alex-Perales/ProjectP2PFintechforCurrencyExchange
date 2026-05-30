@@ -5,6 +5,7 @@ import com.example.p2p.data.remote.model.LoginResponse
 
 interface AuthRepository {
     suspend fun login(email: String, password: String): NetworkResult<LoginResponse>
+    suspend fun register(email: String, password: String, fullName: String): NetworkResult<LoginResponse>
     suspend fun logout()
     suspend fun isLoggedIn(): Boolean
 }

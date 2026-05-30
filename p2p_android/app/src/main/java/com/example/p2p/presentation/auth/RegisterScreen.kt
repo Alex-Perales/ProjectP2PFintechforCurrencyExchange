@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,9 +37,14 @@ import com.example.p2p.ui.theme.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
+    viewModel: RegisterViewModel? = null,
     onNavigateBack: () -> Unit = {},
-    onNavigateToLogin: () -> Unit = {}
+    onNavigateToLogin: () -> Unit = {},
+    onRegisterSuccess: () -> Unit = {}
 ) {
+    val uiState by viewModel?.uiState?.collectAsState(initial = RegisterUiState())
+        ?: remember { mutableStateOf(RegisterUiState()) }
+
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var dni by remember { mutableStateOf("") }
@@ -47,6 +53,10 @@ fun RegisterScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
     var termsAccepted by remember { mutableStateOf(false) }
+
+    LaunchedEffect(uiState.isSuccess) {
+        if (uiState.isSuccess) onRegisterSuccess()
+    }
 
     val scrollState = rememberScrollState()
 
@@ -261,7 +271,10 @@ fun RegisterScreen(
 
                     // Register Button
                     Button(
-                        onClick = { /* visual only */ },
+                        onClick = {
+                            if (password != confirmPassword) return@Button
+                            viewModel?.register(email, password, fullName)
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp),
@@ -270,12 +283,25 @@ fun RegisterScreen(
                             containerColor = PrimaryMint,
                             contentColor = Color(0xFF004D40)
                         ),
-                        enabled = termsAccepted
+                        enabled = termsAccepted && !uiState.isLoading
                     ) {
+                        if (uiState.isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = Color(0xFF004D40),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text("Crear Cuenta", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                        }
+                    }
+
+                    uiState.error?.let { err ->
                         Text(
-                            "Crear Cuenta",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp
+                            text = err,
+                            color = DangerColor,
+                            fontSize = 12.sp,
+                            modifier = androidx.compose.ui.Modifier.padding(top = 6.dp)
                         )
                     }
                 }

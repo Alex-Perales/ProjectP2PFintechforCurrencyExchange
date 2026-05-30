@@ -28,7 +28,14 @@
       "Bash(Get-ChildItem -Path \"C:\\\\Mobile\\\\ProyectoFinal\\\\ProjectP2PFintechforCurrencyExchange\\\\p2p_backend\\\\app\\\\services\" -ErrorAction SilentlyContinue)",
       "Bash(Select-Object Name)",
       "Bash(curl -sf -X POST http://localhost:5000/api/v1/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"comprador@peruexchange.com\",\"password\":\"Comprador123!\"}')",
-      "Bash(grep -v \"ReceivedRatingDto\\\\|RatingApi\\\\|//\\\\|//.*Dto\")"
+      "Bash(grep -v \"ReceivedRatingDto\\\\|RatingApi\\\\|//\\\\|//.*Dto\")",
+      "Bash(curl -sf -X POST http://localhost:5000/api/v1/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"vendedor@peruexchange.com\",\"password\":\"Vendedor123!\"}')",
+      "Bash(curl -sf -X POST http://localhost:5000/api/v1/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"admin@peruexchange.com\",\"password\":\"Admin123!\"}')",
+      "Bash(grep -v \"function\\\\|//\")",
+      "Bash(02_)",
+      "Bash(03_)",
+      "Bash('04_ *)",
+      "Bash(\" 2>/dev/null)"
     ]
   }
 }
