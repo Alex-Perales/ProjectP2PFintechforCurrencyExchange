@@ -10,11 +10,15 @@ transactions_bp = Blueprint('transactions', __name__, url_prefix='/transactions'
 
 
 def _txn_dict(t):
+    buyer  = db.session.get(User, t.buyer_id)
+    vendor = db.session.get(User, t.vendor_id)
     return {
         'id': t.id,
         'offer_id': t.offer_id,
         'buyer_id': t.buyer_id,
         'vendor_id': t.vendor_id,
+        'buyer_name': buyer.full_name if buyer else None,
+        'vendor_name': vendor.full_name if vendor else None,
         'amount_from': t.amount_from,
         'amount_to': t.amount_to,
         'exchange_rate': t.exchange_rate,
@@ -196,6 +200,7 @@ def update_status(txn_id):
     if txn.buyer_id != user_id and txn.vendor_id != user_id:
         raise AuthorizationError('Not your transaction')
 
+    data = request.get_json() or {}
     new_status = data.get('status')
     if new_status not in ('cancelled', 'paused'):
         raise AppException('INVALID_STATUS', 'Status must be cancelled or paused', 400)

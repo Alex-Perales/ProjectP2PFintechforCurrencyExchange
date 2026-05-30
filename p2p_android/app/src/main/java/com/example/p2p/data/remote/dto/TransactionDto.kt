@@ -5,6 +5,8 @@ data class TransactionDto(
     val offer_id: String,
     val buyer_id: String,
     val vendor_id: String,
+    val buyer_name: String? = null,
+    val vendor_name: String? = null,
     val amount_from: Double,
     val amount_to: Double,
     val exchange_rate: Double,

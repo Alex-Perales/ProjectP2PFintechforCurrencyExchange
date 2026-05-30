@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.p2p.core.network.NetworkResult
+import com.example.p2p.data.remote.api.ExchangeApi
+import com.example.p2p.data.remote.dto.ExchangeRateDto
 import com.example.p2p.data.remote.dto.OfferDto
 import com.example.p2p.domain.repository.OfferRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,12 +18,14 @@ import com.example.p2p.data.remote.dto.CreateTransactionRequest
 data class MarketUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
-    val offers: List<OfferDto> = emptyList()
+    val offers: List<OfferDto> = emptyList(),
+    val exchangeRates: List<ExchangeRateDto> = emptyList()
 )
 
 class MarketViewModel(
     private val offerRepository: OfferRepository,
-    private val transactionRepository: TransactionRepository
+    private val transactionRepository: TransactionRepository,
+    private val exchangeApi: ExchangeApi? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MarketUiState())
@@ -29,6 +33,20 @@ class MarketViewModel(
 
     init {
         loadOffers()
+        loadExchangeRates()
+    }
+
+    private fun loadExchangeRates() {
+        if (exchangeApi == null) return
+        viewModelScope.launch {
+            try {
+                val response = exchangeApi.getRates()
+                if (response.isSuccessful) {
+                    val rates = response.body()?.rates ?: emptyList()
+                    _uiState.value = _uiState.value.copy(exchangeRates = rates)
+                }
+            } catch (_: Exception) { /* keep defaults on error */ }
+        }
     }
 
     fun loadOffers() {
@@ -88,10 +106,11 @@ class MarketViewModel(
 
     class Factory(
         private val offerRepository: OfferRepository,
-        private val transactionRepository: TransactionRepository
+        private val transactionRepository: TransactionRepository,
+        private val exchangeApi: ExchangeApi? = null
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            MarketViewModel(offerRepository, transactionRepository) as T
+            MarketViewModel(offerRepository, transactionRepository, exchangeApi) as T
     }
 }

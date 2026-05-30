@@ -28,6 +28,7 @@ import com.example.p2p.ui.theme.*
 
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.p2p.presentation.market.MarketViewModel
+import com.example.p2p.data.remote.dto.ExchangeRateDto
 import com.example.p2p.data.remote.dto.OfferDto
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
@@ -75,6 +76,7 @@ private fun OfferDto.toUiOffer(): Offer {
 @Composable
 fun MarketScreen(
     viewModel: MarketViewModel,
+    userName: String = "Usuario",
     onNavigateToNotifications: () -> Unit = {},
     onNavigateToTransaction: (String) -> Unit = {}
 ) {
@@ -87,9 +89,11 @@ fun MarketScreen(
         viewModel.loadOffers()
     }
 
+    val exchangeRates = uiState.exchangeRates
+
     Scaffold(
         containerColor = BackgroundApp,
-        topBar = { MarketTopBar(onNavigateToNotifications = onNavigateToNotifications) }
+        topBar = { MarketTopBar(exchangeRates = exchangeRates, onNavigateToNotifications = onNavigateToNotifications) }
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
@@ -99,7 +103,7 @@ fun MarketScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(vertical = 16.dp)
         ) {
-            item { WelcomeCard() }
+            item { WelcomeCard(userName = userName) }
             item { FilterCard() }
             item {
                 MatchingRow(
@@ -301,7 +305,30 @@ fun MarketScreen(
 // ─── TopBar ──────────────────────────────────────────────────────────────────
 
 @Composable
-private fun MarketTopBar(onNavigateToNotifications: () -> Unit = {}) {
+private fun MarketTopBar(
+    exchangeRates: List<ExchangeRateDto> = emptyList(),
+    onNavigateToNotifications: () -> Unit = {}
+) {
+    // Build ticker items from real rates (X→PEN), fallback to hardcoded defaults
+    val tickerItems: List<Triple<String, String, Boolean>> = if (exchangeRates.isNotEmpty()) {
+        val penRates = exchangeRates.filter { it.to_currency == "PEN" }
+        if (penRates.isNotEmpty()) {
+            penRates.map { r ->
+                Triple(r.from_currency, "S/${String.format("%.3f", r.rate)}", true)
+            }
+        } else {
+            listOf(
+                Triple("USD", "S/3.720", true),
+                Triple("EUR", "S/4.050", true)
+            )
+        }
+    } else {
+        listOf(
+            Triple("USD", "S/3.720", true),
+            Triple("EUR", "S/4.050", true)
+        )
+    }
+
     Surface(
         color = Primary,
         shadowElevation = 4.dp
@@ -335,7 +362,7 @@ private fun MarketTopBar(onNavigateToNotifications: () -> Unit = {}) {
                     )
                 }
             }
-            // Ticker row
+            // Ticker row — real rates from backend
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -345,9 +372,9 @@ private fun MarketTopBar(onNavigateToNotifications: () -> Unit = {}) {
                 horizontalArrangement = Arrangement.spacedBy(20.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TickerItem("USD", "S/3.78", up = true)
-                TickerItem("EUR", "S/4.11", up = true)
-                TickerItem("BRL", "S/0.74", up = false)
+                tickerItems.forEach { (currency, rate, up) ->
+                    TickerItem(currency, rate, up)
+                }
             }
         }
     }
@@ -370,7 +397,8 @@ private fun TickerItem(currency: String, rate: String, up: Boolean) {
 // ─── Welcome Card ────────────────────────────────────────────────────────────
 
 @Composable
-private fun WelcomeCard() {
+private fun WelcomeCard(userName: String = "Usuario") {
+    val firstName = userName.split(" ").firstOrNull() ?: userName
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -390,7 +418,7 @@ private fun WelcomeCard() {
                 ) {
                     Text("⭐ Experto", color = PrimaryMint, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                 }
-                Text("Bienvenido, Carlos", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                Text("Bienvenido, $firstName", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                 Text("P2P Seguro · Lima, Perú", color = Color.White.copy(alpha = 0.75f), fontSize = 12.sp)
             }
             // "PE" Badge

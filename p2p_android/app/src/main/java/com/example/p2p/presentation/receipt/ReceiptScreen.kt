@@ -46,10 +46,10 @@ fun ReceiptScreen(
     }
 
     val txn = uiState.transaction
-    val buyerName = "Carlos Mendoza" // In a real app, query User public profile. For now, display readable info.
-    val vendorName = "Victor Vendedor"
-    val rate = txn?.exchange_rate ?: 3.780
-    val amountFiat = txn?.amount_to ?: 741.60
+    val buyerName  = txn?.buyer_name  ?: "Comprador"
+    val vendorName = txn?.vendor_name ?: "Vendedor"
+    val rate       = txn?.exchange_rate ?: 3.780
+    val amountFiat = txn?.amount_to ?: 0.0
 
     Column(
         modifier = Modifier

@@ -26,7 +26,7 @@ def dashboard():
     total_txns = Transaction.query.count()
     pending_disputes = Dispute.query.filter_by(status='open').count()
     total_volume = db.session.query(
-        func.sum(Transaction.amount_fiat)
+        func.sum(Transaction.amount_to)
     ).filter_by(status='completed').scalar() or 0
 
     return {

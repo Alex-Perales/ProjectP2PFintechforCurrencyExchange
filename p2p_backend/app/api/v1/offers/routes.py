@@ -100,13 +100,15 @@ def match_offer():
     data = request.get_json() or {}
     currency = data.get('currency', 'USD')
     fiat_currency = data.get('fiat_currency', 'PEN')
-    offer_type = data.get('offer_type', 'sell')
+    offer_type = data.get('offer_type')  # optional — don't filter if not provided
     amount = data.get('amount', 0)
 
     query = Offer.query.filter_by(
         status='active', from_currency=currency,
-        to_currency=fiat_currency, offer_type=offer_type
+        to_currency=fiat_currency
     )
+    if offer_type:
+        query = query.filter_by(offer_type=offer_type)
     if amount:
         query = query.filter(
             Offer.min_transaction <= amount,

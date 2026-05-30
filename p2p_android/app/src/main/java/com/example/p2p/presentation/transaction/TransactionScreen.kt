@@ -66,6 +66,8 @@ fun TransactionScreen(
     }
 
     val txn = uiState.transaction
+    val vendorName = txn?.vendor_name ?: "Vendedor"
+    val vendorBank = txn?.vendor_payment_account ?: "BCP"
     val statusText = when (txn?.status) {
         "pending" -> "ORDEN P2P EN CURSO"
         "voucher_uploaded" -> "VERIFICANDO PAGO"
@@ -280,7 +282,7 @@ fun TransactionScreen(
                     letterSpacing = 0.8.sp
                 )
                 Text(
-                    text = "Victor Vendedor",
+                    text = vendorName,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextMain
@@ -290,21 +292,10 @@ fun TransactionScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "BCP",
+                        text = vendorBank,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
                         color = Primary
-                    )
-                    Text(
-                        text = "·",
-                        fontSize = 13.sp,
-                        color = TextMuted
-                    )
-                    Text(
-                        text = "002-191-0098765432-12",
-                        fontSize = 12.sp,
-                        fontFamily = FontFamily.Monospace,
-                        color = TextMuted
                     )
                 }
             }

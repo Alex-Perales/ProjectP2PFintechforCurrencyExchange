@@ -5,4 +5,5 @@ import com.example.p2p.data.remote.dto.UserDto
 
 interface UserRepository {
     suspend fun getMe(): NetworkResult<UserDto>
+    suspend fun updateProfile(fullName: String, phone: String?): NetworkResult<UserDto>
 }

@@ -6,7 +6,11 @@ import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
@@ -43,6 +47,7 @@ import com.example.p2p.presentation.notifications.NotificationsScreen
 import com.example.p2p.presentation.offer.MyOffersScreen
 import com.example.p2p.presentation.offer.PublishScreen
 import com.example.p2p.presentation.profile.EditProfileScreen
+import com.example.p2p.presentation.profile.EditProfileViewModel
 import com.example.p2p.presentation.profile.ProfileScreen
 import com.example.p2p.presentation.rating.RatingScreen
 import com.example.p2p.presentation.rating.RatingViewModel
@@ -132,11 +137,16 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
 
             // ── Main ─────────────────────────────────────────────────────────────
             composable(Screen.Market.route) {
+                var userName by remember { mutableStateOf("Usuario") }
+                LaunchedEffect(Unit) {
+                    userName = tokenManager.getUserName() ?: "Usuario"
+                }
                 val offerRepo = com.example.p2p.data.repository.OfferRepositoryImpl(com.example.p2p.core.network.ApiClient.offerApi)
                 val txnRepo = com.example.p2p.data.repository.TransactionRepositoryImpl(com.example.p2p.core.network.ApiClient.transactionApi)
-                val vm: com.example.p2p.presentation.market.MarketViewModel = viewModel(factory = com.example.p2p.presentation.market.MarketViewModel.Factory(offerRepo, txnRepo))
+                val vm: com.example.p2p.presentation.market.MarketViewModel = viewModel(factory = com.example.p2p.presentation.market.MarketViewModel.Factory(offerRepo, txnRepo, com.example.p2p.core.network.ApiClient.exchangeApi))
                 MarketScreen(
                     viewModel = vm,
+                    userName = userName,
                     onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) },
                     onNavigateToTransaction = { txnId -> navController.navigate(Screen.Transaction.createRoute(txnId)) }
                 )
@@ -226,7 +236,8 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
                 val vm: com.example.p2p.presentation.transaction.TransactionViewModel = viewModel(factory = com.example.p2p.presentation.transaction.TransactionViewModel.Factory(txnRepo))
                 TransactionDetailScreen(
                     transactionId = backStack.arguments?.getString("transactionId"),
-                    viewModel = vm
+                    viewModel = vm,
+                    onBack = { navController.popBackStack() }
                 )
             }
 
@@ -249,7 +260,9 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
             }
 
             composable(Screen.EditProfile.route) {
-                EditProfileScreen(onBack = { navController.popBackStack() })
+                val userRepo = com.example.p2p.data.repository.UserRepositoryImpl(com.example.p2p.core.network.ApiClient.userApi)
+                val vm: EditProfileViewModel = viewModel(factory = EditProfileViewModel.Factory(userRepo))
+                EditProfileScreen(viewModel = vm, onBack = { navController.popBackStack() })
             }
 
             composable(Screen.BankAccounts.route) {

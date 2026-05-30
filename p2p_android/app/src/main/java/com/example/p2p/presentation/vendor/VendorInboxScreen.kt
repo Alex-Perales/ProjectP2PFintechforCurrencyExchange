@@ -251,7 +251,10 @@ private fun VendorTransactionCard(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("Comprador", fontSize = 12.sp, color = TextMuted)
-                    Text("Carlos Mendoza", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextMain)
+                    Text(
+                        transaction.buyer_name ?: transaction.buyer_id.take(8).uppercase(),
+                        fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextMain
+                    )
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
