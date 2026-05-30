@@ -1,11 +1,24 @@
+# ── Framework ─────────────────────────────────────────────────────────────────
 Flask==3.0.0
-Flask-SQLAlchemy==3.1.1
-Flask-Migrate==4.0.5
-Flask-JWT-Extended==4.5.3
-Flask-CORS==4.0.0
-psycopg2-binary==2.9.9
-SQLAlchemy==2.0.23
-python-dotenv==1.0.0
-gunicorn==21.2.0
-redis==5.0.1
 Werkzeug==3.0.0
+
+# ── Base de datos ─────────────────────────────────────────────────────────────
+Flask-SQLAlchemy==3.1.1
+SQLAlchemy==2.0.23
+Flask-Migrate==4.0.5
+psycopg2-binary==2.9.9
+
+# ── Autenticación ─────────────────────────────────────────────────────────────
+Flask-JWT-Extended==4.5.3
+
+# ── CORS ──────────────────────────────────────────────────────────────────────
+Flask-CORS==4.0.0
+
+# ── Variables de entorno ──────────────────────────────────────────────────────
+python-dotenv==1.0.0
+
+# ── Servidor de producción ────────────────────────────────────────────────────
+gunicorn==21.2.0
+
+# ── Cache / Cola de tareas ────────────────────────────────────────────────────
+redis==5.0.1

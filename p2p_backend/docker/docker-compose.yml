@@ -1,8 +1,11 @@
-version: '3.8'
+name: p2p
 
 services:
   p2p_postgres:
-    image: postgres:15-alpine
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    image: p2p_postgres:15
     container_name: p2p_postgres
     environment:
       POSTGRES_USER: p2p_user
@@ -11,18 +14,21 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - p2p_postgres_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
+      - ../migrations/sql:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U p2p_user -d p2p_exchange_dev"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - p2p_network
+      - network
 
   p2p_redis:
-    image: redis:7-alpine
+    build:
+      context: .
+      dockerfile: Dockerfile.redis
+    image: p2p_redis:7
     container_name: p2p_redis
     ports:
       - "6379:6379"
@@ -32,17 +38,18 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - p2p_network
+      - network
 
   p2p_backend:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: p2p_backend:latest
     container_name: p2p_backend
     ports:
       - "5000:5000"
     environment:
-      FLASK_APP: app.py
+      FLASK_APP: wsgi.py
       FLASK_ENV: development
       DATABASE_URL: postgresql://p2p_user:p2p_password@p2p_postgres:5432/p2p_exchange_dev
       REDIS_URL: redis://p2p_redis:6379/0
@@ -59,27 +66,28 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - p2p_network
+      - network
     restart: on-failure
 
   p2p_nginx:
-    image: nginx:alpine
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    image: p2p_nginx:latest
     container_name: p2p_nginx
     ports:
       - "80:80"
       - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - p2p_backend
     networks:
-      - p2p_network
+      - network
     restart: on-failure
 
 volumes:
-  p2p_postgres_data:
+  postgres_data:
     driver: local
 
 networks:
-  p2p_network:
+  network:
     driver: bridge

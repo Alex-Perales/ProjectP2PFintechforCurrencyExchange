@@ -1,6 +1,7 @@
 """Flask Application Factory"""
 from flask import Flask
 from flask_cors import CORS
+from flask_migrate import Migrate
 
 
 def create_app(config_name='development'):
@@ -13,6 +14,7 @@ def create_app(config_name='development'):
 
     db.init_app(app)
     jwt.init_app(app)
+    Migrate(app, db)
     CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     with app.app_context():

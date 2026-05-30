@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Entornos virtuales
+venv/
+env/
+ENV/
+.venv/
+
+# Tests y cobertura
+.pytest_cache/
+.coverage
+htmlcov/
+tests/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker (no incluir en la imagen)
+.dockerignore
+docker-compose*.yml
+Dockerfile
+
+# Variables de entorno (usar docker-compose env_file o secrets)
+.env
+.env.*
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Migraciones temporales (las versiones sí se incluyen)
+migrations/versions/*.pyc

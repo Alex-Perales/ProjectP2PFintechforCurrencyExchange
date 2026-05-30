@@ -34,7 +34,9 @@ def _offer_dict(o, with_vendor=False):
 
 @offers_bp.route('', methods=['GET'])
 @offers_bp.route('/', methods=['GET'])
+@jwt_required(optional=True)
 def list_offers():
+    current_user_id = get_jwt_identity()
     currency = request.args.get('currency')
     fiat = request.args.get('fiat_currency')
     offer_type = request.args.get('type')
@@ -46,6 +48,8 @@ def list_offers():
         query = query.filter_by(to_currency=fiat)
     if offer_type:
         query = query.filter_by(offer_type=offer_type)
+    if current_user_id:
+        query = query.filter(Offer.vendor_id != current_user_id)
 
     offers = query.order_by(Offer.price_per_unit).all()
     return {'offers': [_offer_dict(o, with_vendor=True) for o in offers]}, 200
@@ -97,6 +101,7 @@ def my_offers():
 @offers_bp.route('/match', methods=['POST'])
 @jwt_required()
 def match_offer():
+    user_id = get_jwt_identity()
     data = request.get_json() or {}
     currency = data.get('currency', 'USD')
     fiat_currency = data.get('fiat_currency', 'PEN')
@@ -106,7 +111,8 @@ def match_offer():
     query = Offer.query.filter_by(
         status='active', from_currency=currency,
         to_currency=fiat_currency
-    )
+    ).filter(Offer.vendor_id != user_id)
+
     if offer_type:
         query = query.filter_by(offer_type=offer_type)
     if amount:
