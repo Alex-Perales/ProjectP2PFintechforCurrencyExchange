@@ -12,11 +12,15 @@ sealed class Screen(val route: String) {
     object EditProfile   : Screen("edit_profile")
     object BankAccounts  : Screen("bank_accounts")
     object Admin         : Screen("admin")
-    object Rating        : Screen("rating")
+    object Rating : Screen("rating/{transactionId}") {
+        fun createRoute(id: String) = "rating/$id"
+    }
     object Notifications : Screen("notifications")
     object MyOffers      : Screen("my_offers")
     object MyDisputes    : Screen("my_disputes")
-    object RegisterDispute : Screen("register_dispute")
+    object RegisterDispute : Screen("register_dispute/{transactionId}") {
+        fun createRoute(id: String) = "register_dispute/$id"
+    }
     object Reviews       : Screen("reviews")
     object Complaints    : Screen("complaints")
     object Terms         : Screen("terms")

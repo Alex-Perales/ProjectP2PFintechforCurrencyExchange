@@ -1,0 +1,104 @@
+#!/usr/bin/env python3
+"""
+Seed de datos de prueba — usuarios, monedas, tasas y ofertas iniciales.
+Se ejecuta al arrancar el contenedor en modo development.
+
+Usuarios de prueba:
+  comprador@peruexchange.com  /  Comprador123!  (rol: buyer)
+  vendedor@peruexchange.com   /  Vendedor123!   (rol: vendor)
+  admin@peruexchange.com      /  Admin123!      (rol: admin)
+"""
+import time
+import sys
+import os
+
+# Subir dos niveles: sql/ -> migrations/ -> p2p_backend/
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+
+def seed():
+    from app import create_app
+    from app.core.database import db
+    from app.models import Currency, ExchangeRate, Offer
+    from app.models.user import User
+    import json
+
+    app = create_app('development')
+    with app.app_context():
+
+        # ── Monedas ───────────────────────────────────────────
+        for code, name, symbol in [
+            ('PEN', 'Sol Peruano',      'S/'),
+            ('USD', 'Dólar Americano',  '$'),
+            ('EUR', 'Euro',             '€'),
+            ('BRL', 'Real Brasileño',   'R$'),
+        ]:
+            if not Currency.query.filter_by(code=code).first():
+                db.session.add(Currency(code=code, name=name, symbol=symbol))
+                print(f'  + Moneda {code}')
+
+        # ── Tasas de cambio ───────────────────────────────────
+        for frm, to, rate in [
+            ('USD', 'PEN', 3.72),
+            ('PEN', 'USD', 0.2688),
+            ('EUR', 'PEN', 4.05),
+            ('PEN', 'EUR', 0.2469),
+            ('USD', 'EUR', 0.9220),
+            ('EUR', 'USD', 1.0845),
+        ]:
+            if not ExchangeRate.query.filter_by(from_currency=frm, to_currency=to).first():
+                db.session.add(ExchangeRate(from_currency=frm, to_currency=to, rate=rate))
+                print(f'  + Tasa {frm}->{to}: {rate}')
+
+        # ── Usuarios de prueba ────────────────────────────────
+        for ud in [
+            {'email': 'comprador@peruexchange.com', 'password': 'Comprador123!',
+             'full_name': 'Carlos Comprador', 'role': 'buyer'},
+            {'email': 'vendedor@peruexchange.com',  'password': 'Vendedor123!',
+             'full_name': 'Victor Vendedor',  'role': 'vendor'},
+            {'email': 'admin@peruexchange.com',     'password': 'Admin123!',
+             'full_name': 'Ana Admin',         'role': 'admin'},
+        ]:
+            if not User.query.filter_by(email=ud['email']).first():
+                u = User(
+                    email=ud['email'],
+                    full_name=ud['full_name'],
+                    role=ud['role'],
+                    kyc_verified=True,
+                    rating=4.8,
+                    total_transactions=12,
+                )
+                u.set_password(ud['password'])
+                db.session.add(u)
+                print(f"  + Usuario {ud['email']} [{ud['role']}]")
+
+        db.session.commit()
+
+        # ── Ofertas iniciales del vendedor ────────────────────
+        vendor = User.query.filter_by(email='vendedor@peruexchange.com').first()
+        if vendor and not Offer.query.filter_by(vendor_id=vendor.id).first():
+            db.session.add(Offer(
+                vendor_id=vendor.id,
+                from_currency='USD', to_currency='PEN',
+                amount=1200.0, available_amount=1200.0,
+                price_per_unit=3.780, offer_type='partial', status='active',
+                min_transaction=50.0, max_transaction=600.0,
+                payment_methods=json.dumps(['BCP', 'Yape'])
+            ))
+            db.session.add(Offer(
+                vendor_id=vendor.id,
+                from_currency='USD', to_currency='PEN',
+                amount=800.0, available_amount=800.0,
+                price_per_unit=3.750, offer_type='full', status='active',
+                min_transaction=800.0, max_transaction=800.0,
+                payment_methods=json.dumps(['BCP'])
+            ))
+            print('  + 2 ofertas iniciales para Victor Vendedor')
+
+        db.session.commit()
+        print('Seed completado.')
+
+
+if __name__ == '__main__':
+    time.sleep(2)
+    seed()

@@ -1,0 +1,93 @@
+name: p2p
+
+services:
+  p2p_postgres:
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    image: p2p_postgres:15
+    container_name: p2p_postgres
+    environment:
+      POSTGRES_USER: p2p_user
+      POSTGRES_PASSWORD: p2p_password
+      POSTGRES_DB: p2p_exchange_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../migrations/sql:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U p2p_user -d p2p_exchange_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - network
+
+  p2p_redis:
+    build:
+      context: .
+      dockerfile: Dockerfile.redis
+    image: p2p_redis:7
+    container_name: p2p_redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - network
+
+  p2p_backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: p2p_backend:latest
+    container_name: p2p_backend
+    ports:
+      - "5000:5000"
+    environment:
+      FLASK_APP: wsgi.py
+      FLASK_ENV: development
+      DATABASE_URL: postgresql://p2p_user:p2p_password@p2p_postgres:5432/p2p_exchange_dev
+      REDIS_URL: redis://p2p_redis:6379/0
+      SECRET_KEY: p2p-secret-key-change-in-prod
+      JWT_SECRET_KEY: p2p-jwt-secret-key-change-in-prod
+    depends_on:
+      p2p_postgres:
+        condition: service_healthy
+      p2p_redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - network
+    restart: on-failure
+
+  p2p_nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    image: p2p_nginx:latest
+    container_name: p2p_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - p2p_backend
+    networks:
+      - network
+    restart: on-failure
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  network:
+    driver: bridge

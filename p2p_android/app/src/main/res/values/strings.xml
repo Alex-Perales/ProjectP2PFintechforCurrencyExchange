@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">P2P</string>
+    <string name="app_name">PeruExchange</string>
+    <string name="app_tagline">Intercambio P2P seguro</string>
 </resources>

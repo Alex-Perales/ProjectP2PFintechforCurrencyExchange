@@ -1,5 +1,6 @@
 package com.example.p2p.presentation.complaints
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -9,11 +10,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -21,7 +23,9 @@ import com.example.p2p.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ComplaintsScreen() {
+fun ComplaintsScreen(onBack: () -> Unit = {}) {
+    val context = LocalContext.current
+    var description by remember { mutableStateOf("") }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -34,7 +38,7 @@ fun ComplaintsScreen() {
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = TextMain)
                     }
                 },
@@ -96,8 +100,8 @@ fun ComplaintsScreen() {
 
                     // Description textarea
                     OutlinedTextField(
-                        value = "",
-                        onValueChange = {},
+                        value = description,
+                        onValueChange = { description = it },
                         placeholder = {
                             Text(
                                 "Describe tu reclamo con detalle...",
@@ -120,7 +124,14 @@ fun ComplaintsScreen() {
 
                     // Submit button
                     Button(
-                        onClick = {},
+                        onClick = {
+                            if (description.isBlank()) {
+                                Toast.makeText(context, "Por favor describe tu reclamo", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(context, "Reclamo enviado. Te responderemos en 48h.", Toast.LENGTH_LONG).show()
+                                description = ""
+                            }
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(48.dp),

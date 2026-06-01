@@ -1,7 +1,6 @@
 package com.example.p2p.presentation.reviews
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -12,7 +11,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -21,24 +20,24 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.p2p.data.remote.api.ReceivedRating
 import com.example.p2p.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReviewsScreen() {
+fun ReviewsScreen(
+    viewModel: ReviewsViewModel? = null,
+    onBack: () -> Unit = {}
+) {
+    val uiState by viewModel?.uiState?.collectAsState(initial = ReviewsUiState())
+        ?: remember { mutableStateOf(ReviewsUiState()) }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        "Mis Reseñas",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 17.sp,
-                        color = TextMain
-                    )
-                },
+                title = { Text("Mis Reseñas", fontWeight = FontWeight.Bold, fontSize = 17.sp, color = TextMain) },
                 navigationIcon = {
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = TextMain)
                     }
                 },
@@ -47,6 +46,14 @@ fun ReviewsScreen() {
         },
         containerColor = BackgroundApp
     ) { innerPadding ->
+
+        if (uiState.isLoading) {
+            Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = Primary)
+            }
+            return@Scaffold
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -55,7 +62,7 @@ fun ReviewsScreen() {
                 .padding(horizontal = 16.dp, vertical = 20.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
-            // ── Rating Summary Card ───────────────────────────────────────────
+            // ── Rating Summary Card ─────────────────────────────────────────────
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = SurfaceColor),
@@ -71,23 +78,24 @@ fun ReviewsScreen() {
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            "4.9",
+                            text = if (uiState.total > 0) String.format("%.1f", uiState.average) else "--",
                             fontSize = 36.sp,
                             fontWeight = FontWeight.Bold,
                             color = TextMain
                         )
                         Text(
-                            "(12 reseñas)",
+                            text = "(${uiState.total} reseñas)",
                             fontSize = 14.sp,
                             color = TextMuted,
                             modifier = Modifier.padding(bottom = 6.dp)
                         )
                     }
-                    // 5 stars
+                    // Stars
                     Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                        repeat(5) {
+                        val fullStars = uiState.average.toInt()
+                        repeat(5) { i ->
                             Icon(
-                                Icons.Default.Star,
+                                if (i < fullStars) Icons.Default.Star else Icons.Default.StarBorder,
                                 contentDescription = null,
                                 tint = WarningColor,
                                 modifier = Modifier.size(22.dp)
@@ -95,44 +103,33 @@ fun ReviewsScreen() {
                         }
                     }
                     // Distribution bars
-                    RatingBar(stars = 5, count = 10, total = 12)
-                    RatingBar(stars = 4, count = 2, total = 12)
-                    RatingBar(stars = 3, count = 0, total = 12)
-                    RatingBar(stars = 2, count = 0, total = 12)
-                    RatingBar(stars = 1, count = 0, total = 12)
+                    listOf(5, 4, 3, 2, 1).forEach { stars ->
+                        val count = uiState.distribution[stars.toString()] ?: 0
+                        RatingBar(stars = stars, count = count, total = uiState.total)
+                    }
                 }
             }
 
-            // ── Section title ─────────────────────────────────────────────────
-            Text(
-                "Comentarios Recibidos",
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextMain
-            )
+            // ── Section title ────────────────────────────────────────────────────
+            Text("Comentarios Recibidos", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextMain)
 
-            // ── Review items ──────────────────────────────────────────────────
-            ReviewItem(
-                name = "Victor V.",
-                stars = 5,
-                comment = "Excelente operación, muy puntual!",
-                date = "24 May 2026",
-                initials = "VV"
-            )
-            ReviewItem(
-                name = "Ana M.",
-                stars = 4,
-                comment = "Todo bien, transferencia rápida.",
-                date = "20 May 2026",
-                initials = "AM"
-            )
-            ReviewItem(
-                name = "Luis R.",
-                stars = 5,
-                comment = "Muy confiable, lo recomiendo.",
-                date = "18 May 2026",
-                initials = "LR"
-            )
+            // ── Review items ─────────────────────────────────────────────────────
+            if (uiState.total == 0) {
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "Aún no tienes reseñas. Completa transacciones para recibirlas.",
+                        fontSize = 13.sp,
+                        color = TextMuted
+                    )
+                }
+            } else {
+                uiState.ratings.forEach { rating ->
+                    ReviewItem(rating = rating)
+                }
+            }
 
             Spacer(Modifier.height(8.dp))
         }
@@ -170,13 +167,15 @@ private fun RatingBar(stars: Int, count: Int, total: Int) {
 }
 
 @Composable
-private fun ReviewItem(
-    name: String,
-    stars: Int,
-    comment: String,
-    date: String,
-    initials: String
-) {
+private fun ReviewItem(rating: ReceivedRating) {
+    val name = rating.rater_name ?: "Anónimo"
+    val initials = name.trim().split(" ")
+        .filter { it.isNotEmpty() }
+        .take(2)
+        .joinToString("") { it.first().uppercaseChar().toString() }
+        .ifEmpty { "??" }
+    val date = rating.created_at?.take(10) ?: ""
+
     Card(
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = SurfaceColor),
@@ -187,7 +186,6 @@ private fun ReviewItem(
             modifier = Modifier.padding(14.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Avatar
             Box(
                 modifier = Modifier
                     .size(42.dp)
@@ -207,26 +205,22 @@ private fun ReviewItem(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        name,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = TextMain
-                    )
+                    Text(name, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = TextMain)
                     Text(date, fontSize = 11.sp, color = TextMuted)
                 }
-                // Stars
                 Row(horizontalArrangement = Arrangement.spacedBy(1.dp)) {
                     repeat(5) { i ->
                         Icon(
-                            if (i < stars) Icons.Default.Star else Icons.Default.StarBorder,
+                            if (i < rating.score) Icons.Default.Star else Icons.Default.StarBorder,
                             contentDescription = null,
                             tint = WarningColor,
                             modifier = Modifier.size(14.dp)
                         )
                     }
                 }
-                Text(comment, fontSize = 13.sp, color = TextMuted, lineHeight = 18.sp)
+                if (!rating.comment.isNullOrBlank()) {
+                    Text(rating.comment, fontSize = 13.sp, color = TextMuted, lineHeight = 18.sp)
+                }
             }
         }
     }

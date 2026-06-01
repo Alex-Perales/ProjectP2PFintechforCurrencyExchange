@@ -11,7 +11,7 @@ Este proyecto toma como base el PDF del curso y usa `Maquetado.html` como refere
 - Tasas de cambio y APIs: [Docs/Exchange_Rates_API.md](Docs/Exchange_Rates_API.md)
 - Documento Historias de usuario: https://docs.google.com/document/d/17NVohPg2bjVlZ_WTKR1ElYv2Bw3S3ONzCkSl15gZHbk/edit?usp=sharing
 
-## Stack
+## Stacks
 
 - Mobile: Android Studio, Kotlin, MVVM.
 - Backend: Flask API, SQLAlchemy, JWT.

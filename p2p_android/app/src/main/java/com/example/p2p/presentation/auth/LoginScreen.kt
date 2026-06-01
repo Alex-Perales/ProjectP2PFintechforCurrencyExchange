@@ -1,12 +1,15 @@
 package com.example.p2p.presentation.auth
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
@@ -21,11 +24,15 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.p2p.ui.theme.*
@@ -39,33 +46,50 @@ fun LoginScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
 
-    // Navigate on success
     LaunchedEffect(uiState.isSuccess) {
         if (uiState.isSuccess) onLoginSuccess()
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(BackgroundApp)
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+
+        // ── Fondo degradado oscuro (parte superior) ────────────────────────────
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.42f)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color(0xFF0A1628), Color(0xFF0D2137), Color(0xFF0A3040))
+                    )
+                )
+        )
+
+        // ── Fondo claro (parte inferior) ───────────────────────────────────────
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.58f)
+                .align(Alignment.BottomCenter)
+                .background(BackgroundApp)
+        )
+
+        // ── Contenido principal ────────────────────────────────────────────────
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(Modifier.height(64.dp))
 
-            // ── Logo ──────────────────────────────────────────
+            // Logo
             Box(
                 modifier = Modifier
-                    .size(80.dp)
-                    .clip(RoundedCornerShape(24.dp))
+                    .size(88.dp)
+                    .clip(RoundedCornerShape(28.dp))
                     .background(
-                        Brush.linearGradient(
-                            listOf(Primary, PrimaryMint)
-                        )
+                        Brush.linearGradient(listOf(Primary, PrimaryMint))
                     ),
                 contentAlignment = Alignment.Center
             ) {
@@ -73,73 +97,92 @@ fun LoginScreen(
                     text = "PE",
                     color = Color.White,
                     fontWeight = FontWeight.ExtraBold,
-                    fontSize = 26.sp
+                    fontSize = 30.sp,
+                    letterSpacing = (-1).sp
                 )
             }
 
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(16.dp))
 
             Text(
-                text = "Bienvenido",
-                fontSize = 26.sp,
+                text = "PeruExchange",
+                color = Color.White,
                 fontWeight = FontWeight.ExtraBold,
-                color = TextMain
+                fontSize = 22.sp,
+                letterSpacing = (-0.5).sp
             )
             Text(
-                text = "Inicia sesión para continuar",
-                fontSize = 13.sp,
-                color = TextMuted,
-                modifier = Modifier.padding(top = 4.dp, bottom = 28.dp)
+                text = "Intercambio P2P · Lima, Perú",
+                color = Color.White.copy(alpha = 0.55f),
+                fontSize = 12.sp,
+                modifier = Modifier.padding(top = 4.dp)
             )
 
-            // ── Card ──────────────────────────────────────────
+            Spacer(Modifier.height(32.dp))
+
+            // ── Tarjeta de login ───────────────────────────────────────────────
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
+                shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(containerColor = SurfaceColor),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
             ) {
-                Column(modifier = Modifier.padding(20.dp)) {
+                Column(modifier = Modifier.padding(24.dp)) {
+
+                    Text(
+                        text = "Iniciar Sesión",
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 20.sp,
+                        color = TextMain
+                    )
+                    Text(
+                        text = "Bienvenido de nuevo",
+                        fontSize = 13.sp,
+                        color = TextMuted,
+                        modifier = Modifier.padding(top = 2.dp, bottom = 20.dp)
+                    )
 
                     // Error banner
-                    AnimatedVisibility(visible = uiState.error != null) {
-                        Card(
+                    AnimatedVisibility(
+                        visible = uiState.error != null,
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
+                        Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = 14.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = DangerColor.copy(alpha = 0.08f)
-                            ),
-                            shape = RoundedCornerShape(10.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(DangerColor.copy(alpha = 0.08f))
+                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
                                 text = uiState.error ?: "",
                                 color = DangerColor,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                modifier = Modifier.padding(10.dp)
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium
                             )
                         }
+                        Spacer(Modifier.height(14.dp))
                     }
 
-                    // Email field
+                    // Email
                     Text(
-                        "EMAIL",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextMuted,
-                        letterSpacing = 0.8.sp,
+                        "CORREO ELECTRÓNICO",
+                        fontSize = 10.sp, fontWeight = FontWeight.Bold,
+                        color = TextMuted, letterSpacing = 0.8.sp,
                         modifier = Modifier.padding(bottom = 6.dp)
                     )
                     OutlinedTextField(
                         value = uiState.email,
                         onValueChange = viewModel::onEmailChange,
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(14.dp),
                         leadingIcon = {
-                            Icon(Icons.Default.Email, contentDescription = null, tint = TextMuted)
+                            Icon(Icons.Default.Email, contentDescription = null,
+                                tint = Primary, modifier = Modifier.size(20.dp))
                         },
-                        placeholder = { Text("tu@email.com", color = TextMuted, fontSize = 13.sp) },
+                        placeholder = { Text("tu@email.com", color = TextSubtle, fontSize = 14.sp) },
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Email,
                             imeAction = ImeAction.Next
@@ -150,90 +193,79 @@ fun LoginScreen(
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Primary,
                             unfocusedBorderColor = BorderColor,
-                            focusedContainerColor = SurfaceColor,
-                            unfocusedContainerColor = SurfaceColor
+                            focusedLabelColor = Primary,
+                            focusedTextColor = TextMain,
+                            unfocusedTextColor = TextMain,
                         ),
                         singleLine = true
                     )
 
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(16.dp))
 
-                    // Password field
+                    // Contraseña
                     Text(
                         "CONTRASEÑA",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextMuted,
-                        letterSpacing = 0.8.sp,
+                        fontSize = 10.sp, fontWeight = FontWeight.Bold,
+                        color = TextMuted, letterSpacing = 0.8.sp,
                         modifier = Modifier.padding(bottom = 6.dp)
                     )
                     OutlinedTextField(
                         value = uiState.password,
                         onValueChange = viewModel::onPasswordChange,
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(14.dp),
                         leadingIcon = {
-                            Icon(Icons.Default.Lock, contentDescription = null, tint = TextMuted)
+                            Icon(Icons.Default.Lock, contentDescription = null,
+                                tint = Primary, modifier = Modifier.size(20.dp))
                         },
                         trailingIcon = {
                             IconButton(onClick = { passwordVisible = !passwordVisible }) {
                                 Icon(
                                     imageVector = if (passwordVisible) Icons.Default.VisibilityOff
-                                    else Icons.Default.Visibility,
-                                    contentDescription = "Toggle password",
-                                    tint = TextMuted
+                                                  else Icons.Default.Visibility,
+                                    contentDescription = null, tint = TextMuted,
+                                    modifier = Modifier.size(20.dp)
                                 )
                             }
                         },
-                        placeholder = { Text("••••••••", color = TextMuted, fontSize = 13.sp) },
+                        placeholder = { Text("••••••••", color = TextSubtle, fontSize = 14.sp) },
                         visualTransformation = if (passwordVisible) VisualTransformation.None
-                        else PasswordVisualTransformation(),
+                                               else PasswordVisualTransformation(),
                         keyboardOptions = KeyboardOptions(
                             keyboardType = KeyboardType.Password,
                             imeAction = ImeAction.Done
                         ),
                         keyboardActions = KeyboardActions(
-                            onDone = {
-                                focusManager.clearFocus()
-                                viewModel.login()
-                            }
+                            onDone = { focusManager.clearFocus(); viewModel.login() }
                         ),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Primary,
                             unfocusedBorderColor = BorderColor,
-                            focusedContainerColor = SurfaceColor,
-                            unfocusedContainerColor = SurfaceColor
+                            focusedLabelColor = Primary,
+                            focusedTextColor = TextMain,
+                            unfocusedTextColor = TextMain,
                         ),
                         singleLine = true
                     )
 
-                    Spacer(Modifier.height(20.dp))
+                    Spacer(Modifier.height(24.dp))
 
-                    // Login button
+                    // Botón principal
                     Button(
-                        onClick = {
-                            focusManager.clearFocus()
-                            viewModel.login()
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp),
+                        onClick = { focusManager.clearFocus(); viewModel.login() },
+                        modifier = Modifier.fillMaxWidth().height(54.dp),
                         shape = RoundedCornerShape(14.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Primary),
-                        enabled = !uiState.isLoading
+                        enabled = !uiState.isLoading,
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
                     ) {
                         if (uiState.isLoading) {
                             CircularProgressIndicator(
-                                modifier = Modifier.size(20.dp),
-                                color = Color.White,
-                                strokeWidth = 2.dp
+                                modifier = Modifier.size(22.dp),
+                                color = Color.White, strokeWidth = 2.5.dp
                             )
                         } else {
-                            Text(
-                                "Iniciar Sesión",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp
-                            )
+                            Text("Ingresar", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                         }
                     }
                 }
@@ -241,32 +273,54 @@ fun LoginScreen(
 
             Spacer(Modifier.height(20.dp))
 
-            // Footer hint
+            // ── Credenciales demo ──────────────────────────────────────────────
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Primary.copy(alpha = 0.06f)
-                )
+                    containerColor = Primary.copy(alpha = 0.07f)
+                ),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Primary.copy(alpha = 0.2f))
             ) {
-                Column(modifier = Modifier.padding(14.dp)) {
+                Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        "CREDENCIALES DE PRUEBA",
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Primary,
-                        letterSpacing = 0.8.sp
+                        "CUENTAS DE PRUEBA",
+                        fontSize = 9.sp, fontWeight = FontWeight.ExtraBold,
+                        color = Primary, letterSpacing = 1.sp
                     )
-                    Spacer(Modifier.height(6.dp))
+                    Spacer(Modifier.height(8.dp))
                     listOf(
-                        "comprador@peruexchange.com  /  Comprador123!",
-                        "vendedor@peruexchange.com   /  Vendedor123!",
-                        "admin@peruexchange.com      /  Admin123!"
-                    ).forEach { hint ->
-                        Text(hint, fontSize = 10.sp, color = TextMuted, modifier = Modifier.padding(top = 2.dp))
+                        Pair("Comprador", "comprador@peruexchange.com  /  Comprador123!"),
+                        Pair("Vendedor",  "vendedor@peruexchange.com   /  Vendedor123!"),
+                        Pair("Admin",     "admin@peruexchange.com      /  Admin123!")
+                    ).forEach { (rol, cred) ->
+                        Row(modifier = Modifier.padding(top = 4.dp)) {
+                            Text(
+                                "$rol: ",
+                                fontSize = 11.sp, fontWeight = FontWeight.SemiBold,
+                                color = Primary
+                            )
+                            Text(cred, fontSize = 10.sp, color = TextMuted)
+                        }
                     }
                 }
             }
+
+            Spacer(Modifier.height(32.dp))
+
+            Text(
+                buildAnnotatedString {
+                    withStyle(SpanStyle(color = TextMuted, fontSize = 13.sp)) {
+                        append("¿No tienes cuenta? ")
+                    }
+                    withStyle(SpanStyle(color = Primary, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)) {
+                        append("Regístrate")
+                    }
+                },
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(Modifier.height(24.dp))
         }
     }
 }

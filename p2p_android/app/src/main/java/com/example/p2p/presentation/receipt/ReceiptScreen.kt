@@ -1,5 +1,6 @@
 package com.example.p2p.presentation.receipt
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -12,21 +13,44 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.p2p.presentation.transaction.TransactionUiState
+import com.example.p2p.presentation.transaction.TransactionViewModel
 import com.example.p2p.ui.theme.*
 
 @Composable
-fun ReceiptScreen(transactionId: String? = null) {
+fun ReceiptScreen(
+    transactionId: String? = null,
+    viewModel: TransactionViewModel? = null,
+    onNavigateToRating: (String) -> Unit = {},
+    onNavigateToMarket: () -> Unit = {}
+) {
+    val context = LocalContext.current
+    val uiState by viewModel?.uiState?.collectAsState(initial = TransactionUiState()) ?: remember { mutableStateOf(TransactionUiState()) }
+
+    LaunchedEffect(transactionId) {
+        if (transactionId != null) {
+            viewModel?.loadTransaction(transactionId)
+        }
+    }
+
+    val txn = uiState.transaction
+    val buyerName  = txn?.buyer_name  ?: "Comprador"
+    val vendorName = txn?.vendor_name ?: "Vendedor"
+    val rate       = txn?.exchange_rate ?: 3.780
+    val amountFiat = txn?.amount_to ?: 0.0
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -101,7 +125,7 @@ fun ReceiptScreen(transactionId: String? = null) {
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "#TX-9982",
+                    text = transactionId?.take(8) ?: "#TX-9982",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = TextMuted
@@ -117,9 +141,9 @@ fun ReceiptScreen(transactionId: String? = null) {
                     .padding(horizontal = 20.dp, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                ReceiptRow(label = "Comprador:", value = "Carlos Mendoza", valueColor = TextMain)
-                ReceiptRow(label = "Vendedor:", value = "Victor Vendedor", valueColor = TextMain)
-                ReceiptRow(label = "Tasa Aplicada:", value = "S/ 3.780", valueColor = TextMain)
+                ReceiptRow(label = "Comprador:", value = buyerName, valueColor = TextMain)
+                ReceiptRow(label = "Vendedor:", value = vendorName, valueColor = TextMain)
+                ReceiptRow(label = "Tasa Aplicada:", value = "S/ $rate", valueColor = TextMain)
 
                 // OCR row
                 Row(
@@ -172,7 +196,7 @@ fun ReceiptScreen(transactionId: String? = null) {
                         color = TextMain
                     )
                     Text(
-                        text = "S/ 741.60",
+                        text = "S/ $amountFiat",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = SuccessColor
@@ -185,7 +209,9 @@ fun ReceiptScreen(transactionId: String? = null) {
 
         // Download PDF button
         Button(
-            onClick = {},
+            onClick = {
+                Toast.makeText(context, "Comprobante PDF descargado.", Toast.LENGTH_SHORT).show()
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
@@ -209,7 +235,9 @@ fun ReceiptScreen(transactionId: String? = null) {
 
         // Rate seller button
         OutlinedButton(
-            onClick = {},
+            onClick = {
+                onNavigateToRating(transactionId ?: "")
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
@@ -234,7 +262,7 @@ fun ReceiptScreen(transactionId: String? = null) {
 
         // Ghost button
         TextButton(
-            onClick = {},
+            onClick = onNavigateToMarket,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(

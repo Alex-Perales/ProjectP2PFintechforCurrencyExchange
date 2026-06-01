@@ -1,6 +1,7 @@
 """Flask Application Factory"""
 from flask import Flask
 from flask_cors import CORS
+from flask_migrate import Migrate
 
 
 def create_app(config_name='development'):
@@ -13,6 +14,7 @@ def create_app(config_name='development'):
 
     db.init_app(app)
     jwt.init_app(app)
+    Migrate(app, db)
     CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     with app.app_context():
@@ -34,31 +36,7 @@ def create_app(config_name='development'):
             return {'status': 'healthy'}, 200
 
         # Error handlers
-        from app.core.exceptions import AppException
-
-        @app.errorhandler(AppException)
-        def handle_app_exception(error):
-            return {'error': {'code': error.code, 'message': error.message}}, error.status_code
-
-        @app.errorhandler(400)
-        def bad_request(e):
-            return {'error': {'code': 'BAD_REQUEST', 'message': str(e)}}, 400
-
-        @app.errorhandler(401)
-        def unauthorized(e):
-            return {'error': {'code': 'UNAUTHORIZED', 'message': str(e)}}, 401
-
-        @app.errorhandler(403)
-        def forbidden(e):
-            return {'error': {'code': 'FORBIDDEN', 'message': str(e)}}, 403
-
-        @app.errorhandler(404)
-        def not_found(e):
-            return {'error': {'code': 'NOT_FOUND', 'message': str(e)}}, 404
-
-        @app.errorhandler(500)
-        def internal_error(e):
-            db.session.rollback()
-            return {'error': {'code': 'INTERNAL_ERROR', 'message': str(e)}}, 500
+        from app.core.exceptions import register_error_handlers
+        register_error_handlers(app, db)
 
     return app

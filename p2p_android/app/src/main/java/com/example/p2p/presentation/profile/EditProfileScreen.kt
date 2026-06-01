@@ -1,5 +1,6 @@
 package com.example.p2p.presentation.profile
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -18,36 +19,76 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.p2p.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditProfileScreen() {
+fun EditProfileScreen(
+    viewModel: EditProfileViewModel? = null,
+    onBack: () -> Unit = {}
+) {
+    val context = LocalContext.current
+    val uiState by viewModel?.uiState?.collectAsState(initial = EditProfileUiState())
+        ?: remember { mutableStateOf(EditProfileUiState()) }
+
+    // Pre-fill fields from loaded user
+    var fullNameText by remember { mutableStateOf("") }
+    var phoneText by remember { mutableStateOf("") }
+
+    // Sync fields once user data arrives
+    LaunchedEffect(uiState.user) {
+        uiState.user?.let {
+            if (fullNameText.isEmpty()) fullNameText = it.full_name ?: ""
+            if (phoneText.isEmpty()) phoneText = it.phone ?: ""
+        }
+    }
+
+    // Show toast on save success
+    LaunchedEffect(uiState.saveSuccess) {
+        if (uiState.saveSuccess) {
+            Toast.makeText(context, "Perfil actualizado", Toast.LENGTH_SHORT).show()
+            viewModel?.resetSaveSuccess()
+            onBack()
+        }
+    }
+
+    // Show error
+    LaunchedEffect(uiState.error) {
+        if (uiState.error != null) {
+            Toast.makeText(context, uiState.error, Toast.LENGTH_LONG).show()
+        }
+    }
+
+    val user = uiState.user
+    val initials = (user?.full_name ?: fullNameText)
+        .split(" ").take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
+        .ifEmpty { "PE" }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        "Editar Perfil",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 17.sp,
-                        color = TextMain
-                    )
-                },
+                title = { Text("Editar Perfil", fontWeight = FontWeight.Bold, fontSize = 17.sp, color = TextMain) },
                 navigationIcon = {
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = TextMain)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceColor),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceColor)
             )
         },
         containerColor = BackgroundApp
     ) { innerPadding ->
+        if (uiState.isLoading) {
+            Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = Primary)
+            }
+            return@Scaffold
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -56,7 +97,7 @@ fun EditProfileScreen() {
                 .padding(horizontal = 16.dp, vertical = 20.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
-            // ── Avatar section ────────────────────────────────────────────────
+            // Avatar section
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.fillMaxWidth(),
@@ -69,38 +110,25 @@ fun EditProfileScreen() {
                         .background(Brush.linearGradient(listOf(Primary, PrimaryLight))),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        "CM",
-                        color = Color.White,
-                        fontWeight = FontWeight.Black,
-                        fontSize = 26.sp
-                    )
+                    Text(initials, color = Color.White, fontWeight = FontWeight.Black, fontSize = 26.sp)
                 }
                 TextButton(onClick = {}) {
-                    Text(
-                        "Cambiar foto",
-                        color = Primary,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Text("Cambiar foto", color = Primary, fontSize = 12.sp, fontWeight = FontWeight.Medium)
                 }
             }
 
-            // ── Form Card ─────────────────────────────────────────────────────
+            // Form Card
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = SurfaceColor),
                 elevation = CardDefaults.cardElevation(1.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
-                ) {
-                    // Nombre Completo
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+
                     OutlinedTextField(
-                        value = "Carlos Mendoza",
-                        onValueChange = {},
+                        value = fullNameText,
+                        onValueChange = { fullNameText = it },
                         label = { Text("Nombre Completo", fontSize = 13.sp) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(10.dp),
@@ -114,9 +142,8 @@ fun EditProfileScreen() {
                         )
                     )
 
-                    // Correo Electrónico (disabled)
                     OutlinedTextField(
-                        value = "carlos@peruexchange.com",
+                        value = user?.email ?: "",
                         onValueChange = {},
                         label = { Text("Correo Electrónico", fontSize = 13.sp) },
                         modifier = Modifier.fillMaxWidth(),
@@ -136,10 +163,9 @@ fun EditProfileScreen() {
                         modifier = Modifier.padding(start = 4.dp, top = (-6).dp)
                     )
 
-                    // Teléfono
                     OutlinedTextField(
-                        value = "+51 999 123 456",
-                        onValueChange = {},
+                        value = phoneText,
+                        onValueChange = { phoneText = it },
                         label = { Text("Teléfono", fontSize = 13.sp) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(10.dp),
@@ -153,13 +179,9 @@ fun EditProfileScreen() {
                         )
                     )
 
-                    // País dropdown (visual)
                     DropdownBox(label = "País", value = "Perú 🇵🇪")
-
-                    // Moneda preferida dropdown (visual)
                     DropdownBox(label = "Moneda preferida", value = "PEN")
 
-                    // Notificaciones checkbox
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -168,39 +190,36 @@ fun EditProfileScreen() {
                         Checkbox(
                             checked = true,
                             onCheckedChange = {},
-                            colors = CheckboxDefaults.colors(
-                                checkedColor = Primary,
-                                uncheckedColor = BorderColor
-                            )
+                            colors = CheckboxDefaults.colors(checkedColor = Primary, uncheckedColor = BorderColor)
                         )
-                        Text(
-                            "Recibir notificaciones por correo",
-                            fontSize = 13.sp,
-                            color = TextMain,
-                            modifier = Modifier.weight(1f)
-                        )
+                        Text("Recibir notificaciones por correo", fontSize = 13.sp, color = TextMain, modifier = Modifier.weight(1f))
                     }
                 }
             }
 
-            // ── Guardar Cambios button ─────────────────────────────────────────
+            // Save button
             Button(
-                onClick = {},
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
+                onClick = {
+                    val name = fullNameText.trim()
+                    if (name.isEmpty()) {
+                        Toast.makeText(context, "El nombre no puede estar vacío", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+                    viewModel?.saveProfile(name, phoneText.trim().ifEmpty { null })
+                },
+                modifier = Modifier.fillMaxWidth().height(50.dp),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = SuccessColor)
+                colors = ButtonDefaults.buttonColors(containerColor = SuccessColor),
+                enabled = !uiState.isSaving
             ) {
-                Text(
-                    "Guardar Cambios",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White
-                )
+                if (uiState.isSaving) {
+                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(22.dp), strokeWidth = 2.dp)
+                } else {
+                    Text("Guardar Cambios", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+                }
             }
 
-            // ── KYC Banner ────────────────────────────────────────────────────
+            // KYC Banner
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -211,12 +230,7 @@ fun EditProfileScreen() {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(
-                    Icons.Default.CheckCircle,
-                    contentDescription = null,
-                    tint = SuccessColor,
-                    modifier = Modifier.size(18.dp)
-                )
+                Icon(Icons.Default.CheckCircle, contentDescription = null, tint = SuccessColor, modifier = Modifier.size(18.dp))
                 Text(
                     "✓ KYC Verificado · Puedes operar hasta \$10,000 USD/día",
                     fontSize = 12.sp,
@@ -233,12 +247,7 @@ fun EditProfileScreen() {
 @Composable
 private fun DropdownBox(label: String, value: String) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        Text(
-            label,
-            fontSize = 12.sp,
-            color = TextMuted,
-            modifier = Modifier.padding(start = 2.dp, bottom = 4.dp)
-        )
+        Text(label, fontSize = 12.sp, color = TextMuted, modifier = Modifier.padding(start = 2.dp, bottom = 4.dp))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -248,12 +257,7 @@ private fun DropdownBox(label: String, value: String) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(value, fontSize = 14.sp, color = TextMain)
-            Icon(
-                Icons.Default.KeyboardArrowDown,
-                contentDescription = null,
-                tint = TextMuted,
-                modifier = Modifier.size(20.dp)
-            )
+            Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = TextMuted, modifier = Modifier.size(20.dp))
         }
     }
 }

@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(timeout 60 bash -c \"until curl -sf http://localhost:5000/health; do sleep 2; done\")",
+      "Bash(adb logcat *)",
+      "Bash(where adb *)",
+      "Bash(timeout 30 bash -c \"until curl -sf http://localhost:5000/health; do sleep 2; done\")",
+      "Bash(curl -sf http://localhost:5000/health)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Mobile\\\\ProyectoFinal\\\\ProjectP2PFintechforCurrencyExchange\\\\p2p_backend\" -Depth 0)",
+      "Bash(Select-Object -Property Mode, Name)",
+      "Bash(docker exec *)",
+      "Bash(docker cp *)",
+      "PowerShell(Get-ChildItem -Recurse \"C:\\\\Mobile\\\\ProyectoFinal\\\\ProjectP2PFintechforCurrencyExchange\\\\p2p_backend\\\\migrations\" | Select-Object FullName | ForEach-Object { $_.FullName.Replace\\(\"C:\\\\Mobile\\\\ProyectoFinal\\\\ProjectP2PFintechforCurrencyExchange\\\\p2p_backend\\\\\", \"\"\\) })",
+      "PowerShell(Move-Item -Path \"C:\\\\Mobile\\\\ProyectoFinal\\\\ProjectP2PFintechforCurrencyExchange\\\\p2p_backend\\\\init.sql\" -Destination \"C:\\\\Mobile\\\\ProyectoFinal\\\\ProjectP2PFintechforCurrencyExchange\\\\p2p_backend\\\\migrations\\\\init.sql\")",
+      "Bash(docker rm *)",
+      "PowerShell(New-Item -ItemType Directory -Path \"C:\\\\Mobile\\\\ProyectoFinal\\\\ProjectP2PFintechforCurrencyExchange\\\\p2p_backend\\\\migrations\\\\sql\" -Force)",
+      "PowerShell(Move-Item -Path \"C:\\\\Mobile\\\\ProyectoFinal\\\\ProjectP2PFintechforCurrencyExchange\\\\p2p_backend\\\\seed.py\" -Destination \"C:\\\\Mobile\\\\ProyectoFinal\\\\ProjectP2PFintechforCurrencyExchange\\\\p2p_backend\\\\migrations\\\\seed.py\")",
+      "Bash(curl -sf -X POST http://localhost:5000/api/v1/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"comprador@peruexchange.com\",\"password\":\"Comprador123!\"}')",
+      "Bash(curl -sf -X POST http://localhost:5000/api/v1/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"vendedor@peruexchange.com\",\"password\":\"Vendedor123!\"}')",
+      "Bash(curl -sf -X POST http://localhost:5000/api/v1/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"admin@peruexchange.com\",\"password\":\"Admin123!\"}')",
+      "Bash(docker rmi *)",
+      "Bash(docker network *)",
+      "Bash(docker volume *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Mobile\\\\ProyectoFinal\\\\ProjectP2PFintechforCurrencyExchange\\\\p2p_android\" -Recurse -Force)",
+      "Bash(Select-Object -Property FullName)",
+      "Bash(Sort-Object FullName)",
+      "Bash(Out-String -Width 500)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Mobile\\\\ProyectoFinal\\\\ProjectP2PFintechforCurrencyExchange\\\\p2p_backend\\\\app\\\\services\" -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object Name)",
+      "Bash(curl -sf -X POST http://localhost:5000/api/v1/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"comprador@peruexchange.com\",\"password\":\"Comprador123!\"}')",
+      "Bash(grep -v \"ReceivedRatingDto\\\\|RatingApi\\\\|//\\\\|//.*Dto\")",
+      "Bash(curl -sf -X POST http://localhost:5000/api/v1/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"vendedor@peruexchange.com\",\"password\":\"Vendedor123!\"}')",
+      "Bash(curl -sf -X POST http://localhost:5000/api/v1/auth/login -H \"Content-Type: application/json\" -d '{\"email\":\"admin@peruexchange.com\",\"password\":\"Admin123!\"}')",
+      "Bash(grep -v \"function\\\\|//\")",
+      "Bash(02_)",
+      "Bash(03_)",
+      "Bash('04_ *)",
+      "Bash(\" 2>/dev/null)",
+      "Bash(powershell -Command 'Get-Content '\\\\''C:\\\\Mobile\\\\ProyectoFinal\\\\ProjectP2PFintechforCurrencyExchange\\\\p2p_android\\\\app\\\\src\\\\main\\\\java\\\\com\\\\example\\\\p2p\\\\navigation\\\\NavGraph.kt'\\\\'' | Select-String -Pattern '\\\\''Market|userName|getUserName'\\\\'' | Select-Object -First 10')"
+    ]
+  }
+}

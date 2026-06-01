@@ -3,6 +3,7 @@ package com.example.p2p.presentation.dispute
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,41 +51,27 @@ import com.example.p2p.ui.theme.BackgroundApp
 import com.example.p2p.ui.theme.BorderColor
 import com.example.p2p.ui.theme.DangerColor
 import com.example.p2p.ui.theme.Primary
+import com.example.p2p.ui.theme.SuccessColor
 import com.example.p2p.ui.theme.SurfaceColor
 import com.example.p2p.ui.theme.TextMain
 import com.example.p2p.ui.theme.TextMuted
 import com.example.p2p.ui.theme.WarningColor
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 // ---------------------------------------------------------------------------
 // Data model
 // ---------------------------------------------------------------------------
 
-private data class DisputeItem(
-    val txId: String,
+private data class Dispute(
+    val id: String,
     val status: String,
     val statusColor: Color,
-    val opponent: String,
-    val amount: String,
+    val reason: String,
+    val transactionId: String,
+    val rawTransactionId: String,
     val date: String,
-)
-
-private val sampleDisputes = listOf(
-    DisputeItem(
-        txId = "#TX-9982",
-        status = "EN ARBITRAJE",
-        statusColor = DangerColor,
-        opponent = "vs Victor Vendedor",
-        amount = "\$200 USD",
-        date = "25 May 2026",
-    ),
-    DisputeItem(
-        txId = "#TX-9756",
-        status = "EN REVISIÓN",
-        statusColor = WarningColor,
-        opponent = "vs Ana Martínez",
-        amount = "\$500 USD",
-        date = "23 May 2026",
-    ),
+    val unreadMessages: Int
 )
 
 // ---------------------------------------------------------------------------
@@ -92,9 +80,54 @@ private val sampleDisputes = listOf(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyDisputesScreen(onBack: () -> Unit = {}) {
+fun MyDisputesScreen(
+    viewModel: DisputesViewModel? = null,
+    onNavigate: (String) -> Unit = {},
+    onBack: () -> Unit = {}
+) {
+    val uiState by viewModel?.uiState?.collectAsState(initial = DisputesUiState()) ?: remember { mutableStateOf(DisputesUiState()) }
     var selectedFilter by remember { mutableStateOf(0) }
-    val filters = listOf("Todas", "Arbitraje", "Revisión", "Resuelta")
+    val filters = listOf("Todas", "Abiertas", "Resueltas")
+
+    val disputes = uiState.disputes.map { dto ->
+        val statusName = when (dto.status) {
+            "open" -> "Abierta"
+            "resolved" -> "Resuelta"
+            "closed" -> "Cerrada"
+            else -> dto.status
+        }
+        val sColor = when (dto.status) {
+            "open" -> DangerColor
+            "resolved" -> SuccessColor
+            else -> TextMuted
+        }
+        val formattedDate = try {
+            val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+            val formatter = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+            val date = parser.parse(dto.created_at.substringBefore("."))
+            if (date != null) formatter.format(date) else dto.created_at.take(10)
+        } catch (e: Exception) {
+            dto.created_at.take(10)
+        }
+        Dispute(
+            id = "#DSP-${dto.id.takeLast(4).uppercase()}",
+            status = statusName,
+            statusColor = sColor,
+            reason = dto.reason,
+            transactionId = "#TX-${dto.transaction_id.takeLast(4).uppercase()}",
+            rawTransactionId = dto.transaction_id,
+            date = formattedDate,
+            unreadMessages = 0
+        )
+    }
+
+    val filteredList = if (selectedFilter == 0) disputes else disputes.filter {
+        when (selectedFilter) {
+            1 -> it.status == "Abierta"
+            2 -> it.status == "Resuelta"
+            else -> true
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -130,7 +163,7 @@ fun MyDisputesScreen(onBack: () -> Unit = {}) {
             // Register new dispute button
             item {
                 Button(
-                    onClick = {},
+                    onClick = { onNavigate("create_dispute") },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
@@ -168,6 +201,7 @@ fun MyDisputesScreen(onBack: () -> Unit = {}) {
                                     color = if (isSelected) Primary else BorderColor,
                                     shape = RoundedCornerShape(50.dp),
                                 )
+                                .clickable { selectedFilter = index }
                                 .padding(horizontal = 16.dp, vertical = 8.dp),
                             contentAlignment = Alignment.Center,
                         ) {
@@ -183,8 +217,13 @@ fun MyDisputesScreen(onBack: () -> Unit = {}) {
             }
 
             // Dispute cards
-            items(sampleDisputes.size) { index ->
-                DisputeCard(dispute = sampleDisputes[index])
+            items(filteredList.size) { index ->
+                DisputeCard(
+                    dispute = filteredList[index],
+                    onViewDetail = { txnId ->
+                        onNavigate(com.example.p2p.navigation.Screen.TransactionDetail.createRoute(txnId))
+                    }
+                )
             }
         }
     }
@@ -195,7 +234,7 @@ fun MyDisputesScreen(onBack: () -> Unit = {}) {
 // ---------------------------------------------------------------------------
 
 @Composable
-private fun DisputeCard(dispute: DisputeItem) {
+private fun DisputeCard(dispute: Dispute, onViewDetail: (String) -> Unit = {}) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -211,9 +250,9 @@ private fun DisputeCard(dispute: DisputeItem) {
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
-                    text = dispute.txId,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
+                    text = dispute.transactionId,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 13.sp,
                     color = TextMain,
                 )
                 DisputeStatusBadge(label = dispute.status, color = dispute.statusColor)
@@ -221,9 +260,9 @@ private fun DisputeCard(dispute: DisputeItem) {
 
             Spacer(Modifier.height(8.dp))
 
-            // Opponent
+            // Opponent -> TX ID
             Text(
-                text = dispute.opponent,
+                text = dispute.transactionId,
                 fontSize = 13.sp,
                 color = TextMuted,
             )
@@ -237,9 +276,9 @@ private fun DisputeCard(dispute: DisputeItem) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = dispute.amount,
+                    text = dispute.reason,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
+                    fontSize = 14.sp,
                     color = Primary,
                 )
                 Text(
@@ -253,7 +292,7 @@ private fun DisputeCard(dispute: DisputeItem) {
 
             // Ver detalle button
             OutlinedButton(
-                onClick = {},
+                onClick = { onViewDetail(dispute.rawTransactionId) },
                 shape = RoundedCornerShape(8.dp),
                 border = BorderStroke(1.dp, Primary),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),

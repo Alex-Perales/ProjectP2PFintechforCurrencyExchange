@@ -1,9 +1,9 @@
 package com.example.p2p.data.remote.api
 
-import com.example.p2p.data.remote.dto.LoginRequest
-import com.example.p2p.data.remote.dto.LoginResponse
-import com.example.p2p.data.remote.dto.RegisterRequest
-import com.example.p2p.data.remote.dto.UserResponse
+import com.example.p2p.data.remote.model.LoginRequest
+import com.example.p2p.data.remote.model.LoginResponse
+import com.example.p2p.data.remote.model.RegisterRequest
+import com.example.p2p.data.remote.model.UserResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET

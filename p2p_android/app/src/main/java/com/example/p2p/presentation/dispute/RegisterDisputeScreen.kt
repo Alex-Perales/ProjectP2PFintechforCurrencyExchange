@@ -1,7 +1,9 @@
 package com.example.p2p.presentation.dispute
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -9,20 +11,38 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.p2p.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterDisputeScreen() {
+fun RegisterDisputeScreen(
+    transactionId: String? = null,
+    viewModel: DisputesViewModel? = null,
+    onNavigateBack: () -> Unit = {}
+) {
+    val context = LocalContext.current
+    val uiState by viewModel?.uiState?.collectAsState() ?: remember { mutableStateOf(DisputesUiState()) }
+
+    val reasons = listOf(
+        "El vendedor no liberó los fondos",
+        "El comprador no realizó el pago",
+        "El voucher no corresponde al monto",
+        "Fondos enviados al banco incorrecto",
+        "Otro motivo"
+    )
+    var reason by remember { mutableStateOf(reasons[0]) }
+    var reasonExpanded by remember { mutableStateOf(false) }
+    var description by remember { mutableStateOf("") }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -35,7 +55,7 @@ fun RegisterDisputeScreen() {
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = TextMain)
                     }
                 },
@@ -80,22 +100,16 @@ fun RegisterDisputeScreen() {
             // ── Transaction selection ─────────────────────────────────────────
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(
-                    "Selecciona la Transacción",
+                    "Transacción Seleccionada",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextMain
                 )
                 // TX selected
                 TransactionCard(
-                    id = "#TX-9982",
-                    amount = "\$200 USD",
+                    id = transactionId ?: "No seleccionada",
+                    amount = "Monto en disputa",
                     isSelected = true
-                )
-                // TX not selected
-                TransactionCard(
-                    id = "#TX-9756",
-                    amount = "\$500 USD",
-                    isSelected = false
                 )
             }
 
@@ -108,31 +122,51 @@ fun RegisterDisputeScreen() {
                     color = TextMain
                 )
 
-                // Dropdown reason
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
-                        .padding(horizontal = 14.dp, vertical = 14.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                // Dropdown reason selector
+                ExposedDropdownMenuBox(
+                    expanded = reasonExpanded,
+                    onExpandedChange = { reasonExpanded = it }
                 ) {
-                    Text(
-                        "El vendedor no liberó los fondos",
-                        fontSize = 13.sp,
-                        color = TextMain
-                    )
-                    Icon(
-                        Icons.Default.KeyboardArrowDown,
-                        contentDescription = null,
-                        tint = TextMuted,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                            .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
+                            .padding(horizontal = 14.dp, vertical = 14.dp)
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(reason, fontSize = 13.sp, color = TextMain, modifier = Modifier.weight(1f))
+                            Icon(
+                                if (reasonExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                contentDescription = null,
+                                tint = TextMuted,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                    ExposedDropdownMenu(
+                        expanded = reasonExpanded,
+                        onDismissRequest = { reasonExpanded = false }
+                    ) {
+                        reasons.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option, fontSize = 13.sp) },
+                                onClick = {
+                                    reason = option
+                                    reasonExpanded = false
+                                }
+                            )
+                        }
+                    }
                 }
 
                 OutlinedTextField(
-                    value = "",
-                    onValueChange = {},
+                    value = description,
+                    onValueChange = { description = it },
                     placeholder = {
                         Text(
                             "Describe con detalle qué ocurrió...",
@@ -186,7 +220,7 @@ fun RegisterDisputeScreen() {
                             modifier = Modifier.size(22.dp)
                         )
                         Text(
-                            "Toca para adjuntar PNG, JPG, PDF",
+                            "Evidencia adjunta (Simulada)",
                             fontSize = 13.sp,
                             color = TextMuted
                         )
@@ -196,26 +230,48 @@ fun RegisterDisputeScreen() {
 
             // ── Submit button ─────────────────────────────────────────────────
             Button(
-                onClick = {},
+                onClick = {
+                    if (transactionId != null) {
+                        viewModel?.createDispute(
+                            transactionId = transactionId,
+                            reason = reason,
+                            description = description,
+                            onSuccess = {
+                                Toast.makeText(context, "Disputa registrada con éxito", Toast.LENGTH_SHORT).show()
+                                onNavigateBack()
+                            },
+                            onError = { err ->
+                                Toast.makeText(context, "Error: $err", Toast.LENGTH_LONG).show()
+                            }
+                        )
+                    } else {
+                        Toast.makeText(context, "Debe seleccionar una transacción válida", Toast.LENGTH_SHORT).show()
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
                 shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = DangerColor)
+                colors = ButtonDefaults.buttonColors(containerColor = DangerColor),
+                enabled = !uiState.isLoading
             ) {
-                Icon(
-                    Icons.Default.Gavel,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp),
-                    tint = Color.White
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    "Enviar Disputa",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White
-                )
+                if (uiState.isLoading) {
+                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                } else {
+                    Icon(
+                        Icons.Default.Gavel,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = Color.White
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        "Enviar Disputa",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White
+                    )
+                }
             }
 
             Spacer(Modifier.height(8.dp))

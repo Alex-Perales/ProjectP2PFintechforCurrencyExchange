@@ -2,11 +2,11 @@
 from flask import Blueprint, request
 from flask_jwt_extended import (
     create_access_token, create_refresh_token,
-    jwt_required, get_jwt_identity
+    jwt_required, get_jwt_identity,
 )
+from app.models.user import User
 from app.core.database import db
 from app.core.exceptions import ConflictError, AuthenticationError
-from app.models.user import User
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -81,25 +81,3 @@ def refresh():
 @jwt_required()
 def logout():
     return {'message': 'Logged out'}, 200
-
-
-@auth_bp.route('/me', methods=['GET'])
-@jwt_required()
-def me():
-    user_id = get_jwt_identity()
-    user = db.session.get(User, user_id)
-    if not user:
-        raise AuthenticationError('User not found')
-
-    return {
-        'id': user.id,
-        'email': user.email,
-        'full_name': user.full_name,
-        'phone': user.phone,
-        'role': user.role,
-        'kyc_verified': user.kyc_verified,
-        'rating': user.rating,
-        'total_transactions': user.total_transactions,
-        'avatar_url': user.avatar_url,
-        'is_active': user.is_active,
-    }, 200

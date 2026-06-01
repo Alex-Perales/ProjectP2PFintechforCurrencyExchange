@@ -1,7 +1,9 @@
 package com.example.p2p.presentation.rating
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -17,6 +19,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -24,8 +28,16 @@ import androidx.compose.ui.unit.sp
 import com.example.p2p.ui.theme.*
 
 @Composable
-fun RatingScreen() {
+fun RatingScreen(
+    transactionId: String? = null,
+    viewModel: RatingViewModel? = null,
+    onSuccess: () -> Unit = {},
+    onSkip: () -> Unit = {}
+) {
+    val context = LocalContext.current
+    var score by remember { mutableIntStateOf(5) }
     var commentText by remember { mutableStateOf("") }
+    val uiState by viewModel?.uiState?.collectAsState(initial = RatingUiState()) ?: remember { mutableStateOf(RatingUiState()) }
 
     Column(
         modifier = Modifier
@@ -67,7 +79,7 @@ fun RatingScreen() {
         Spacer(modifier = Modifier.height(6.dp))
 
         Text(
-            text = "Califica a Victor Vendedor",
+            text = "Califica al Vendedor",
             fontSize = 13.sp,
             color = TextMuted,
             textAlign = TextAlign.Center
@@ -86,25 +98,23 @@ fun RatingScreen() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
-            // 5 stars row — 4 filled, 1 empty (visual static)
+            // 5 stars row (tappable!)
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                repeat(4) {
+                repeat(5) { index ->
+                    val starIndex = index + 1
+                    val isSelected = starIndex <= score
                     Icon(
-                        imageVector = Icons.Filled.Star,
-                        contentDescription = null,
-                        tint = WarningColor,
-                        modifier = Modifier.size(36.dp)
+                        imageVector = if (isSelected) Icons.Filled.Star else Icons.Outlined.StarOutline,
+                        contentDescription = "Calificar $starIndex",
+                        tint = if (isSelected) WarningColor else BorderColor,
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clickable { score = starIndex }
                     )
                 }
-                Icon(
-                    imageVector = Icons.Outlined.StarOutline,
-                    contentDescription = null,
-                    tint = BorderColor,
-                    modifier = Modifier.size(36.dp)
-                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -164,31 +174,53 @@ fun RatingScreen() {
 
         // Submit button
         Button(
-            onClick = {},
+            onClick = {
+                if (transactionId != null) {
+                    viewModel?.submitRating(
+                        transactionId = transactionId,
+                        score = score,
+                        comment = commentText,
+                        onSuccess = {
+                            Toast.makeText(context, "Calificación enviada", Toast.LENGTH_SHORT).show()
+                            onSuccess()
+                        },
+                        onError = { err ->
+                            Toast.makeText(context, "Error: $err", Toast.LENGTH_LONG).show()
+                        }
+                    )
+                } else {
+                    onSuccess()
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),
             shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Primary)
+            colors = ButtonDefaults.buttonColors(containerColor = Primary),
+            enabled = !uiState.isLoading
         ) {
-            Icon(
-                imageVector = Icons.Filled.Check,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "Enviar Calificación",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold
-            )
+            if (uiState.isLoading) {
+                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+            } else {
+                Icon(
+                    imageVector = Icons.Filled.Check,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Enviar Calificación",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(10.dp))
 
         // Ghost skip button
         TextButton(
-            onClick = {},
+            onClick = onSkip,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(

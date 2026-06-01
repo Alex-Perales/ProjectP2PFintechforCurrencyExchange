@@ -11,7 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,9 +26,20 @@ import com.example.p2p.ui.theme.*
 
 @Composable
 fun ProfileScreen(
+    viewModel: ProfileViewModel? = null,
     onNavigate: (String) -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
+    val uiState by viewModel?.uiState?.collectAsState(initial = ProfileUiState()) ?: remember { mutableStateOf(ProfileUiState()) }
+    val user = uiState.user
+
+    val fullName = user?.full_name ?: "Usuario"
+    val initials = fullName.split(" ").take(2).mapNotNull { it.firstOrNull()?.uppercaseChar() }.joinToString("")
+    val email = user?.email ?: "cargando..."
+    val ratingStr = user?.rating?.toString() ?: "5.0"
+    val txCount = user?.total_transactions?.toString() ?: "0"
+    val roleStr = if (user?.role == "vendor") "Experto" else "Básico"
+    val isVerified = user?.kyc_verified == true
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -58,14 +69,16 @@ fun ProfileScreen(
                         .border(3.dp, Color.White.copy(alpha = 0.5f), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("CM", color = Color.White, fontWeight = FontWeight.Black, fontSize = 24.sp)
+                    Text(initials, color = Color.White, fontWeight = FontWeight.Black, fontSize = 24.sp)
                 }
-                Text("Carlos Mendoza", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                Text("carlos@peruexchange.com", color = PrimaryMint, fontSize = 12.sp)
+                Text(fullName, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                Text(email, color = PrimaryMint, fontSize = 12.sp)
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                    ProfileBadge("⭐ 4.9", Color.White.copy(alpha = 0.2f), Color.White)
-                    ProfileBadge("Experto", PrimaryMint.copy(alpha = 0.2f), PrimaryMint)
-                    ProfileBadge("✓ Verificado", Color.White.copy(alpha = 0.15f), Color.White)
+                    ProfileBadge("⭐ $ratingStr", Color.White.copy(alpha = 0.2f), Color.White)
+                    ProfileBadge(roleStr, PrimaryMint.copy(alpha = 0.2f), PrimaryMint)
+                    if (isVerified) {
+                        ProfileBadge("✓ Verificado", Color.White.copy(alpha = 0.15f), Color.White)
+                    }
                 }
                 Spacer(Modifier.height(4.dp))
                 Row(
@@ -76,11 +89,11 @@ fun ProfileScreen(
                         .padding(vertical = 14.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    StatColumn("180", "Operaciones")
+                    StatColumn(txCount, "Operaciones")
                     VerticalDividerLine()
-                    StatColumn("98%", "Completadas")
+                    StatColumn("100%", "Completadas")
                     VerticalDividerLine()
-                    StatColumn("~3m", "Respuesta")
+                    StatColumn("~1m", "Respuesta")
                 }
             }
         }
@@ -167,6 +180,11 @@ fun ProfileScreen(
 
         // ── Soporte ───────────────────────────────────────────────────────────
         MenuSection(title = "SOPORTE") {
+            MenuItem(
+                icon = Icons.Default.Store, iconBg = WarningColor.copy(.12f), iconTint = WarningColor,
+                label = "Modo Vendedor (Inbox)",
+                onClick = { onNavigate(Screen.Vendor.route) }
+            )
             MenuItem(
                 icon = Icons.Default.HeadsetMic, iconBg = Primary.copy(.12f), iconTint = Primary,
                 label = "Reclamos",
