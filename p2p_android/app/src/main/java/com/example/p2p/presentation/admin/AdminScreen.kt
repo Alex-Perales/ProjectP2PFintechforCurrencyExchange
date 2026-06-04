@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,8 +25,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.p2p.data.remote.api.AdminDispute
-import com.example.p2p.ui.theme.*
+import com.example.p2p.data.remote.model.Dispute
+import com.example.p2p.ui.theme.BackgroundApp
+import com.example.p2p.ui.theme.BorderColor
+import com.example.p2p.ui.theme.DangerColor
+import com.example.p2p.ui.theme.Primary
+import com.example.p2p.ui.theme.PrimaryMint
+import com.example.p2p.ui.theme.SuccessColor
+import com.example.p2p.ui.theme.SurfaceColor
+import com.example.p2p.ui.theme.TextMain
+import com.example.p2p.ui.theme.TextMuted
+import com.example.p2p.ui.theme.WarningColor
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,7 +46,7 @@ fun AdminScreen(
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
-    var selectedTab by remember { mutableStateOf(0) }
+    var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("Todas", "Arbitraje", "Revisión", "Resuelta")
 
     LaunchedEffect(Unit) {
@@ -55,7 +66,7 @@ fun AdminScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Atrás",
                             tint = TextMain,
                         )
@@ -208,7 +219,7 @@ private fun AdminHeaderCard(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                AdminStat(value = "S/ ${String.format("%.1fK", volume / 1000)}", label = "Volumen", valueColor = Color.White)
+                AdminStat(value = "S/ ${String.format(Locale.getDefault(), "%.1fK", volume / 1000)}", label = "Volumen", valueColor = Color.White)
                 StatDivider()
                 AdminStat(value = disputesCount.toString(), label = "Disputas", valueColor = DangerColor)
                 StatDivider()
@@ -312,7 +323,7 @@ private fun FilterTabsRow(
 }
 
 @Composable
-private fun DisputeCard(dispute: AdminDispute, onResolve: () -> Unit, modifier: Modifier = Modifier) {
+private fun DisputeCard(dispute: Dispute, onResolve: () -> Unit, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
