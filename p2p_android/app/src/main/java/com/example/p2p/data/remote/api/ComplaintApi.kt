@@ -9,7 +9,7 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Query
 
-interface ComplaintsApi {
+interface ComplaintApi {
 
     @GET("complaints/my-complaints")
     suspend fun getMyComplaints(
