@@ -284,3 +284,70 @@ def resolve_dispute(dispute_id):
         'resolved_at':     dispute.resolved_at.isoformat() if dispute.resolved_at else None,
         'transaction_status': dispute.transaction.status if dispute.transaction else None,
     }, 200
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  RECLAMOS
+# ══════════════════════════════════════════════════════════════════════════════
+
+@admin_bp.route('/complaints', methods=['GET'])
+@jwt_required()
+def list_complaints():
+    _require_admin()
+    page, per_page = _paginate_params()
+    status_filter = request.args.get('status')
+
+    from app.models.complaint import Complaint
+    query = Complaint.query
+    if status_filter:
+        query = query.filter_by(status=status_filter)
+
+    pagination = query.order_by(Complaint.created_at.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+
+    return {
+        'complaints': [c.to_dict() for c in pagination.items],
+        'pagination': {
+            'page':     pagination.page,
+            'per_page': pagination.per_page,
+            'total':    pagination.total,
+            'pages':    pagination.pages,
+            'has_next': pagination.has_next,
+            'has_prev': pagination.has_prev,
+        }
+    }, 200
+
+
+@admin_bp.route('/complaints/<complaint_id>', methods=['GET'])
+@jwt_required()
+def get_complaint(complaint_id):
+    _require_admin()
+    from app.models.complaint import Complaint
+    complaint = db.session.get(Complaint, complaint_id)
+    if not complaint:
+        raise NotFoundError('Complaint not found')
+    return complaint.to_dict(), 200
+
+
+@admin_bp.route('/complaints/<complaint_id>/resolve', methods=['PATCH'])
+@jwt_required()
+def resolve_complaint(complaint_id):
+    _require_admin()
+    from app.models.complaint import Complaint
+    complaint = db.session.get(Complaint, complaint_id)
+    if not complaint:
+        raise NotFoundError('Complaint not found')
+
+    if complaint.status in ('resolved', 'closed'):
+        raise AppException('INVALID_STATE', 'Complaint is already resolved', 400)
+
+    data = request.get_json() or {}
+    admin_note = data.get('admin_note')
+    if not admin_note or not admin_note.strip():
+        raise AppException('MISSING_FIELD', 'admin_note is required', 400)
+
+    complaint.status = 'resolved'
+    complaint.admin_note = admin_note.strip()
+    db.session.commit()
+
+    return complaint.to_dict(), 200
