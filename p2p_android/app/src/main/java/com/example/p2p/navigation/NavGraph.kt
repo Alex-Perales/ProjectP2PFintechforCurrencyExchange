@@ -353,9 +353,10 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
             // ── Admin ─────────────────────────────────────────────────────────────
             composable(Screen.Admin.route) {
                 val adminRepo = com.example.p2p.data.repository.AdminRepositoryImpl(com.example.p2p.core.network.ApiClient.adminApi)
-                val vm: com.example.p2p.presentation.admin.AdminViewModel = viewModel(factory = com.example.p2p.presentation.admin.AdminViewModel.Factory(adminRepo))
+                val vm: AdminViewModel = viewModel(factory = com.example.p2p.presentation.admin.AdminViewModel.Factory(adminRepo))
                 AdminScreen(
                     viewModel = vm,
+                    onNavigate = { route -> navController.navigate(route) },
                     onBack = { navController.popBackStack() }
                 )
             }

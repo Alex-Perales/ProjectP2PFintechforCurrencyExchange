@@ -18,6 +18,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.example.p2p.navigation.Screen
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -42,6 +43,7 @@ import java.util.Locale
 @Composable
 fun AdminScreen(
     viewModel: AdminViewModel,
+    onNavigate: (String) -> Unit = {},  // ← agrega esto
     onBack: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -150,6 +152,9 @@ fun AdminScreen(
                 items(filteredDisputes) { dispute ->
                     DisputeCard(
                         dispute = dispute,
+                        onViewDetail = { disputeId ->
+                            onNavigate(Screen.DisputeDetail.createRoute(disputeId))
+                        },
                         onResolve = { resolution ->
                             viewModel.resolveDispute(
                                 disputeId = dispute.id,
@@ -332,11 +337,12 @@ private fun FilterTabsRow(
 @Composable
 private fun DisputeCard(
     dispute: Dispute,
+    onViewDetail: (String) -> Unit = {},
     onResolve: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().clickable { onViewDetail(dispute.id) },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = SurfaceColor),
         border = BorderStroke(1.dp, BorderColor),
