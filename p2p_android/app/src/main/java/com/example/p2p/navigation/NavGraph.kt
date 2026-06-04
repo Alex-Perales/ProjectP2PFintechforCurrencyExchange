@@ -1,5 +1,8 @@
 package com.example.p2p.navigation
 
+
+import com.example.p2p.presentation.dispute.DisputeDetailScreen
+import com.example.p2p.presentation.dispute.DisputesViewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.BarChart
@@ -242,11 +245,13 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
                 route = Screen.TransactionDetail.route,
                 arguments = listOf(navArgument("transactionId") { type = NavType.StringType })
             ) { backStack ->
+                val id = backStack.arguments?.getString("transactionId") ?: ""
                 val txnRepo = com.example.p2p.data.repository.TransactionRepositoryImpl(com.example.p2p.core.network.ApiClient.transactionApi)
                 val vm: com.example.p2p.presentation.transaction.TransactionViewModel = viewModel(factory = com.example.p2p.presentation.transaction.TransactionViewModel.Factory(txnRepo))
                 TransactionDetailScreen(
-                    transactionId = backStack.arguments?.getString("transactionId"),
+                    transactionId = id,
                     viewModel = vm,
+                    onNavigateToDispute = { txnId -> navController.navigate(Screen.RegisterDispute.createRoute(txnId)) },
                     onBack = { navController.popBackStack() }
                 )
             }
@@ -329,6 +334,19 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
                     transactionId = backStack.arguments?.getString("transactionId"),
                     viewModel = vm,
                     onNavigateBack = { navController.popBackStack() }
+                )
+            }
+            composable(
+                route = Screen.DisputeDetail.route,
+                arguments = listOf(navArgument("disputeId") { type = NavType.StringType })
+            ) { backStack ->
+                val repo = com.example.p2p.data.repository.DisputeRepositoryImpl(com.example.p2p.core.network.ApiClient.disputeApi)
+                val vm: DisputesViewModel = viewModel(factory = DisputesViewModel.Factory(repo))
+                val id = backStack.arguments?.getString("disputeId") ?: ""
+                DisputeDetailScreen(
+                    disputeId = id,
+                    viewModel = vm,
+                    onBack = { navController.popBackStack() }
                 )
             }
 

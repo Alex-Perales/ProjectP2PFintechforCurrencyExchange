@@ -24,6 +24,7 @@ import com.example.p2p.ui.theme.*
 fun TransactionDetailScreen(
     transactionId: String?,
     viewModel: TransactionViewModel? = null,
+    onNavigateToDispute: (String) -> Unit = {},
     onBack: () -> Unit = {}
 ) {
     val uiState by viewModel?.uiState?.collectAsState(initial = TransactionUiState())
@@ -139,7 +140,22 @@ fun TransactionDetailScreen(
                 Spacer(Modifier.width(8.dp))
                 Text("Descargar PDF", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
             }
+            // Dispute button — solo si la transacción no está completada ni cancelada
 
+
+            if (txn?.status !in listOf("completed", "cancelled", "disputed")) {
+                OutlinedButton(
+                    onClick = { transactionId?.let { onNavigateToDispute(it) } },
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = DangerColor),
+                    border = androidx.compose.foundation.BorderStroke(1.5.dp, DangerColor)
+                ) {
+                    Icon(Icons.Default.Gavel, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text("Abrir Disputa", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                }
+            }
             // Back to history
             OutlinedButton(
                 onClick = onBack,
@@ -157,6 +173,7 @@ fun TransactionDetailScreen(
         }
     }
 }
+
 
 @Composable
 private fun DetailRow(
@@ -177,3 +194,5 @@ private fun DetailRow(
         if (showDivider) HorizontalDivider(color = BorderColor, thickness = 0.5.dp)
     }
 }
+
+

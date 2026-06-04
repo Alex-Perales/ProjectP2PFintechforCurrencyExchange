@@ -1,5 +1,6 @@
 package com.example.p2p.presentation.dispute
 
+import com.example.p2p.navigation.Screen
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -160,29 +161,7 @@ fun MyDisputesScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            // Register new dispute button
-            item {
-                Button(
-                    onClick = { onNavigate("create_dispute") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = DangerColor),
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Add,
-                        contentDescription = null,
-                        tint = Color.White,
-                    )
-                    Text(
-                        text = " Registrar nueva disputa",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.White,
-                    )
-                }
-            }
+
 
             // Filter chips
             item {
@@ -220,8 +199,8 @@ fun MyDisputesScreen(
             items(filteredList.size) { index ->
                 DisputeCard(
                     dispute = filteredList[index],
-                    onViewDetail = { txnId ->
-                        onNavigate(com.example.p2p.navigation.Screen.TransactionDetail.createRoute(txnId))
+                    onViewDetail = { disputeId ->
+                        onNavigate(Screen.DisputeDetail.createRoute(disputeId))
                     }
                 )
             }
@@ -292,7 +271,7 @@ private fun DisputeCard(dispute: Dispute, onViewDetail: (String) -> Unit = {}) {
 
             // Ver detalle button
             OutlinedButton(
-                onClick = { onViewDetail(dispute.rawTransactionId) },
+                onClick = { onViewDetail(dispute.id) },
                 shape = RoundedCornerShape(8.dp),
                 border = BorderStroke(1.dp, Primary),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),

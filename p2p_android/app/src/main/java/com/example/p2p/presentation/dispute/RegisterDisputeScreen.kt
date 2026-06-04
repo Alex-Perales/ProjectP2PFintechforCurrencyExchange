@@ -1,5 +1,5 @@
 package com.example.p2p.presentation.dispute
-
+import com.example.p2p.data.remote.model.DisputeReason
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -33,13 +33,14 @@ fun RegisterDisputeScreen(
     val uiState by viewModel?.uiState?.collectAsState() ?: remember { mutableStateOf(DisputesUiState()) }
 
     val reasons = listOf(
-        "El vendedor no liberó los fondos",
-        "El comprador no realizó el pago",
-        "El voucher no corresponde al monto",
-        "Fondos enviados al banco incorrecto",
-        "Otro motivo"
+        "El vendedor no liberó los fondos" to DisputeReason.PAYMENT_NOT_RECEIVED,
+        "El comprador no realizó el pago"  to DisputeReason.PAYMENT_NOT_RECEIVED,
+        "El voucher no corresponde al monto" to DisputeReason.VOUCHER_FAKE,
+        "Fondos enviados al banco incorrecto" to DisputeReason.WRONG_AMOUNT,
+        "Otro motivo" to DisputeReason.OTHER
     )
-    var reason by remember { mutableStateOf(reasons[0]) }
+
+    var selectedReason by remember { mutableStateOf(reasons[0]) }
     var reasonExpanded by remember { mutableStateOf(false) }
     var description by remember { mutableStateOf("") }
 
@@ -139,7 +140,7 @@ fun RegisterDisputeScreen(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(reason, fontSize = 13.sp, color = TextMain, modifier = Modifier.weight(1f))
+                            Text(selectedReason.first, fontSize = 13.sp, color = TextMain, modifier = Modifier.weight(1f))
                             Icon(
                                 if (reasonExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                                 contentDescription = null,
@@ -154,9 +155,9 @@ fun RegisterDisputeScreen(
                     ) {
                         reasons.forEach { option ->
                             DropdownMenuItem(
-                                text = { Text(option, fontSize = 13.sp) },
+                                text = { Text(option.first, fontSize = 13.sp) },
                                 onClick = {
-                                    reason = option
+                                    selectedReason = option
                                     reasonExpanded = false
                                 }
                             )
@@ -234,7 +235,7 @@ fun RegisterDisputeScreen(
                     if (transactionId != null) {
                         viewModel?.createDispute(
                             transactionId = transactionId,
-                            reason = reason,
+                            reason = selectedReason.second,   // ← envía la KEY, no el label
                             description = description,
                             onSuccess = {
                                 Toast.makeText(context, "Disputa registrada con éxito", Toast.LENGTH_SHORT).show()
