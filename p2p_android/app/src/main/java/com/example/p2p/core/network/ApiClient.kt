@@ -5,6 +5,7 @@ import com.example.p2p.core.security.TokenManager
 import com.example.p2p.data.remote.api.AdminApi
 import com.example.p2p.data.remote.api.AuthApi
 import com.example.p2p.data.remote.api.BankAccountsApi
+import com.example.p2p.data.remote.api.ComplaintApi
 import com.example.p2p.data.remote.api.DisputeApi
 import com.example.p2p.data.remote.api.ExchangeApi
 import com.example.p2p.data.remote.api.OfferApi
@@ -63,6 +64,7 @@ object ApiClient {
             .build()
     }
 
+    val complaintApi: ComplaintApi by lazy { retrofit.create(ComplaintApi::class.java) }
     val authApi: AuthApi by lazy { retrofit.create(AuthApi::class.java) }
     val offerApi: OfferApi by lazy { retrofit.create(OfferApi::class.java) }
     val transactionApi: TransactionApi by lazy { retrofit.create(TransactionApi::class.java) }

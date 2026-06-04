@@ -38,4 +38,22 @@ interface AdminRepository {
     ): NetworkResult<List<AdminUser>>
 
     suspend fun banUser(userId: String, banned: Boolean): NetworkResult<Unit>
+
+    // ── Reclamos ──────────────────────────────────────────────────────────────
+    suspend fun getComplaints(
+        page: Int = 1,
+        perPage: Int = 20,
+        status: String? = null
+    ): NetworkResult<com.example.p2p.data.remote.model.ComplaintsResponse>
+
+    suspend fun getComplaintDetail(
+        complaintId: String
+    ): NetworkResult<com.example.p2p.data.remote.model.Complaint>
+
+    suspend fun resolveComplaint(
+        complaintId: String,
+        adminNote: String
+    ): NetworkResult<com.example.p2p.data.remote.model.Complaint>
+
+
 }

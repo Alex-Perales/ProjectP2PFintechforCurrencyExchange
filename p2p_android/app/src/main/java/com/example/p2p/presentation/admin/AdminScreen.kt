@@ -1,5 +1,6 @@
 package com.example.p2p.presentation.admin
-
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -18,6 +19,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.example.p2p.navigation.Screen
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -42,12 +44,13 @@ import java.util.Locale
 @Composable
 fun AdminScreen(
     viewModel: AdminViewModel,
+    onNavigate: (String) -> Unit = {},  // ← agrega esto
     onBack: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Todas", "Arbitraje", "Revisión", "Resuelta")
+    val tabs = listOf("Disputas", "Reclamos")
 
     LaunchedEffect(Unit) {
         viewModel.loadData()
@@ -128,43 +131,135 @@ fun AdminScreen(
             }
 
             // Dispute cards
-            if (uiState.isLoading && uiState.disputes.isEmpty()) {
-                item {
-                    Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = Primary)
+            // Content by tab
+            when (selectedTab) {
+                0 -> {
+                    // ── Disputas ──────────────────────────────────────────────
+                    item {
+                        Spacer(Modifier.height(20.dp))
+                        Text(
+                            text = "Disputas Activas",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = TextMain,
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                        )
+                        Spacer(Modifier.height(12.dp))
                     }
-                }
-            } else if (uiState.disputes.isEmpty()) {
-                item {
-                    Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                        Text("No hay disputas registradas", color = TextMuted)
-                    }
-                }
-            } else {
-                val filteredDisputes = when (selectedTab) {
-                    1 -> uiState.disputes.filter { it.status == "open" }
-                    2 -> uiState.disputes.filter { it.status == "review" }
-                    3 -> uiState.disputes.filter { it.status == "resolved" }
-                    else -> uiState.disputes
-                }
-                items(filteredDisputes) { dispute ->
-                    DisputeCard(
-                        dispute = dispute,
-                        onResolve = { resolution ->
-                            viewModel.resolveDispute(
-                                disputeId = dispute.id,
-                                resolution = resolution,
-                                onSuccess = {
-                                    Toast.makeText(context, "Disputa resuelta :3", Toast.LENGTH_SHORT).show()
+
+                    if (uiState.isLoading && uiState.disputes.isEmpty()) {
+                        item {
+                            Box(
+                                modifier = Modifier.fillMaxWidth().padding(32.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(color = Primary)
+                            }
+                        }
+                    } else if (uiState.disputes.isEmpty()) {
+                        item {
+                            Box(
+                                modifier = Modifier.fillMaxWidth().padding(32.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("No hay disputas registradas", color = TextMuted)
+                            }
+                        }
+                    } else {
+                        items(uiState.disputes) { dispute ->
+                            DisputeCard(
+                                dispute = dispute,
+                                onViewDetail = { disputeId ->
+                                    onNavigate(Screen.DisputeDetail.createRoute(disputeId))
                                 },
-                                onError = { err ->
-                                    Toast.makeText(context, "Error: $err", Toast.LENGTH_LONG).show()
-                                }
+                                onResolve = { resolution ->
+                                    viewModel.resolveDispute(
+                                        disputeId = dispute.id,
+                                        resolution = resolution,
+                                        onSuccess = {
+                                            Toast.makeText(
+                                                context,
+                                                "Disputa resuelta :3",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        },
+                                        onError = { err ->
+                                            Toast.makeText(
+                                                context,
+                                                "Error: $err",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                        }
+                                    )
+                                },
+                                modifier = Modifier.padding(horizontal = 16.dp),
                             )
-                        },
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                    )
-                    Spacer(Modifier.height(12.dp))
+                            Spacer(Modifier.height(12.dp))
+                        }
+                    }
+                }
+
+                1 -> {
+                    // ── Reclamos ───────────────────────────────────────────────
+                    item {
+                        Spacer(Modifier.height(20.dp))
+                        Text(
+                            text = "Reclamos de Usuarios",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = TextMain,
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                        )
+                        Spacer(Modifier.height(12.dp))
+                    }
+
+                    if (uiState.isLoading && uiState.complaints.isEmpty()) {
+                        item {
+                            Box(
+                                modifier = Modifier.fillMaxWidth().padding(32.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(color = Primary)
+                            }
+                        }
+                    } else if (uiState.complaints.isEmpty()) {
+                        item {
+                            Box(
+                                modifier = Modifier.fillMaxWidth().padding(32.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("No hay reclamos registrados", color = TextMuted)
+                            }
+                        }
+                    } else {
+                        items(uiState.complaints) { complaint ->
+                            ComplaintAdminCard(
+                                complaint = complaint,
+                                onResolve = { adminNote ->
+                                    viewModel.resolveComplaint(
+                                        complaintId = complaint.id,
+                                        adminNote = adminNote,
+                                        onSuccess = {
+                                            Toast.makeText(
+                                                context,
+                                                "Reclamo resuelto",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        },
+                                        onError = { err ->
+                                            Toast.makeText(
+                                                context,
+                                                "Error: $err",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                        }
+                                    )
+                                },
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                            )
+                            Spacer(Modifier.height(12.dp))
+                        }
+                    }
                 }
             }
         }
@@ -332,11 +427,12 @@ private fun FilterTabsRow(
 @Composable
 private fun DisputeCard(
     dispute: Dispute,
+    onViewDetail: (String) -> Unit = {},
     onResolve: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().clickable { onViewDetail(dispute.id) },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = SurfaceColor),
         border = BorderStroke(1.dp, BorderColor),
@@ -418,5 +514,131 @@ private fun StatusBadge(label: String, color: Color) {
             fontWeight = FontWeight.Bold,
             color = color,
         )
+    }
+}
+
+@Composable
+private fun ComplaintAdminCard(
+    complaint: com.example.p2p.data.remote.model.Complaint,
+    onResolve: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var showDialog by remember { mutableStateOf(false) }
+    var adminNote by remember { mutableStateOf("") }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Resolver Reclamo", fontWeight = FontWeight.Bold) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Escribe una nota de resolución para el usuario:", fontSize = 13.sp, color = TextMuted)
+                    OutlinedTextField(
+                        value = adminNote,
+                        onValueChange = { adminNote = it },
+                        placeholder = { Text("Nota de resolución...", fontSize = 13.sp) },
+                        modifier = Modifier.fillMaxWidth().height(100.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        maxLines = 4,
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (adminNote.isNotBlank()) {
+                            onResolve(adminNote)
+                            showDialog = false
+                            adminNote = ""
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = SuccessColor)
+                ) {
+                    Text("Resolver", color = Color.White)
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = SurfaceColor),
+        border = BorderStroke(1.dp, BorderColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    text = "#RCL-${complaint.id.takeLast(4).uppercase()}",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = Primary,
+                )
+                StatusBadge(
+                    label = when (complaint.status) {
+                        "pending"      -> "PENDIENTE"
+                        "under_review" -> "EN REVISIÓN"
+                        "resolved"     -> "RESUELTO"
+                        else           -> complaint.status.uppercase()
+                    },
+                    color = when (complaint.status) {
+                        "pending"      -> WarningColor
+                        "under_review" -> Primary
+                        "resolved"     -> SuccessColor
+                        else           -> TextMuted
+                    }
+                )
+            }
+
+            Text(
+                text = "Tipo: ${com.example.p2p.data.remote.model.ComplaintType.label(complaint.type)}",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = TextMain
+            )
+
+            Text(
+                text = complaint.description,
+                fontSize = 12.sp,
+                color = TextMuted
+            )
+
+            complaint.admin_note?.let {
+                Text(
+                    text = "Nota admin: $it",
+                    fontSize = 12.sp,
+                    color = SuccessColor,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            Text(
+                text = complaint.created_at.take(10),
+                fontSize = 12.sp,
+                color = TextMuted
+            )
+
+            if (complaint.status != "resolved" && complaint.status != "closed") {
+                Button(
+                    onClick = { showDialog = true },
+                    shape = RoundedCornerShape(8.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = SuccessColor),
+                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
+                    modifier = Modifier.fillMaxWidth().height(36.dp),
+                ) {
+                    Text("Resolver Reclamo", fontSize = 12.sp, color = Color.White)
+                }
+            }
+        }
     }
 }

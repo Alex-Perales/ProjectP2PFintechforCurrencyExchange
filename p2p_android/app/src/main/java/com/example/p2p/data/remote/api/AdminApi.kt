@@ -12,6 +12,11 @@ import retrofit2.http.Query
 
 // ── Response models ───────────────────────────────────────────────────────────
 
+
+data class ResolveComplaintRequest
+    (val admin_note: String
+
+            )
 data class AdminUsersStats(
     val total: Int,
     val active: Int
@@ -117,4 +122,29 @@ interface AdminApi {
         @Path("id") disputeId: String,
         @Body body: ResolveDisputeRequest
     ): Response<Map<String, String>>
+
+    // ── Reclamos ──────────────────────────────────────────────────────────────
+
+    /** GET /api/v1/admin/complaints */
+    @GET("admin/complaints")
+    suspend fun getComplaints(
+        @Query("page") page: Int = 1,
+        @Query("per_page") perPage: Int = 20,
+        @Query("status") status: String? = null
+    ): Response<com.example.p2p.data.remote.model.ComplaintsResponse>
+
+    /** GET /api/v1/admin/complaints/{id} */
+    @GET("admin/complaints/{id}")
+    suspend fun getComplaintDetail(
+        @Path("id") complaintId: String
+    ): Response<com.example.p2p.data.remote.model.Complaint>
+
+    /** PATCH /api/v1/admin/complaints/{id}/resolve */
+    @PATCH("admin/complaints/{id}/resolve")
+    suspend fun resolveComplaint(
+        @Path("id") complaintId: String,
+        @Body body: ResolveComplaintRequest
+    ): Response<com.example.p2p.data.remote.model.Complaint>
 }
+
+
