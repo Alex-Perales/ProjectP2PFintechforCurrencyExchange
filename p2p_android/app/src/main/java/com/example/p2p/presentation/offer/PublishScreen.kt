@@ -61,6 +61,13 @@ fun PublishScreen(
     var minTransactionText by remember { mutableStateOf("") }
     var maxTransactionText by remember { mutableStateOf("") }
 
+    var selectedCurrency by remember { mutableStateOf("USD") }
+    var selectedFiatCurrency by remember { mutableStateOf("PEN") }
+
+
+    val currencies = listOf("USD", "EUR", "USDT")
+    val fiatCurrencies = listOf("PEN", "COP", "MXN", "ARS")
+
     val currentRate = if (customRateEnabled) {
         customRateText.toDoubleOrNull() ?: 3.780
     } else {
@@ -162,34 +169,45 @@ fun PublishScreen(
                     }
 
                     // Recibo dropdown
+                    var selectedFiatCurrency by remember { mutableStateOf("PEN") }
+                    var expandedFiat by remember { mutableStateOf(false) }
+                    val fiatCurrencies = listOf("PEN", "COP", "MXN", "ARS")
+
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Recibo",
-                            fontSize = 11.sp,
-                            color = TextMuted,
-                            fontWeight = FontWeight.Medium
-                        )
+                        Text("Recibo", fontSize = 11.sp, color = TextMuted, fontWeight = FontWeight.Medium)
                         Spacer(modifier = Modifier.height(4.dp))
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(10.dp))
-                                .border(1.5.dp, BorderColor, RoundedCornerShape(10.dp))
-                                .background(SurfaceColor)
-                                .padding(horizontal = 14.dp, vertical = 14.dp)
+                        ExposedDropdownMenuBox(
+                            expanded = expandedFiat,
+                            onExpandedChange = { expandedFiat = !expandedFiat }
                         ) {
-                            Row(
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .menuAnchor()
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .border(1.5.dp, BorderColor, RoundedCornerShape(10.dp))
+                                    .background(SurfaceColor)
+                                    .padding(horizontal = 14.dp, vertical = 14.dp)
                             ) {
-                                Text(
-                                    text = "PEN",
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = TextMain
-                                )
-                                Text(text = "▾", fontSize = 12.sp, color = TextMuted)
+                                Row(
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(text = selectedFiatCurrency, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextMain)
+                                    Text(text = "▾", fontSize = 12.sp, color = TextMuted)
+                                }
+                            }
+                            ExposedDropdownMenu(
+                                expanded = expandedFiat,
+                                onDismissRequest = { expandedFiat = false }
+                            ) {
+                                fiatCurrencies.forEach { cur ->
+                                    DropdownMenuItem(
+                                        text = { Text(cur) },
+                                        onClick = { selectedFiatCurrency = cur; expandedFiat = false }
+                                    )
+                                }
                             }
                         }
                     }
@@ -438,8 +456,8 @@ fun PublishScreen(
                     }
 
                     val req = CreateOfferRequest(
-                        currency = "USD",
-                        fiat_currency = "PEN",
+                        currency = selectedCurrency,
+                        fiat_currency = selectedFiatCurrency,
                         amount = amountDouble,
                         price_per_unit = currentRate,
                         offer_type = if (selectedSaleMode == 0) "full" else "partial",
