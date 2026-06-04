@@ -84,6 +84,27 @@ class AdminRepositoryImpl(
             NetworkResult.Error(-1, e.message ?: "Error de conexión")
         }
 
+    // ── Reclamos ──────────────────────────────────────────────────────────────
+
+    override suspend fun getComplaints(
+        page: Int,
+        perPage: Int,
+        status: String?
+    ): NetworkResult<com.example.p2p.data.remote.model.ComplaintsResponse> =
+        safeCall { api.getComplaints(page, perPage, status) }
+
+    override suspend fun getComplaintDetail(
+        complaintId: String
+    ): NetworkResult<com.example.p2p.data.remote.model.Complaint> =
+        safeCall { api.getComplaintDetail(complaintId) }
+
+    override suspend fun resolveComplaint(
+        complaintId: String,
+        adminNote: String
+    ): NetworkResult<com.example.p2p.data.remote.model.Complaint> =
+        safeCall { api.resolveComplaint(complaintId, com.example.p2p.data.remote.api.ResolveComplaintRequest(adminNote)) }
+
+
     // ── Helper ────────────────────────────────────────────────────────────────
 
     private suspend fun <T> safeCall(call: suspend () -> retrofit2.Response<T>): NetworkResult<T> =

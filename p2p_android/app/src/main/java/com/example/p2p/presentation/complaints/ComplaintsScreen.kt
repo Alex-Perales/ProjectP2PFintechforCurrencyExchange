@@ -19,24 +19,27 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.p2p.data.remote.model.ComplaintType
 import com.example.p2p.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ComplaintsScreen(onBack: () -> Unit = {}) {
+fun ComplaintsScreen(
+    viewModel: ComplaintsViewModel? = null,
+    onBack: () -> Unit = {}
+) {
     val context = LocalContext.current
+    val uiState by viewModel?.uiState?.collectAsState() ?: remember { mutableStateOf(ComplaintsUiState()) }
+
+    val types = ComplaintType.all
+    var selectedType by remember { mutableStateOf(types[0]) }
+    var typeExpanded by remember { mutableStateOf(false) }
     var description by remember { mutableStateOf("") }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        "Reclamos",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 17.sp,
-                        color = TextMain
-                    )
-                },
+                title = { Text("Reclamos", fontWeight = FontWeight.Bold, fontSize = 17.sp, color = TextMain) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = TextMain)
@@ -55,63 +58,59 @@ fun ComplaintsScreen(onBack: () -> Unit = {}) {
                 .padding(horizontal = 16.dp, vertical = 20.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            // ── New Complaint Card ────────────────────────────────────────────
+            // ── Nuevo Reclamo ─────────────────────────────────────────────────
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = SurfaceColor),
                 elevation = CardDefaults.cardElevation(1.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
-                ) {
-                    Text(
-                        "Nuevo Reclamo",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextMain
-                    )
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    Text("Nuevo Reclamo", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextMain)
 
-                    // Type dropdown
+                    // Tipo dropdown
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text("Tipo de Reclamo", fontSize = 12.sp, color = TextMuted)
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
-                                .padding(horizontal = 14.dp, vertical = 14.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                        ExposedDropdownMenuBox(
+                            expanded = typeExpanded,
+                            onExpandedChange = { typeExpanded = it }
                         ) {
-                            Text(
-                                "Tipo: Problema con transacción",
-                                fontSize = 13.sp,
-                                color = TextMain
-                            )
-                            Icon(
-                                Icons.Default.KeyboardArrowDown,
-                                contentDescription = null,
-                                tint = TextMuted,
-                                modifier = Modifier.size(20.dp)
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .menuAnchor()
+                                    .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
+                                    .padding(horizontal = 14.dp, vertical = 14.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(ComplaintType.label(selectedType), fontSize = 13.sp, color = TextMain)
+                                    Icon(
+                                        if (typeExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                        contentDescription = null, tint = TextMuted, modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                            ExposedDropdownMenu(expanded = typeExpanded, onDismissRequest = { typeExpanded = false }) {
+                                types.forEach { option ->
+                                    DropdownMenuItem(
+                                        text = { Text(ComplaintType.label(option), fontSize = 13.sp) },
+                                        onClick = { selectedType = option; typeExpanded = false }
+                                    )
+                                }
+                            }
                         }
                     }
 
-                    // Description textarea
+                    // Descripción
                     OutlinedTextField(
                         value = description,
                         onValueChange = { description = it },
-                        placeholder = {
-                            Text(
-                                "Describe tu reclamo con detalle...",
-                                fontSize = 13.sp,
-                                color = TextMuted
-                            )
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(110.dp),
+                        placeholder = { Text("Describe tu reclamo con detalle...", fontSize = 13.sp, color = TextMuted) },
+                        modifier = Modifier.fillMaxWidth().height(110.dp),
                         shape = RoundedCornerShape(10.dp),
                         maxLines = 5,
                         colors = OutlinedTextFieldDefaults.colors(
@@ -122,61 +121,72 @@ fun ComplaintsScreen(onBack: () -> Unit = {}) {
                         )
                     )
 
-                    // Submit button
+                    // Botón enviar
                     Button(
                         onClick = {
                             if (description.isBlank()) {
                                 Toast.makeText(context, "Por favor describe tu reclamo", Toast.LENGTH_SHORT).show()
                             } else {
-                                Toast.makeText(context, "Reclamo enviado. Te responderemos en 48h.", Toast.LENGTH_LONG).show()
-                                description = ""
+                                viewModel?.createComplaint(
+                                    type = selectedType,
+                                    description = description,
+                                    onSuccess = {
+                                        Toast.makeText(context, "Reclamo enviado. Te responderemos en 48h.", Toast.LENGTH_LONG).show()
+                                        description = ""
+                                    },
+                                    onError = { err ->
+                                        Toast.makeText(context, "Error: $err", Toast.LENGTH_LONG).show()
+                                    }
+                                )
                             }
                         },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp),
+                        modifier = Modifier.fillMaxWidth().height(48.dp),
                         shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = DangerColor)
+                        colors = ButtonDefaults.buttonColors(containerColor = DangerColor),
+                        enabled = !uiState.isSubmitting
                     ) {
-                        Icon(
-                            Icons.Default.Send,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            tint = Color.White
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            "Enviar Reclamo",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color.White
-                        )
+                        if (uiState.isSubmitting) {
+                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
+                        } else {
+                            Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
+                            Spacer(Modifier.width(8.dp))
+                            Text("Enviar Reclamo", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color.White)
+                        }
                     }
                 }
             }
 
-            // ── My Complaints section ─────────────────────────────────────────
-            Text(
-                "Mis Reclamos",
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextMain
-            )
+            // ── Mis Reclamos ──────────────────────────────────────────────────
+            Text("Mis Reclamos", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextMain)
 
-            ComplaintItem(
-                id = "#RCL-001",
-                type = "Problema con transacción",
-                status = "En revisión",
-                statusColor = WarningColor,
-                date = "20 May 2026"
-            )
-            ComplaintItem(
-                id = "#RCL-002",
-                type = "Error en plataforma",
-                status = "Resuelto",
-                statusColor = SuccessColor,
-                date = "15 May 2026"
-            )
+            if (uiState.isLoading) {
+                Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = Primary)
+                }
+            } else if (uiState.complaints.isEmpty()) {
+                Text("No tienes reclamos registrados.", fontSize = 13.sp, color = TextMuted)
+            } else {
+                uiState.complaints.forEach { complaint ->
+                    ComplaintItem(
+                        id = "#RCL-${complaint.id.takeLast(4).uppercase()}",
+                        type = ComplaintType.label(complaint.type),
+                        status = when (complaint.status) {
+                            "pending"      -> "Pendiente"
+                            "under_review" -> "En revisión"
+                            "resolved"     -> "Resuelto"
+                            "closed"       -> "Cerrado"
+                            else           -> complaint.status
+                        },
+                        statusColor = when (complaint.status) {
+                            "pending"      -> WarningColor
+                            "under_review" -> Primary
+                            "resolved"     -> SuccessColor
+                            else           -> TextMuted
+                        },
+                        date = complaint.created_at.take(10)
+                    )
+                }
+            }
 
             Spacer(Modifier.height(8.dp))
         }
@@ -184,13 +194,7 @@ fun ComplaintsScreen(onBack: () -> Unit = {}) {
 }
 
 @Composable
-private fun ComplaintItem(
-    id: String,
-    type: String,
-    status: String,
-    statusColor: Color,
-    date: String
-) {
+private fun ComplaintItem(id: String, type: String, status: String, statusColor: androidx.compose.ui.graphics.Color, date: String) {
     Card(
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = SurfaceColor),
@@ -198,34 +202,15 @@ private fun ComplaintItem(
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp),
+            modifier = Modifier.fillMaxWidth().padding(14.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    id,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TextMain
-                )
-                Text(
-                    type,
-                    fontSize = 12.sp,
-                    color = TextMuted
-                )
-                Text(
-                    date,
-                    fontSize = 11.sp,
-                    color = TextMuted
-                )
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(id, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextMain)
+                Text(type, fontSize = 12.sp, color = TextMuted)
+                Text(date, fontSize = 11.sp, color = TextMuted)
             }
-            // Status pill
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(50.dp))
@@ -233,12 +218,7 @@ private fun ComplaintItem(
                     .border(1.dp, statusColor.copy(alpha = 0.3f), RoundedCornerShape(50.dp))
                     .padding(horizontal = 12.dp, vertical = 5.dp)
             ) {
-                Text(
-                    status,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = statusColor
-                )
+                Text(status, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = statusColor)
             }
         }
     }

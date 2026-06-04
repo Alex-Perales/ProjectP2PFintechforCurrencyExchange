@@ -39,6 +39,7 @@ import com.example.p2p.presentation.auth.RegisterScreen
 import com.example.p2p.presentation.auth.RegisterViewModel
 import com.example.p2p.presentation.bank_accounts.BankAccountsScreen
 import com.example.p2p.presentation.complaints.ComplaintsScreen
+import com.example.p2p.presentation.complaints.ComplaintsViewModel
 import com.example.p2p.presentation.dispute.MyDisputesScreen
 import com.example.p2p.presentation.dispute.RegisterDisputeScreen
 import com.example.p2p.presentation.help.HelpScreen
@@ -311,7 +312,13 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
             }
 
             composable(Screen.Complaints.route) {
-                ComplaintsScreen(onBack = { navController.popBackStack() })
+                val vm: ComplaintsViewModel = viewModel(
+                    factory = ComplaintsViewModel.Factory(com.example.p2p.core.network.ApiClient.complaintApi)
+                )
+                ComplaintsScreen(
+                    viewModel = vm,
+                    onBack = { navController.popBackStack() }
+                )
             }
 
             // ── Disputes ─────────────────────────────────────────────────────────

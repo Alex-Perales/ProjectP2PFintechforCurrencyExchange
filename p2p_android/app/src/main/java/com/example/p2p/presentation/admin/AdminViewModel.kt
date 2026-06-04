@@ -21,11 +21,11 @@ data class AdminUiState(
     val error: String? = null,
     val stats: AdminDashboardResponse? = null,
     val disputes: List<Dispute> = emptyList(),
+    val complaints: List<com.example.p2p.data.remote.model.Complaint> = emptyList(), // ← agrega
     val users: List<AdminUser> = emptyList(),
     val selectedDispute: Dispute? = null,
-    // Para feedback de acciones individuales
-    val actionInProgress: String? = null,   // ID de la disputa/usuario siendo procesado
-    val actionSuccess: String? = null,      // Mensaje de éxito
+    val actionInProgress: String? = null,
+    val actionSuccess: String? = null,
 )
 
 // ── ViewModel ─────────────────────────────────────────────────────────────────
@@ -45,20 +45,18 @@ class AdminViewModel(
 
             val statsResult = repository.getDashboardStats()
             val disputesResult = repository.getDisputes()
+            val complaintsResult = repository.getComplaints() // ← agrega
 
             val stats = (statsResult as? NetworkResult.Success)?.data
             val disputes = (disputesResult as? NetworkResult.Success)?.data?.disputes ?: emptyList()
-            val error = when {
-                statsResult is NetworkResult.Error -> statsResult.message
-                disputesResult is NetworkResult.Error -> disputesResult.message
-                else -> null
-            }
+            val complaints = (complaintsResult as? NetworkResult.Success)?.data?.complaints ?: emptyList() // ← agrega
 
             _uiState.value = _uiState.value.copy(
                 isLoading = false,
                 stats = stats,
                 disputes = disputes,
-                error = error,
+                complaints = complaints, // ← agrega
+                error = null,
             )
         }
     }
@@ -143,6 +141,54 @@ class AdminViewModel(
                     _uiState.value = _uiState.value.copy(
                         actionInProgress = null,
                         actionSuccess = "Disputa resuelta $label",
+                    )
+                    loadData()
+                    onSuccess()
+                }
+                is NetworkResult.Error -> {
+                    _uiState.value = _uiState.value.copy(
+                        actionInProgress = null,
+                        error = result.message,
+                    )
+                    onError(result.message)
+                }
+                NetworkResult.Loading -> Unit
+            }
+        }
+    }
+
+    // ── Acciones sobre reclamos ───────────────────────────────────────────────
+
+    fun loadComplaints(status: String? = null) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            when (val result = repository.getComplaints(status = status)) {
+                is NetworkResult.Success -> _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    complaints = result.data.complaints,
+                )
+                is NetworkResult.Error -> _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = result.message,
+                )
+                NetworkResult.Loading -> Unit
+            }
+        }
+    }
+
+    fun resolveComplaint(
+        complaintId: String,
+        adminNote: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(actionInProgress = complaintId)
+            when (val result = repository.resolveComplaint(complaintId, adminNote)) {
+                is NetworkResult.Success -> {
+                    _uiState.value = _uiState.value.copy(
+                        actionInProgress = null,
+                        actionSuccess = "Reclamo resuelto",
                     )
                     loadData()
                     onSuccess()
