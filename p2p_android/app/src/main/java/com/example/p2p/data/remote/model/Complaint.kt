@@ -7,7 +7,12 @@ enum class ComplaintType(val label: String) {
     TRANSACTION_ISSUE("Problema con transacción"),
     ACCOUNT_ISSUE("Problema con mi cuenta"),
     PAYMENT_ISSUE("Problema con pago"),
-    OTHER("Otro")
+    OTHER("Otro");
+
+    companion object {
+        fun label(type: String): String =
+            entries.firstOrNull { it.name == type }?.label ?: type
+    }
 }
 
 enum class ComplaintStatus(val label: String) {
@@ -22,9 +27,9 @@ data class Complaint(
     @SerializedName("type")        val type: String,
     @SerializedName("description") val description: String,
     @SerializedName("status")      val status: String,
-    @SerializedName("created_at")  val createdAt: String,
-    @SerializedName("updated_at")  val updatedAt: String? = null,
-    @SerializedName("response")    val adminResponse: String? = null
+    @SerializedName("created_at")  val created_at: String,
+    @SerializedName("updated_at")  val updated_at: String? = null,
+    @SerializedName("admin_note")  val admin_note: String? = null
 )
 
 data class ComplaintsResponse(

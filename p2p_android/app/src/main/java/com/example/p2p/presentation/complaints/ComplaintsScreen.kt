@@ -262,7 +262,7 @@ private fun ComplaintItem(complaint: Complaint) {
                     fontSize = 12.sp,
                     color = TextMuted
                 )
-                Text(complaint.createdAt.take(10), fontSize = 11.sp, color = TextMuted)
+                Text(complaint.created_at.take(10), fontSize = 11.sp, color = TextMuted)
             }
             Surface(
                 shape = RoundedCornerShape(20.dp),
