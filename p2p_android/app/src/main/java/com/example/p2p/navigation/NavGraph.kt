@@ -333,6 +333,19 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
                     onNavigateBack = { navController.popBackStack() }
                 )
             }
+            composable(
+                route = Screen.DisputeDetail.route,
+                arguments = listOf(navArgument("disputeId") { type = NavType.StringType })
+            ) { backStack ->
+                val repo = com.example.p2p.data.repository.DisputeRepositoryImpl(com.example.p2p.core.network.ApiClient.disputeApi)
+                val vm: DisputesViewModel = viewModel(factory = DisputesViewModel.Factory(repo))
+                val id = backStack.arguments?.getString("disputeId") ?: ""
+                DisputeDetailScreen(
+                    disputeId = id,
+                    viewModel = vm,
+                    onBack = { navController.popBackStack() }
+                )
+            }
 
             // ── Admin ─────────────────────────────────────────────────────────────
             composable(Screen.Admin.route) {

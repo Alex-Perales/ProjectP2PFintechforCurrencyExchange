@@ -199,8 +199,8 @@ fun MyDisputesScreen(
             items(filteredList.size) { index ->
                 DisputeCard(
                     dispute = filteredList[index],
-                    onViewDetail = { txnId ->
-                        onNavigate(com.example.p2p.navigation.Screen.TransactionDetail.createRoute(txnId))
+                    onViewDetail = { disputeId ->
+                        onNavigate(Screen.DisputeDetail.createRoute(disputeId))
                     }
                 )
             }
@@ -271,7 +271,7 @@ private fun DisputeCard(dispute: Dispute, onViewDetail: (String) -> Unit = {}) {
 
             // Ver detalle button
             OutlinedButton(
-                onClick = { onViewDetail(dispute.rawTransactionId) },
+                onClick = { onViewDetail(dispute.id) },
                 shape = RoundedCornerShape(8.dp),
                 border = BorderStroke(1.dp, Primary),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
