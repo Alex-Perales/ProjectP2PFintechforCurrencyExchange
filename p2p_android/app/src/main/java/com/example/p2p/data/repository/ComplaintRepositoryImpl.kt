@@ -1,14 +1,14 @@
 package com.example.p2p.data.repository
 
 import com.example.p2p.core.network.NetworkResult
-import com.example.p2p.data.remote.api.ComplaintsApi
+import com.example.p2p.data.remote.api.ComplaintApi
 import com.example.p2p.data.remote.model.Complaint
 import com.example.p2p.data.remote.model.ComplaintsResponse
 import com.example.p2p.data.remote.model.CreateComplaintRequest
 import com.example.p2p.domain.repository.ComplaintRepository
 
 class ComplaintsRepositoryImpl(
-    private val api: ComplaintsApi
+    private val api: ComplaintApi
 ) : ComplaintRepository {
 
     override suspend fun getMyComplaints(page: Int, perPage: Int): NetworkResult<ComplaintsResponse> =
