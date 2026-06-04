@@ -1,5 +1,8 @@
 package com.example.p2p.navigation
 
+
+import com.example.p2p.presentation.dispute.DisputeDetailScreen
+import com.example.p2p.presentation.dispute.DisputesViewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.BarChart
