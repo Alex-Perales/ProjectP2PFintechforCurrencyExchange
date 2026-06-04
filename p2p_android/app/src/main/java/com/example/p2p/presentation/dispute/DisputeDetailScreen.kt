@@ -1,5 +1,5 @@
 package com.example.p2p.presentation.dispute
-
+import com.example.p2p.data.remote.model.DisputeReason
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
