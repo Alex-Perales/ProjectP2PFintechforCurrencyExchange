@@ -312,8 +312,11 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
             }
 
             composable(Screen.Complaints.route) {
+                val repo = com.example.p2p.data.repository.ComplaintsRepositoryImpl(
+                    com.example.p2p.core.network.ApiClient.complaintApi
+                )
                 val vm: ComplaintsViewModel = viewModel(
-                    factory = ComplaintsViewModel.Factory(com.example.p2p.core.network.ApiClient.complaintApi)
+                    factory = ComplaintsViewModel.Factory(repo)
                 )
                 ComplaintsScreen(
                     viewModel = vm,
