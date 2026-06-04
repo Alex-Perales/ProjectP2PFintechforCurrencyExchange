@@ -242,11 +242,13 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
                 route = Screen.TransactionDetail.route,
                 arguments = listOf(navArgument("transactionId") { type = NavType.StringType })
             ) { backStack ->
+                val id = backStack.arguments?.getString("transactionId") ?: ""
                 val txnRepo = com.example.p2p.data.repository.TransactionRepositoryImpl(com.example.p2p.core.network.ApiClient.transactionApi)
                 val vm: com.example.p2p.presentation.transaction.TransactionViewModel = viewModel(factory = com.example.p2p.presentation.transaction.TransactionViewModel.Factory(txnRepo))
                 TransactionDetailScreen(
-                    transactionId = backStack.arguments?.getString("transactionId"),
+                    transactionId = id,
                     viewModel = vm,
+                    onNavigateToDispute = { txnId -> navController.navigate(Screen.RegisterDispute.createRoute(txnId)) },
                     onBack = { navController.popBackStack() }
                 )
             }

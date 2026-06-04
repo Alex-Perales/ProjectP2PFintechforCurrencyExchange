@@ -161,29 +161,7 @@ fun MyDisputesScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            // Register new dispute button
-            item {
-                Button(
-                    onClick = { onNavigate(Screen.RegisterDispute.createRoute("")) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = DangerColor),
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Add,
-                        contentDescription = null,
-                        tint = Color.White,
-                    )
-                    Text(
-                        text = " Registrar nueva disputa",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.White,
-                    )
-                }
-            }
+
 
             // Filter chips
             item {
