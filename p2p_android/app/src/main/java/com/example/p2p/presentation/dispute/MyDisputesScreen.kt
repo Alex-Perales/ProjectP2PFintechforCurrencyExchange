@@ -1,5 +1,6 @@
 package com.example.p2p.presentation.dispute
 
+import com.example.p2p.navigation.Screen
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -163,7 +164,7 @@ fun MyDisputesScreen(
             // Register new dispute button
             item {
                 Button(
-                    onClick = { onNavigate("create_dispute") },
+                    onClick = { onNavigate(Screen.RegisterDispute.createRoute("")) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
