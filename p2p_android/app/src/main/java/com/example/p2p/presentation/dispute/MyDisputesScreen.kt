@@ -66,6 +66,7 @@ import java.util.Locale
 
 private data class Dispute(
     val id: String,
+    val rawId: String,
     val status: String,
     val statusColor: Color,
     val reason: String,
@@ -112,6 +113,7 @@ fun MyDisputesScreen(
         }
         Dispute(
             id = "#DSP-${dto.id.takeLast(4).uppercase()}",
+            rawId = dto.id,
             status = statusName,
             statusColor = sColor,
             reason = dto.reason,
@@ -271,7 +273,7 @@ private fun DisputeCard(dispute: Dispute, onViewDetail: (String) -> Unit = {}) {
 
             // Ver detalle button
             OutlinedButton(
-                onClick = { onViewDetail(dispute.id) },
+                onClick = { onViewDetail(dispute.rawId) },
                 shape = RoundedCornerShape(8.dp),
                 border = BorderStroke(1.dp, Primary),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
