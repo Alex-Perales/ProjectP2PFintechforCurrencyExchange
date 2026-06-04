@@ -1,47 +1,45 @@
 package com.example.p2p.data.remote.model
 
+import com.google.gson.annotations.SerializedName
+
+enum class ComplaintType(val label: String) {
+    PLATFORM_ERROR("Error en plataforma"),
+    TRANSACTION_ISSUE("Problema con transacción"),
+    ACCOUNT_ISSUE("Problema con mi cuenta"),
+    PAYMENT_ISSUE("Problema con pago"),
+    OTHER("Otro")
+}
+
+enum class ComplaintStatus(val label: String) {
+    PENDING("Pendiente"),
+    IN_REVIEW("En revisión"),
+    RESOLVED("Resuelto"),
+    CLOSED("Cerrado")
+}
+
 data class Complaint(
-    val id: String,
-    val user_id: String,
-    val type: String,
-    val description: String,
-    val status: String,
-    val admin_note: String?,
-    val created_at: String,
-    val updated_at: String
+    @SerializedName("id")          val id: String,
+    @SerializedName("type")        val type: String,
+    @SerializedName("description") val description: String,
+    @SerializedName("status")      val status: String,
+    @SerializedName("created_at")  val createdAt: String,
+    @SerializedName("updated_at")  val updatedAt: String? = null,
+    @SerializedName("response")    val adminResponse: String? = null
 )
 
 data class ComplaintsResponse(
-    val complaints: List<Complaint>,
-    val pagination: PaginationMeta? = null
+    @SerializedName("complaints")  val complaints: List<Complaint>,
+    @SerializedName("pagination")  val pagination: ComplaintPagination? = null
+)
+
+data class ComplaintPagination(
+    @SerializedName("page")    val page: Int,
+    @SerializedName("pages")   val pages: Int,
+    @SerializedName("per_page") val perPage: Int,
+    @SerializedName("total")   val total: Int
 )
 
 data class CreateComplaintRequest(
-    val type: String,
-    val description: String
+    @SerializedName("type")        val type: String,
+    @SerializedName("description") val description: String
 )
-
-object ComplaintType {
-    const val TRANSACTION_ISSUE = "transaction_issue"
-    const val PLATFORM_ERROR    = "platform_error"
-    const val PAYMENT_ISSUE     = "payment_issue"
-    const val ACCOUNT_ISSUE     = "account_issue"
-    const val OTHER             = "other"
-
-    fun label(type: String) = when (type) {
-        TRANSACTION_ISSUE -> "Problema con transacción"
-        PLATFORM_ERROR    -> "Error en plataforma"
-        PAYMENT_ISSUE     -> "Problema de pago"
-        ACCOUNT_ISSUE     -> "Problema con cuenta"
-        OTHER             -> "Otro motivo"
-        else              -> type
-    }
-
-    val all = listOf(
-        TRANSACTION_ISSUE,
-        PLATFORM_ERROR,
-        PAYMENT_ISSUE,
-        ACCOUNT_ISSUE,
-        OTHER
-    )
-}

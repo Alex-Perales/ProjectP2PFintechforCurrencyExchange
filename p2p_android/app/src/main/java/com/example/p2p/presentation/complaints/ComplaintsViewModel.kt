@@ -4,77 +4,99 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.p2p.core.network.NetworkResult
-import com.example.p2p.data.remote.api.ComplaintApi
 import com.example.p2p.data.remote.model.Complaint
+import com.example.p2p.data.remote.model.ComplaintType
 import com.example.p2p.data.remote.model.CreateComplaintRequest
+import com.example.p2p.domain.repository.ComplaintRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import retrofit2.Response
 
 data class ComplaintsUiState(
     val isLoading: Boolean = false,
     val isSubmitting: Boolean = false,
-    val complaints: List<Complaint> = emptyList(),
     val error: String? = null,
-    val submitSuccess: Boolean = false
+    val submitSuccess: Boolean = false,
+    val complaints: List<Complaint> = emptyList(),
+    val currentPage: Int = 1,
+    val totalPages: Int = 1
 )
 
-class ComplaintsViewModel(private val api: ComplaintApi) : ViewModel() {
+class ComplaintsViewModel(
+    private val repository: ComplaintRepository
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ComplaintsUiState())
     val uiState: StateFlow<ComplaintsUiState> = _uiState.asStateFlow()
 
-    init { loadMyComplaints() }
+    init {
+        loadMyComplaints()
+    }
 
-    fun loadMyComplaints() {
+    fun loadMyComplaints(page: Int = 1) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-            try {
-                val response = api.getMyComplaints()
-                if (response.isSuccessful && response.body() != null) {
+            when (val result = repository.getMyComplaints(page)) {
+                is NetworkResult.Success -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
-                        complaints = response.body()!!.complaints
+                        complaints = result.data.complaints,
+                        currentPage = result.data.pagination?.page ?: 1,
+                        totalPages = result.data.pagination?.pages ?: 1
                     )
-                } else {
-                    _uiState.value = _uiState.value.copy(isLoading = false, error = response.message())
                 }
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
+                is NetworkResult.Error -> {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = result.message
+                    )
+                }
+                NetworkResult.Loading -> Unit
             }
         }
     }
 
     fun createComplaint(
-        type: String,
+        type: ComplaintType,
         description: String,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isSubmitting = true)
-            try {
-                val response = api.createComplaint(CreateComplaintRequest(type, description))
-                if (response.isSuccessful) {
-                    _uiState.value = _uiState.value.copy(isSubmitting = false, submitSuccess = true)
+            _uiState.value = _uiState.value.copy(isSubmitting = true, submitSuccess = false)
+            val request = CreateComplaintRequest(
+                type = type.name,
+                description = description
+            )
+            when (val result = repository.createComplaint(request)) {
+                is NetworkResult.Success -> {
+                    _uiState.value = _uiState.value.copy(
+                        isSubmitting = false,
+                        submitSuccess = true
+                    )
                     loadMyComplaints()
                     onSuccess()
-                } else {
-                    _uiState.value = _uiState.value.copy(isSubmitting = false)
-                    onError(response.message())
                 }
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(isSubmitting = false)
-                onError(e.message ?: "Error de conexión")
+                is NetworkResult.Error -> {
+                    _uiState.value = _uiState.value.copy(
+                        isSubmitting = false,
+                        error = result.message
+                    )
+                    onError(result.message)
+                }
+                NetworkResult.Loading -> Unit
             }
         }
     }
 
-    class Factory(private val api: ComplaintApi) : ViewModelProvider.Factory {
+    fun clearError() {
+        _uiState.value = _uiState.value.copy(error = null)
+    }
+
+    class Factory(private val repo: ComplaintRepository) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            ComplaintsViewModel(api) as T
+            ComplaintsViewModel(repo) as T
     }
 }
