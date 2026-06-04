@@ -85,3 +85,4 @@ class AuditLog(BaseModel):
     changes  = db.Column(db.Text)
 
 from app.models.dispute import Dispute
+from app.models.complaint import Complaint

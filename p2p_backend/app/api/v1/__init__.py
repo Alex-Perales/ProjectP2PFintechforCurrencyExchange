@@ -4,6 +4,7 @@ from flask import Blueprint
 api_v1 = Blueprint('api_v1', __name__)
 
 from app.api.v1.auth.routes import auth_bp
+from app.api.v1.complaints.routes import complaints_bp
 from app.api.v1.offers.routes import offers_bp
 from app.api.v1.transactions.routes import transactions_bp
 from app.api.v1.users.routes import users_bp
@@ -22,3 +23,4 @@ api_v1.register_blueprint(exchange_bp)
 api_v1.register_blueprint(bank_accounts_bp)
 api_v1.register_blueprint(ratings_bp)
 api_v1.register_blueprint(disputes_bp)  # ← agrega esto
+api_v1.register_blueprint(complaints_bp)
