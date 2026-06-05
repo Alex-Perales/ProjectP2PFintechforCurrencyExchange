@@ -6,6 +6,7 @@ from app.core.database import db
 from app.core.exceptions import AuthorizationError, NotFoundError
 from app.models import Transaction, Dispute
 from app.models.user import User
+from app.core.notifications import notify
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -91,10 +92,26 @@ def resolve_dispute(dispute_id):
 
     data = request.get_json() or {}
     dispute.status = 'resolved'
+    resolution = data.get('resolution', '')
 
     txn = db.session.get(Transaction, dispute.transaction_id)
     if txn:
-        txn.status = 'completed' if data.get('resolution') == 'favour_buyer' else 'cancelled'
+        txn.status = 'completed' if resolution == 'favour_buyer' else 'cancelled'
+        resolution_msg = 'a favor del comprador' if resolution == 'favour_buyer' else 'a favor del vendedor'
+        notify(
+            user_id=txn.buyer_id,
+            type='admin',
+            title='Disputa resuelta',
+            body=f'El administrador resolvió la disputa #{dispute.id[:8]} {resolution_msg}.',
+            resource_id=dispute.id,
+        )
+        notify(
+            user_id=txn.vendor_id,
+            type='admin',
+            title='Disputa resuelta',
+            body=f'El administrador resolvió la disputa #{dispute.id[:8]} {resolution_msg}.',
+            resource_id=dispute.id,
+        )
 
     db.session.commit()
     return {'message': 'Dispute resolved', 'status': 'resolved'}, 200
