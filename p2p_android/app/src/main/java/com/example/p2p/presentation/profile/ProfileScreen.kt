@@ -9,6 +9,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -223,7 +225,7 @@ fun ProfileScreen(
                 onClick = { onNavigate(Screen.About.route) }
             )
             MenuItem(
-                icon = Icons.Default.HelpOutline, iconBg = SuccessColor.copy(.1f), iconTint = SuccessColor,
+                icon = Icons.AutoMirrored.Filled.HelpOutline, iconBg = SuccessColor.copy(.1f), iconTint = SuccessColor,
                 label = "Centro de Ayuda",
                 onClick = { onNavigate(Screen.Help.route) },
                 showDivider = false
@@ -252,7 +254,7 @@ fun ProfileScreen(
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(vertical = 10.dp)
             ) {
-                Icon(Icons.Default.Logout, contentDescription = null, tint = DangerColor, modifier = Modifier.size(16.dp))
+                Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, tint = DangerColor, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
                 Text("Cerrar Sesión", color = DangerColor, fontWeight = FontWeight.SemiBold)
             }

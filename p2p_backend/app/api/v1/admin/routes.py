@@ -180,6 +180,22 @@ def ban_user(user_id):
 
     user.is_banned = bool(banned)
     user.is_active = not bool(banned)
+
+    if user.is_banned:
+        notify(
+            user_id=user.id,
+            type='security',
+            title='Cuenta suspendida',
+            body='Tu cuenta ha sido suspendida por el administrador. Contacta soporte si crees que es un error.',
+        )
+    else:
+        notify(
+            user_id=user.id,
+            type='security',
+            title='Cuenta reactivada',
+            body='Tu cuenta ha sido reactivada. Ya puedes operar con normalidad en la plataforma.',
+        )
+
     db.session.commit()
 
     action = 'banned' if user.is_banned else 'unbanned'
@@ -239,6 +255,19 @@ def take_dispute(dispute_id):
     """
     admin = _require_admin()
     dispute = DisputeService.take_dispute(admin.id, dispute_id)
+
+    # Notificar a ambas partes que la disputa está siendo revisada
+    if dispute.transaction:
+        for uid in {dispute.transaction.buyer_id, dispute.transaction.vendor_id}:
+            notify(
+                user_id=uid,
+                type='dispute',
+                title='Disputa en revisión',
+                body='Un administrador ha tomado tu disputa y está revisando el caso. Te notificaremos con la resolución.',
+                resource_id=dispute.id,
+            )
+    db.session.commit()
+
     return {
         'message':     'Dispute is now under review',
         'dispute_id':  dispute.id,
@@ -277,6 +306,33 @@ def resolve_dispute(dispute_id):
         resolution_note=resolution_note,
     )
 
+    # Notificar a comprador y vendedor con el resultado
+    if dispute.transaction:
+        txn = dispute.transaction
+        favour_buyer = resolution == 'favour_buyer'
+        notify(
+            user_id=txn.buyer_id,
+            type='dispute',
+            title='Disputa resuelta' + (' — A tu favor ✓' if favour_buyer else ' — En contra'),
+            body=(
+                'La disputa fue resuelta a tu favor. La transacción fue completada.'
+                if favour_buyer else
+                'La disputa fue resuelta en favor del vendedor. La transacción fue cancelada.'
+            ) + (f' Nota: {resolution_note}' if resolution_note else ''),
+            resource_id=dispute.id,
+        )
+        notify(
+            user_id=txn.vendor_id,
+            type='dispute',
+            title='Disputa resuelta' + (' — En contra' if favour_buyer else ' — A tu favor ✓'),
+            body=(
+                'La disputa fue resuelta en favor del comprador. La transacción fue completada.'
+                if favour_buyer else
+                'La disputa fue resuelta a tu favor. La transacción fue cancelada.'
+            ) + (f' Nota: {resolution_note}' if resolution_note else ''),
+            resource_id=dispute.id,
+        )
+        db.session.commit()
 
     return {
         'message':         'Dispute resolved',
@@ -351,6 +407,14 @@ def resolve_complaint(complaint_id):
 
     complaint.status = 'resolved'
     complaint.admin_note = admin_note.strip()
-    db.session.commit()
 
+    notify(
+        user_id=complaint.user_id,
+        type='admin',
+        title='Reclamo resuelto',
+        body=f'Tu reclamo fue revisado y resuelto por el administrador. Respuesta: {admin_note.strip()}',
+        resource_id=complaint.id,
+    )
+
+    db.session.commit()
     return complaint.to_dict(), 200

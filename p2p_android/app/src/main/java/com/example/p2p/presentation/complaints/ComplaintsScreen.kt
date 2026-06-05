@@ -7,6 +7,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -48,7 +50,7 @@ fun ComplaintsScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = TextMain)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás", tint = TextMain)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceColor)
@@ -92,7 +94,7 @@ fun ComplaintsScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .menuAnchor()
+                                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
                                     .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
                                     .padding(horizontal = 14.dp, vertical = 14.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -181,7 +183,7 @@ fun ComplaintsScreen(
                             )
                         } else {
                             Icon(
-                                Icons.Default.Send,
+                                Icons.AutoMirrored.Filled.Send,
                                 contentDescription = null,
                                 modifier = Modifier.size(16.dp),
                                 tint = Color.White

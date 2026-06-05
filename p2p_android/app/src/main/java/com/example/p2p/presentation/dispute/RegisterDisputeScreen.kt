@@ -9,6 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -57,7 +58,7 @@ fun RegisterDisputeScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Atrás", tint = TextMain)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás", tint = TextMain)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceColor)
@@ -131,7 +132,7 @@ fun RegisterDisputeScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .menuAnchor()
+                            .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
                             .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
                             .padding(horizontal = 14.dp, vertical = 14.dp)
                     ) {

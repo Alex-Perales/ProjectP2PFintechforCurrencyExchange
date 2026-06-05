@@ -46,9 +46,8 @@ fun MarketScreen(
     var showBuyDialog by remember { mutableStateOf<Offer?>(null) }
     val context = LocalContext.current
 
-    // Filtros
-    val fiatOptions     = listOf("PEN", "COP", "MXN", "ARS")
-    val currencyOptions = listOf("USD", "EUR", "USDT")
+    // Todas las divisas disponibles — ambos lados iguales (S/→USD o USD→S/ etc.)
+    val allCurrencies = listOf("PEN", "USD", "EUR", "USDT", "COP", "MXN", "ARS", "GBP", "BRL", "CAD", "AUD", "JPY", "CLP")
     var selectedFiat     by remember { mutableStateOf("PEN") }
     var selectedCurrency by remember { mutableStateOf("USD") }
 
@@ -68,7 +67,11 @@ fun MarketScreen(
         topBar = {
             MarketTopBar(
                 exchangeRates = uiState.exchangeRates,
-                onNavigateToNotifications = onNavigateToNotifications
+                unreadCount = uiState.unreadCount,
+                onNavigateToNotifications = {
+                    viewModel.loadUnreadCount() // refresca al volver
+                    onNavigateToNotifications()
+                }
             )
         }
     ) { innerPadding ->
@@ -82,11 +85,11 @@ fun MarketScreen(
             // ── Filtros ──────────────────────────────────────────────────────
             item {
                 FilterSection(
-                    fiatOptions     = fiatOptions,
-                    currencyOptions = currencyOptions,
-                    selectedFiat    = selectedFiat,
+                    fiatOptions      = allCurrencies.filter { it != selectedCurrency },
+                    currencyOptions  = allCurrencies.filter { it != selectedFiat },
+                    selectedFiat     = selectedFiat,
                     selectedCurrency = selectedCurrency,
-                    onFiatChange    = { selectedFiat = it },
+                    onFiatChange     = { selectedFiat = it },
                     onCurrencyChange = { selectedCurrency = it }
                 )
             }
@@ -231,14 +234,32 @@ fun MarketScreen(
 @Composable
 private fun MarketTopBar(
     exchangeRates: List<ExchangeRate> = emptyList(),
+    unreadCount: Int = 0,
     onNavigateToNotifications: () -> Unit = {}
 ) {
-    val tickerItems: List<Pair<String, String>> = if (exchangeRates.isNotEmpty()) {
-        exchangeRates.filter { it.to_currency == "PEN" }
-            .map { it.from_currency to "S/${String.format("%.3f", it.rate)}" }
-            .ifEmpty { listOf("USD" to "S/3.720", "EUR" to "S/4.050") }
-    } else {
-        listOf("USD" to "S/3.720", "EUR" to "S/4.050")
+    // Pares relevantes a mostrar en el ticker (→ PEN)
+    val targetPairs = listOf("USD", "EUR", "USDT", "COP", "MXN", "ARS")
+    val rateMap = exchangeRates.associateBy { "${it.from_currency}_${it.to_currency}" }
+
+    // Busca tasa directa o calcula cruzada via USD
+    fun getRateToPen(from: String): Double? {
+        rateMap["${from}_PEN"]?.let { return it.rate }
+        // Cruzada: from→USD y USD→PEN
+        val fromToUsd = rateMap["${from}_USD"]?.rate
+        val usdToPen  = rateMap["USD_PEN"]?.rate
+        if (fromToUsd != null && usdToPen != null) return fromToUsd * usdToPen
+        return null
+    }
+
+    val tickerItems: List<Pair<String, String>> = run {
+        val fromApi = targetPairs.mapNotNull { from ->
+            val rate = getRateToPen(from) ?: return@mapNotNull null
+            from to "S/${String.format("%.3f", rate)}"
+        }
+        fromApi.ifEmpty {
+            // Fallback solo si la API no respondió aún
+            listOf("USD" to "Cargando...", "EUR" to "Cargando...")
+        }
     }
 
     Surface(color = Primary, shadowElevation = 6.dp) {
@@ -256,7 +277,24 @@ private fun MarketTopBar(
                     onClick = onNavigateToNotifications,
                     modifier = Modifier.size(36.dp)
                 ) {
-                    Icon(Icons.Default.Notifications, contentDescription = null, tint = Color.White, modifier = Modifier.size(22.dp))
+                    BadgedBox(
+                        badge = {
+                            if (unreadCount > 0) {
+                                Badge(
+                                    containerColor = DangerColor,
+                                    contentColor = Color.White
+                                ) {
+                                    Text(
+                                        text = if (unreadCount > 99) "99+" else unreadCount.toString(),
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+                    ) {
+                        Icon(Icons.Default.Notifications, contentDescription = "Notificaciones", tint = Color.White, modifier = Modifier.size(22.dp))
+                    }
                 }
             }
             Row(

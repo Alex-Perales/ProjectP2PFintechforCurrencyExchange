@@ -157,20 +157,23 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
                 LaunchedEffect(Unit) {
                     userName = tokenManager.getUserName() ?: "Usuario"
                 }
-                val offerRepo = com.example.p2p.data.repository.OfferRepositoryImpl(com.example.p2p.core.network.ApiClient.offerApi)
-                val txnRepo = com.example.p2p.data.repository.TransactionRepositoryImpl(com.example.p2p.core.network.ApiClient.transactionApi)
-                val vm: com.example.p2p.presentation.market.MarketViewModel = viewModel(factory = com.example.p2p.presentation.market.MarketViewModel.Factory(offerRepo, txnRepo, com.example.p2p.core.network.ApiClient.exchangeApi))
+                val offerRepo  = com.example.p2p.data.repository.OfferRepositoryImpl(com.example.p2p.core.network.ApiClient.offerApi)
+                val txnRepo    = com.example.p2p.data.repository.TransactionRepositoryImpl(com.example.p2p.core.network.ApiClient.transactionApi)
+                val notifRepo  = com.example.p2p.data.repository.NotificationRepositoryImpl(com.example.p2p.core.network.ApiClient.notificationApi)
+                val vm: com.example.p2p.presentation.market.MarketViewModel = viewModel(factory = com.example.p2p.presentation.market.MarketViewModel.Factory(offerRepo, txnRepo, com.example.p2p.core.network.ApiClient.exchangeApi, notifRepo))
                 MarketScreen(
                     viewModel = vm,
                     userName = userName,
-                    onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) },
+                    onNavigateToNotifications = {
+                        navController.navigate(Screen.Notifications.route)
+                    },
                     onNavigateToTransaction = { txnId -> navController.navigate(Screen.Transaction.createRoute(txnId)) }
                 )
             }
 
             composable(Screen.Publish.route) {
                 val offerRepo = com.example.p2p.data.repository.OfferRepositoryImpl(com.example.p2p.core.network.ApiClient.offerApi)
-                val vm: com.example.p2p.presentation.offer.PublishViewModel = viewModel(factory = com.example.p2p.presentation.offer.PublishViewModel.Factory(offerRepo))
+                val vm: com.example.p2p.presentation.offer.PublishViewModel = viewModel(factory = com.example.p2p.presentation.offer.PublishViewModel.Factory(offerRepo, com.example.p2p.core.network.ApiClient.exchangeApi))
                 PublishScreen(
                     viewModel = vm,
                     onNavigateBack = { navController.popBackStack() }
