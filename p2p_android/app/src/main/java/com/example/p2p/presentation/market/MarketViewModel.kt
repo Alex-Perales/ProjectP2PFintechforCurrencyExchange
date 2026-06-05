@@ -32,7 +32,6 @@ class MarketViewModel(
     val uiState: StateFlow<MarketUiState> = _uiState.asStateFlow()
 
     init {
-        loadOffers()
         loadExchangeRates()
     }
 
@@ -49,10 +48,10 @@ class MarketViewModel(
         }
     }
 
-    fun loadOffers() {
+    fun loadOffers(currency: String? = null, fiatCurrency: String? = null) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-            when (val result = offerRepository.listOffers()) {
+            when (val result = offerRepository.listOffers(currency, fiatCurrency)) {
                 is NetworkResult.Success -> {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,

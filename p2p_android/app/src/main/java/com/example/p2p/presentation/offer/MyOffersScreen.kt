@@ -252,13 +252,13 @@ private fun OfferCard(
                 verticalAlignment = Alignment.Bottom
             ) {
                 Text(
-                    text = "S/ ${String.format("%.3f", offer.price_per_unit)}",
+                    text = "${offer.fiat_currency} ${String.format("%.3f", offer.price_per_unit)}",
                     fontWeight = FontWeight.Bold,
                     fontSize = 22.sp,
                     color = TextMain
                 )
                 Text(
-                    text = "${String.format("%.2f", offer.available_amount)} USD disp.",
+                    text = "${String.format("%.2f", offer.available_amount)} ${offer.currency} disp.",
                     fontSize = 13.sp,
                     color = TextMuted
                 )
@@ -267,7 +267,7 @@ private fun OfferCard(
             Spacer(Modifier.height(6.dp))
 
             Text(
-                text = "Min S/ ${String.format("%.2f", offer.min_transaction)} · Max S/ ${String.format("%.2f", offer.max_transaction ?: offer.amount)}",
+                text = "Min ${offer.fiat_currency} ${String.format("%.2f", offer.min_transaction)} · Max ${offer.fiat_currency} ${String.format("%.2f", offer.max_transaction ?: offer.amount)}",
                 fontSize = 12.sp,
                 color = TextMuted
             )
