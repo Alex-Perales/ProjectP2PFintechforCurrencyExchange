@@ -1,16 +1,19 @@
 package com.example.p2p.presentation.market
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,17 +24,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import android.widget.Toast
-import com.example.p2p.ui.theme.*
-
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.p2p.presentation.market.MarketViewModel
 import com.example.p2p.data.remote.model.ExchangeRate
 import com.example.p2p.data.remote.model.Offer
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.ui.text.input.KeyboardType
+import com.example.p2p.ui.theme.*
+import kotlinx.coroutines.delay
 
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
@@ -44,222 +43,184 @@ fun MarketScreen(
     onNavigateToTransaction: (String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var showBuyDialog by remember { mutableStateOf<com.example.p2p.data.remote.model.Offer?>(null) }
-    var buyAmount by remember { mutableStateOf("") }
+    var showBuyDialog by remember { mutableStateOf<Offer?>(null) }
     val context = LocalContext.current
 
+    // Filtros
+    val fiatOptions     = listOf("PEN", "COP", "MXN", "ARS")
+    val currencyOptions = listOf("USD", "EUR", "USDT")
+    var selectedFiat     by remember { mutableStateOf("PEN") }
+    var selectedCurrency by remember { mutableStateOf("USD") }
+
+    // Mensaje de bienvenida breve al entrar
+    val firstName = userName.split(" ").firstOrNull() ?: userName
     LaunchedEffect(Unit) {
-        viewModel.loadOffers()
+        Toast.makeText(context, "Bienvenido, $firstName 👋", Toast.LENGTH_SHORT).show()
     }
 
-    val exchangeRates = uiState.exchangeRates
+    // Carga de ofertas cuando cambian filtros
+    LaunchedEffect(selectedFiat, selectedCurrency) {
+        viewModel.loadOffers(currency = selectedCurrency, fiatCurrency = selectedFiat)
+    }
 
     Scaffold(
         containerColor = BackgroundApp,
-        topBar = { MarketTopBar(exchangeRates = exchangeRates, onNavigateToNotifications = onNavigateToNotifications) }
+        topBar = {
+            MarketTopBar(
+                exchangeRates = uiState.exchangeRates,
+                onNavigateToNotifications = onNavigateToNotifications
+            )
+        }
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(vertical = 16.dp)
+                .padding(innerPadding),
+            verticalArrangement = Arrangement.spacedBy(0.dp),
+            contentPadding = PaddingValues(bottom = 16.dp)
         ) {
-            item { WelcomeCard(userName = userName) }
-            item { FilterCard() }
+            // ── Filtros ──────────────────────────────────────────────────────
             item {
-                MatchingRow(
+                FilterSection(
+                    fiatOptions     = fiatOptions,
+                    currencyOptions = currencyOptions,
+                    selectedFiat    = selectedFiat,
+                    selectedCurrency = selectedCurrency,
+                    onFiatChange    = { selectedFiat = it },
+                    onCurrencyChange = { selectedCurrency = it }
+                )
+            }
+
+            // ── Barra matching + orden ────────────────────────────────────────
+            item {
+                ActionRow(
+                    isLoading = uiState.isLoading,
                     onMatchingClick = {
                         viewModel.matchOffer(
-                            currency = "USD",
-                            fiatCurrency = "PEN",
-                            onMatched = { matchedOffer ->
-                                showBuyDialog = matchedOffer
-                                buyAmount = matchedOffer.available_amount.toString()
-                            },
-                            onError = { err ->
-                                Toast.makeText(context, "No hay ofertas: $err", Toast.LENGTH_SHORT).show()
-                            }
+                            currency = selectedCurrency,
+                            fiatCurrency = selectedFiat,
+                            onMatched = { showBuyDialog = it },
+                            onError   = { Toast.makeText(context, "Sin coincidencias: $it", Toast.LENGTH_SHORT).show() }
                         )
                     }
                 )
             }
-            
-            if (uiState.isLoading) {
-                item { CircularProgressIndicator(modifier = Modifier.padding(16.dp)) }
-            } else if (uiState.error != null) {
-                item { Text(text = uiState.error!!, color = DangerColor) }
-            } else {
-                item { OffersHeader(count = uiState.offers.size) }
-                itemsIndexed(uiState.offers) { index, offer -> 
-                    OfferCard(
-                        offer = offer,
-                        isBestRate = index == 0,
-                        onConfirmBuy = { amount ->
-                            val req = com.example.p2p.data.remote.model.CreateTransactionRequest(
-                                offer_id = offer.id,
-                                amount_from = amount,
-                                amount_to = amount * offer.price_per_unit,
-                                buyer_payment_account = "Mi Cuenta BCP",
-                                vendor_payment_account = offer.payment_methods?.firstOrNull() ?: "BCP"
-                            )
-                            viewModel.createTransaction(req,
-                                onSuccess = { txnId ->
-                                    onNavigateToTransaction(txnId)
-                                },
-                                onError = { err ->
-                                    Toast.makeText(context, err, Toast.LENGTH_LONG).show()
-                                }
-                            )
+
+            // ── Contenido ─────────────────────────────────────────────────────
+            when {
+                uiState.isLoading -> item {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().height(260.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            CircularProgressIndicator(color = Primary, strokeWidth = 3.dp)
+                            Text("Buscando ofertas...", color = TextMuted, fontSize = 13.sp)
                         }
-                    ) 
+                    }
+                }
+
+                uiState.error != null -> item {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().padding(24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier.size(56.dp).clip(CircleShape)
+                                    .background(DangerColor.copy(alpha = 0.1f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.WifiOff, contentDescription = null, tint = DangerColor, modifier = Modifier.size(26.dp))
+                            }
+                            Text("No se pudo conectar", fontWeight = FontWeight.SemiBold, color = TextMain, fontSize = 14.sp)
+                            Text("Verifica tu conexión e inténtalo de nuevo.", color = TextMuted, fontSize = 12.sp)
+                            Button(
+                                onClick = { viewModel.loadOffers(selectedCurrency, selectedFiat) },
+                                colors = ButtonDefaults.buttonColors(containerColor = Primary),
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(Modifier.width(6.dp))
+                                Text("Reintentar")
+                            }
+                        }
+                    }
+                }
+
+                uiState.offers.isEmpty() -> item {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier.size(64.dp).clip(CircleShape)
+                                    .background(Primary.copy(alpha = 0.08f)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.SearchOff, contentDescription = null, tint = Primary, modifier = Modifier.size(30.dp))
+                            }
+                            Text("Sin ofertas disponibles", fontWeight = FontWeight.SemiBold, color = TextMain, fontSize = 14.sp)
+                            Text("No hay ofertas de $selectedCurrency → $selectedFiat ahora.", color = TextMuted, fontSize = 12.sp)
+                        }
+                    }
+                }
+
+                else -> {
+                    item {
+                        OffersHeader(count = uiState.offers.size, from = selectedCurrency, to = selectedFiat)
+                    }
+                    itemsIndexed(uiState.offers, key = { _, o -> o.id }) { index, offer ->
+                        OfferCard(
+                            offer = offer,
+                            isBestRate = index == 0,
+                            onConfirmBuy = { amount ->
+                                val req = com.example.p2p.data.remote.model.CreateTransactionRequest(
+                                    offer_id = offer.id,
+                                    amount_from = amount,
+                                    amount_to = amount * offer.price_per_unit,
+                                    buyer_payment_account = "Mi Cuenta BCP",
+                                    vendor_payment_account = offer.payment_methods?.firstOrNull() ?: "BCP"
+                                )
+                                viewModel.createTransaction(req,
+                                    onSuccess = { txnId -> onNavigateToTransaction(txnId) },
+                                    onError   = { err -> Toast.makeText(context, err, Toast.LENGTH_LONG).show() }
+                                )
+                            }
+                        )
+                    }
                 }
             }
         }
     }
 
-    if (showBuyDialog != null) {
-        val offer = showBuyDialog!!
-        val isPartial = offer.offer_type == "partial"
-        var matchAmountText by remember(offer.id) { 
-            mutableStateOf(if (isPartial) "" else offer.available_amount.toString()) 
-        }
-        val matchAmountDouble = matchAmountText.toDoubleOrNull() ?: 0.0
-        val isMatchAmountValid = if (isPartial) {
-            matchAmountDouble >= offer.min_transaction && 
-            matchAmountDouble <= (offer.max_transaction ?: offer.available_amount) &&
-            matchAmountDouble <= offer.available_amount
-        } else {
-            matchAmountDouble == offer.available_amount
-        }
-
-        AlertDialog(
-            onDismissRequest = { showBuyDialog = null },
-            title = { 
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Icon(Icons.Default.Bolt, contentDescription = null, tint = WarningColor)
-                    Text("Matching: Comprar USD") 
-                }
-            },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text(
-                        text = "Vendedor: ${offer.vendor?.full_name ?: "Victor Vendedor"}",
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 14.sp
-                    )
-                    Text("Tasa de cambio: S/ ${offer.price_per_unit}", fontSize = 14.sp)
-                    Text("Disponible: ${offer.available_amount} USD", fontSize = 13.sp)
-                    
-                    if (isPartial) {
-                        Text(
-                            text = "Límites: ${offer.min_transaction} – ${offer.max_transaction ?: offer.available_amount} USD",
-                            fontSize = 12.sp,
-                            color = TextMuted
-                        )
-                        OutlinedTextField(
-                            value = matchAmountText,
-                            onValueChange = { matchAmountText = it },
-                            label = { Text("Monto a comprar (USD)") },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Primary,
-                                unfocusedBorderColor = BorderColor,
-                                focusedTextColor = TextMain,
-                                cursorColor = Primary
-                            )
-                        )
-                    } else {
-                        Text(
-                            text = "Esta es una oferta de VENTA COMPLETA. Debes comprar el monto total disponible.",
-                            fontSize = 12.sp,
-                            color = WarningColor
-                        )
-                        OutlinedTextField(
-                            value = matchAmountText,
-                            onValueChange = {},
-                            label = { Text("Monto a comprar (USD)") },
-                            modifier = Modifier.fillMaxWidth(),
-                            enabled = false,
-                            colors = OutlinedTextFieldDefaults.colors(
-                                disabledBorderColor = BorderColor,
-                                disabledTextColor = TextMain
-                            )
-                        )
-                    }
-
-                    if (matchAmountDouble > 0) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(SuccessColor.copy(alpha = 0.08f))
-                                .padding(10.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column {
-                                    Text("Recibirás aprox.", fontSize = 11.sp, color = TextMuted)
-                                    Text(
-                                        text = "S/ ${String.format("%.2f", matchAmountDouble * offer.price_per_unit)}",
-                                        fontSize = 15.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = SuccessColor
-                                    )
-                                }
-                                Icon(Icons.Default.ArrowForward, contentDescription = null, tint = Primary)
-                            }
-                        }
-                        
-                        if (isPartial) {
-                            if (matchAmountDouble < offer.min_transaction) {
-                                Text("Monto mínimo es ${offer.min_transaction} USD", color = DangerColor, fontSize = 11.sp)
-                            } else if (offer.max_transaction != null && matchAmountDouble > offer.max_transaction) {
-                                Text("Monto máximo es ${offer.max_transaction} USD", color = DangerColor, fontSize = 11.sp)
-                            } else if (matchAmountDouble > offer.available_amount) {
-                                Text("Monto supera disponible (${offer.available_amount} USD)", color = DangerColor, fontSize = 11.sp)
-                            }
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        val req = com.example.p2p.data.remote.model.CreateTransactionRequest(
-                            offer_id = offer.id,
-                            amount_from = matchAmountDouble,
-                            amount_to = matchAmountDouble * offer.price_per_unit,
-                            buyer_payment_account = "Mi Cuenta BCP",
-                            vendor_payment_account = offer.payment_methods?.firstOrNull() ?: "BCP"
-                        )
-                        viewModel.createTransaction(req,
-                            onSuccess = { txnId ->
-                                showBuyDialog = null
-                                onNavigateToTransaction(txnId)
-                            },
-                            onError = { err ->
-                                Toast.makeText(context, err, Toast.LENGTH_LONG).show()
-                            }
-                        )
-                    },
-                    enabled = isMatchAmountValid,
-                    colors = ButtonDefaults.buttonColors(containerColor = SuccessColor)
-                ) {
-                    Text("Confirmar compra")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showBuyDialog = null }) {
-                    Text("Cancelar")
-                }
+    // ── Matching dialog ───────────────────────────────────────────────────────
+    showBuyDialog?.let { offer ->
+        MatchingDialog(
+            offer = offer,
+            onDismiss = { showBuyDialog = null },
+            onConfirm = { amount ->
+                val req = com.example.p2p.data.remote.model.CreateTransactionRequest(
+                    offer_id = offer.id,
+                    amount_from = amount,
+                    amount_to = amount * offer.price_per_unit,
+                    buyer_payment_account = "Mi Cuenta BCP",
+                    vendor_payment_account = offer.payment_methods?.firstOrNull() ?: "BCP"
+                )
+                viewModel.createTransaction(req,
+                    onSuccess = { txnId -> showBuyDialog = null; onNavigateToTransaction(txnId) },
+                    onError   = { err -> Toast.makeText(context, err, Toast.LENGTH_LONG).show() }
+                )
             }
         )
     }
@@ -272,200 +233,180 @@ private fun MarketTopBar(
     exchangeRates: List<ExchangeRate> = emptyList(),
     onNavigateToNotifications: () -> Unit = {}
 ) {
-    // Build ticker items from real rates (X→PEN), fallback to hardcoded defaults
-    val tickerItems: List<Triple<String, String, Boolean>> = if (exchangeRates.isNotEmpty()) {
-        val penRates = exchangeRates.filter { it.to_currency == "PEN" }
-        if (penRates.isNotEmpty()) {
-            penRates.map { r ->
-                Triple(r.from_currency, "S/${String.format("%.3f", r.rate)}", true)
-            }
-        } else {
-            listOf(
-                Triple("USD", "S/3.720", true),
-                Triple("EUR", "S/4.050", true)
-            )
-        }
+    val tickerItems: List<Pair<String, String>> = if (exchangeRates.isNotEmpty()) {
+        exchangeRates.filter { it.to_currency == "PEN" }
+            .map { it.from_currency to "S/${String.format("%.3f", it.rate)}" }
+            .ifEmpty { listOf("USD" to "S/3.720", "EUR" to "S/4.050") }
     } else {
-        listOf(
-            Triple("USD", "S/3.720", true),
-            Triple("EUR", "S/4.050", true)
-        )
+        listOf("USD" to "S/3.720", "EUR" to "S/4.050")
     }
 
-    Surface(
-        color = Primary,
-        shadowElevation = 4.dp
-    ) {
+    Surface(color = Primary, shadowElevation = 6.dp) {
         Column {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                    .padding(horizontal = 20.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    "Peru",
-                    color = Color.White,
-                    fontWeight = FontWeight.Black,
-                    fontSize = 18.sp
-                )
-                Text(
-                    "Exchange",
-                    color = PrimaryMint,
-                    fontWeight = FontWeight.Black,
-                    fontSize = 18.sp
-                )
+                Text("Peru", color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp)
+                Text("Exchange", color = PrimaryMint, fontWeight = FontWeight.Black, fontSize = 20.sp)
                 Spacer(Modifier.weight(1f))
-                IconButton(onClick = onNavigateToNotifications, modifier = Modifier.size(32.dp)) {
-                    Icon(
-                        Icons.Default.Notifications,
-                        contentDescription = "Notificaciones",
-                        tint = Color.White,
-                        modifier = Modifier.size(22.dp)
-                    )
+                IconButton(
+                    onClick = onNavigateToNotifications,
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(Icons.Default.Notifications, contentDescription = null, tint = Color.White, modifier = Modifier.size(22.dp))
                 }
             }
-            // Ticker row — real rates from backend
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Primary.copy(alpha = 0.85f))
+                    .background(Color.Black.copy(alpha = 0.15f))
                     .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
-                horizontalArrangement = Arrangement.spacedBy(20.dp),
+                    .padding(horizontal = 16.dp, vertical = 7.dp),
+                horizontalArrangement = Arrangement.spacedBy(24.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                tickerItems.forEach { (currency, rate, up) ->
-                    TickerItem(currency, rate, up)
+                tickerItems.forEach { (currency, rate) ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(currency, color = Color.White.copy(alpha = 0.8f), fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                        Text(rate, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        Text("▲", color = PrimaryMint, fontSize = 9.sp)
+                    }
                 }
             }
         }
     }
 }
 
+// ─── Filter Section ───────────────────────────────────────────────────────────
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TickerItem(currency: String, rate: String, up: Boolean) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-        Text(currency, color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 11.sp)
-        Text(rate, color = Color.White.copy(alpha = 0.9f), fontSize = 11.sp)
-        Text(
-            if (up) "▲" else "▼",
-            color = if (up) PrimaryMint else DangerColor,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold
-        )
-    }
-}
-
-// ─── Welcome Card ────────────────────────────────────────────────────────────
-
-@Composable
-private fun WelcomeCard(userName: String = "Usuario") {
-    val firstName = userName.split(" ").firstOrNull() ?: userName
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(Brush.horizontalGradient(listOf(Primary, PrimaryLight)))
-            .padding(20.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                // Badge
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(50.dp))
-                        .background(PrimaryMint.copy(alpha = 0.2f))
-                        .border(1.dp, PrimaryMint.copy(alpha = 0.5f), RoundedCornerShape(50.dp))
-                        .padding(horizontal = 10.dp, vertical = 3.dp)
-                ) {
-                    Text("⭐ Experto", color = PrimaryMint, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
-                }
-                Text("Bienvenido, $firstName", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                Text("P2P Seguro · Lima, Perú", color = Color.White.copy(alpha = 0.75f), fontSize = 12.sp)
-            }
-            // "PE" Badge
-            Box(
-                modifier = Modifier
-                    .size(64.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color.White.copy(alpha = 0.15f))
-                    .border(2.dp, Color.White.copy(alpha = 0.3f), RoundedCornerShape(16.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("PE", color = Color.White, fontWeight = FontWeight.Black, fontSize = 22.sp)
-            }
-        }
-    }
-}
-
-// ─── Filter Card ─────────────────────────────────────────────────────────────
-
-@Composable
-private fun FilterCard() {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceColor),
-        elevation = CardDefaults.cardElevation(2.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Icon(Icons.Default.FilterList, contentDescription = null, tint = Primary, modifier = Modifier.size(18.dp))
-                Text("Filtrado Multidivisa", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextMain)
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                CurrencyDropdown("Tengo", "PEN", Modifier.weight(1f))
-                CurrencyDropdown("Quiero", "USD", Modifier.weight(1f))
-            }
-        }
-    }
-}
-
-@Composable
-private fun CurrencyDropdown(label: String, value: String, modifier: Modifier = Modifier) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(label, fontSize = 11.sp, color = TextMuted, fontWeight = FontWeight.Medium)
+private fun FilterSection(
+    fiatOptions: List<String>,
+    currencyOptions: List<String>,
+    selectedFiat: String,
+    selectedCurrency: String,
+    onFiatChange: (String) -> Unit,
+    onCurrencyChange: (String) -> Unit
+) {
+    Surface(color = SurfaceColor, shadowElevation = 1.dp) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(10.dp))
-                .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
-                .background(BackgroundApp)
-                .padding(horizontal = 12.dp, vertical = 10.dp),
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text(value, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = TextMain)
-            Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = TextMuted, modifier = Modifier.size(18.dp))
+            Icon(Icons.Default.FilterList, contentDescription = null, tint = Primary, modifier = Modifier.size(16.dp))
+            Text("Filtrar:", fontSize = 12.sp, color = TextMuted, fontWeight = FontWeight.Medium)
+            FilterDropdown(
+                label = "Tengo",
+                selected = selectedFiat,
+                options = fiatOptions,
+                onSelect = onFiatChange,
+                modifier = Modifier.weight(1f)
+            )
+            Icon(Icons.Default.SwapHoriz, contentDescription = null, tint = Primary, modifier = Modifier.size(20.dp))
+            FilterDropdown(
+                label = "Quiero",
+                selected = selectedCurrency,
+                options = currencyOptions,
+                onSelect = onCurrencyChange,
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }
 
-// ─── Matching Row ─────────────────────────────────────────────────────────────
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FilterDropdown(
+    label: String,
+    selected: String,
+    options: List<String>,
+    onSelect: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+        modifier = modifier
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
+                .clip(RoundedCornerShape(8.dp))
+                .border(1.dp, if (expanded) Primary else BorderColor, RoundedCornerShape(8.dp))
+                .background(BackgroundApp)
+                .padding(horizontal = 10.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text(label, fontSize = 9.sp, color = TextMuted)
+                Text(selected, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextMain)
+            }
+            Icon(
+                if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                contentDescription = null,
+                tint = if (expanded) Primary else TextMuted,
+                modifier = Modifier.size(16.dp)
+            )
+        }
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            options.forEach { opt ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            opt,
+                            fontWeight = if (opt == selected) FontWeight.Bold else FontWeight.Normal,
+                            color = if (opt == selected) Primary else TextMain
+                        )
+                    },
+                    onClick = { onSelect(opt); expanded = false }
+                )
+            }
+        }
+    }
+}
+
+// ─── Action Row ───────────────────────────────────────────────────────────────
 
 @Composable
-private fun MatchingRow(onMatchingClick: () -> Unit = {}) {
+private fun ActionRow(isLoading: Boolean, onMatchingClick: () -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         OutlinedButton(
             onClick = onMatchingClick,
-            shape = RoundedCornerShape(10.dp),
+            enabled = !isLoading,
+            shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.outlinedButtonColors(contentColor = WarningColor),
             border = androidx.compose.foundation.BorderStroke(1.dp, WarningColor),
-            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
         ) {
-            Icon(Icons.Default.Bolt, contentDescription = null, modifier = Modifier.size(16.dp))
+            Icon(Icons.Default.Bolt, contentDescription = null, modifier = Modifier.size(15.dp))
             Spacer(Modifier.width(4.dp))
             Text("Matching Automático", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
         }
-        Spacer(Modifier.weight(1f))
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            Icon(Icons.Default.Sort, contentDescription = null, tint = TextMuted, modifier = Modifier.size(16.dp))
-            Text("Mejor precio", fontSize = 12.sp, color = TextMuted)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(3.dp)
+        ) {
+            Icon(Icons.AutoMirrored.Filled.Sort, contentDescription = null, tint = TextMuted, modifier = Modifier.size(14.dp))
+            Text("Mejor precio", fontSize = 11.sp, color = TextMuted)
         }
     }
 }
@@ -473,15 +414,20 @@ private fun MatchingRow(onMatchingClick: () -> Unit = {}) {
 // ─── Offers Header ────────────────────────────────────────────────────────────
 
 @Composable
-private fun OffersHeader(count: Int) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("Ofertas disponibles", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = TextMain)
+private fun OffersHeader(count: Int, from: String, to: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text("Ofertas $to → $from", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = TextMain)
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(50.dp))
                 .background(Primary)
-                .padding(horizontal = 8.dp, vertical = 2.dp),
-            contentAlignment = Alignment.Center
+                .padding(horizontal = 8.dp, vertical = 2.dp)
         ) {
             Text("$count", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
         }
@@ -492,302 +438,265 @@ private fun OffersHeader(count: Int) {
 
 @Composable
 private fun OfferCard(
-    offer: com.example.p2p.data.remote.model.Offer,
+    offer: Offer,
     isBestRate: Boolean = false,
     onConfirmBuy: (Double) -> Unit
 ) {
     val isPartial = offer.offer_type == "partial"
     var isExpanded by remember { mutableStateOf(false) }
     var buyAmountText by remember { mutableStateOf("") }
-    
     val buyAmountDouble = buyAmountText.toDoubleOrNull() ?: 0.0
+
     val isAmountValid = if (isPartial) {
-        buyAmountDouble >= offer.min_transaction && 
+        buyAmountDouble >= offer.min_transaction &&
         buyAmountDouble <= (offer.max_transaction ?: offer.available_amount) &&
         buyAmountDouble <= offer.available_amount
-    } else {
-        true
-    }
+    } else true
 
     val initials = offer.vendor?.full_name?.trim()?.split(" ")
-        ?.filter { it.isNotEmpty() }
-        ?.take(2)
+        ?.filter { it.isNotEmpty() }?.take(2)
         ?.map { it.first().uppercaseChar() }
-        ?.joinToString("") ?: "NN"
-
-    val stars = offer.vendor?.rating ?: 4.9
-    val trades = offer.vendor?.total_transactions ?: 180
-    val verified = offer.vendor?.kyc_verified ?: true
+        ?.joinToString("") ?: "??"
 
     Card(
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(0.dp),
         colors = CardDefaults.cardColors(containerColor = SurfaceColor),
-        border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor),
-        elevation = CardDefaults.cardElevation(1.dp),
+        elevation = CardDefaults.cardElevation(0.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            if (isBestRate) {
+        Column {
+            // Borde superior sutil
+            HorizontalDivider(color = BorderColor, thickness = 0.5.dp)
+
+            Column(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                // Mejor tasa badge
+                if (isBestRate) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(WarningColor.copy(alpha = 0.1f))
+                            .border(1.dp, WarningColor.copy(alpha = 0.3f), RoundedCornerShape(6.dp))
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Icon(Icons.Default.Star, contentDescription = null, tint = WarningColor, modifier = Modifier.size(12.dp))
+                        Text("Mejor tasa del mercado", color = WarningColor, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                // Vendor + estado
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(WarningColor.copy(alpha = 0.15f))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Text("🏆", fontSize = 11.sp)
-                    Text("Mejor tasa del mercado", color = WarningColor, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                }
-            }
-            // Row 1: Avatar + name + rating
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Box(
-                    modifier = Modifier
-                        .size(38.dp)
-                        .clip(CircleShape)
-                        .background(Brush.linearGradient(listOf(Primary, PrimaryLight))),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(initials, color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp)
-                }
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(
-                            text = offer.vendor?.full_name ?: "Vendedor", 
-                            fontWeight = FontWeight.Bold, 
-                            fontSize = 13.sp, 
-                            color = TextMain
-                        )
-                        if (verified) {
-                            Icon(
-                                imageVector = Icons.Filled.CheckCircle, 
-                                contentDescription = "Verificado", 
-                                tint = Primary, 
-                                modifier = Modifier.size(12.dp)
-                            )
-                        }
-                    }
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier.padding(top = 2.dp)
+                    Box(
+                        modifier = Modifier.size(40.dp).clip(CircleShape)
+                            .background(Brush.linearGradient(listOf(Primary, PrimaryLight))),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text("★ $stars", fontSize = 11.sp, color = WarningColor, fontWeight = FontWeight.SemiBold)
-                        Text("•  $trades ops", fontSize = 11.sp, color = TextMuted)
-                        Text("•  ~2m", fontSize = 11.sp, color = TextMuted)
-                        Text("•  98%", fontSize = 11.sp, color = SuccessColor, fontWeight = FontWeight.Medium)
+                        Text(initials, color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp)
                     }
-                }
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(50.dp))
-                        .background(SuccessColor.copy(alpha = 0.1f))
-                        .padding(horizontal = 8.dp, vertical = 3.dp)
-                ) {
-                    Text("En línea", color = SuccessColor, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                }
-            }
-            
-            HorizontalDivider(color = BorderColor, thickness = 0.5.dp)
-            
-            // Row 2: Rate and Available
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Bottom
-            ) {
-                Column {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("Tasa", fontSize = 10.sp, color = TextMuted)
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(
-                                    if (isPartial) Primary.copy(alpha = 0.1f) 
-                                    else SuccessColor.copy(alpha = 0.1f)
-                                )
-                                .padding(horizontal = 5.dp, vertical = 1.dp)
-                        ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(
-                                text = if (isPartial) "POR PARTES" else "COMPLETA", 
-                                color = if (isPartial) Primary else SuccessColor, 
-                                fontSize = 8.sp, 
-                                fontWeight = FontWeight.Bold
+                                offer.vendor?.full_name ?: "Vendedor",
+                                fontWeight = FontWeight.Bold, fontSize = 14.sp, color = TextMain
+                            )
+                            if (offer.vendor?.kyc_verified == true) {
+                                Icon(Icons.Default.Verified, contentDescription = null, tint = Primary, modifier = Modifier.size(13.dp))
+                            }
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.padding(top = 2.dp)
+                        ) {
+                            Text("★ ${offer.vendor?.rating ?: 4.9}", fontSize = 11.sp, color = WarningColor, fontWeight = FontWeight.SemiBold)
+                            Text("${offer.vendor?.total_transactions ?: 0} ops", fontSize = 11.sp, color = TextMuted)
+                            Text("98%", fontSize = 11.sp, color = SuccessColor, fontWeight = FontWeight.Medium)
+                        }
+                    }
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(50.dp))
+                            .background(SuccessColor.copy(alpha = 0.1f))
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text("En línea", color = SuccessColor, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                // Tasa + disponible
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Text("Tasa", fontSize = 10.sp, color = TextMuted)
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(if (isPartial) Primary.copy(alpha = 0.1f) else SuccessColor.copy(alpha = 0.1f))
+                                    .padding(horizontal = 5.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    if (isPartial) "PARCIAL" else "COMPLETA",
+                                    color = if (isPartial) Primary else SuccessColor,
+                                    fontSize = 8.sp, fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                        Text(
+                            "${offer.fiat_currency} ${String.format("%.3f", offer.price_per_unit)}",
+                            fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = TextMain
+                        )
+                    }
+                    Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                        Text(
+                            "${String.format("%.2f", offer.available_amount)} ${offer.currency}",
+                            fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextMain
+                        )
+                        Text("disponibles", fontSize = 10.sp, color = TextMuted)
+                        if (isPartial) {
+                            Text(
+                                "Rango: ${offer.min_transaction.toInt()} – ${(offer.max_transaction ?: offer.available_amount).toInt()} ${offer.currency}",
+                                fontSize = 10.sp, color = TextMuted
                             )
                         }
                     }
-                    Text(
-                        text = "S/ ${String.format("%.3f", offer.price_per_unit)}", 
-                        fontSize = 20.sp, 
-                        fontWeight = FontWeight.ExtraBold, 
-                        color = TextMain
-                    )
                 }
-                Column(horizontalAlignment = Alignment.End) {
-                    Text("Disponible: ${offer.available_amount} ${offer.currency}", fontSize = 11.sp, color = TextMuted)
+
+                // Métodos + botón
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        offer.payment_methods?.take(2)?.forEach { method ->
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(Primary.copy(alpha = 0.08f))
+                                    .border(1.dp, Primary.copy(alpha = 0.2f), RoundedCornerShape(6.dp))
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Text(method, color = Primary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                            }
+                        }
+                    }
                     if (isPartial) {
-                        Text(
-                            text = "Rango: ${offer.min_transaction} – ${offer.max_transaction ?: offer.available_amount} ${offer.currency}", 
-                            fontSize = 9.sp, 
-                            color = TextMuted,
-                            modifier = Modifier.padding(top = 2.dp)
-                        )
-                    }
-                }
-            }
-
-            // Row 3: Bank methods + action button
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Primary.copy(alpha = 0.12f))
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                ) {
-                    Text(offer.payment_methods?.firstOrNull() ?: "BCP", color = Primary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                }
-                
-                if (isPartial) {
-                    Button(
-                        onClick = { isExpanded = !isExpanded },
-                        shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Primary),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-                    ) {
-                        Icon(Icons.Filled.ShoppingCart, contentDescription = null, modifier = Modifier.size(14.dp))
-                        Spacer(Modifier.width(4.dp))
-                        Text(if (isExpanded) "Cerrar" else "Elegir monto", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-                    }
-                } else {
-                    Button(
-                        onClick = { onConfirmBuy(offer.available_amount) },
-                        shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = SuccessColor),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-                    ) {
-                        Text("Comprar todo", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                    }
-                }
-            }
-
-            // Row 4: Expandable Partial Purchase Panel
-            if (isExpanded && isPartial) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp)
-                        .border(1.dp, BorderColor, RoundedCornerShape(12.dp))
-                        .background(BackgroundApp)
-                        .padding(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Icon(Icons.Filled.Calculate, contentDescription = null, tint = Primary, modifier = Modifier.size(16.dp))
-                        Text(
-                            text = "¿Cuánto deseas comprar?", 
-                            fontWeight = FontWeight.Bold, 
-                            fontSize = 12.sp, 
-                            color = TextMain
-                        )
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        OutlinedTextField(
-                            value = buyAmountText,
-                            onValueChange = { buyAmountText = it },
-                            placeholder = { Text("Monto en ${offer.currency}", fontSize = 13.sp, color = TextMuted) },
-                            modifier = Modifier.weight(1f),
+                        Button(
+                            onClick = { isExpanded = !isExpanded },
                             shape = RoundedCornerShape(8.dp),
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Primary,
-                                unfocusedBorderColor = BorderColor,
-                                focusedTextColor = TextMain,
-                                unfocusedTextColor = TextMain,
-                                cursorColor = Primary
-                            )
-                        )
-                        Text(
-                            text = offer.currency, 
-                            fontSize = 13.sp, 
-                            fontWeight = FontWeight.Bold, 
-                            color = TextMuted
-                        )
-                    }
-
-                    if (buyAmountDouble > 0) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(SuccessColor.copy(alpha = 0.05f))
-                                .padding(horizontal = 12.dp, vertical = 8.dp)
+                            colors = ButtonDefaults.buttonColors(containerColor = Primary),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                            elevation = ButtonDefaults.buttonElevation(0.dp)
                         ) {
+                            Icon(Icons.Default.ShoppingCart, contentDescription = null, modifier = Modifier.size(14.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text(if (isExpanded) "Cerrar" else "Elegir monto", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                        }
+                    } else {
+                        Button(
+                            onClick = { onConfirmBuy(offer.available_amount) },
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = SuccessColor),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                            elevation = ButtonDefaults.buttonElevation(0.dp)
+                        ) {
+                            Text("Comprar todo", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        }
+                    }
+                }
+
+                // Panel expandible compra parcial
+                if (isExpanded && isPartial) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(BackgroundApp)
+                            .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
+                            .padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text("¿Cuánto deseas comprar?", fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = TextMain)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            OutlinedTextField(
+                                value = buyAmountText,
+                                onValueChange = { buyAmountText = it },
+                                placeholder = { Text("0.00", fontSize = 13.sp, color = TextMuted) },
+                                modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(8.dp),
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = Primary, unfocusedBorderColor = BorderColor,
+                                    focusedTextColor = TextMain, unfocusedTextColor = TextMain, cursorColor = Primary
+                                )
+                            )
+                            Text(offer.currency, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextMuted)
+                        }
+
+                        if (buyAmountDouble > 0) {
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(SuccessColor.copy(alpha = 0.06f))
+                                    .padding(10.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column {
-                                    Text("Recibirás aprox.", fontSize = 10.sp, color = TextMuted)
+                                    Text("Pagarás aprox.", fontSize = 10.sp, color = TextMuted)
                                     Text(
-                                        text = "S/ ${String.format("%.2f", buyAmountDouble * offer.price_per_unit)}",
-                                        fontSize = 15.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = SuccessColor
+                                        "${offer.fiat_currency} ${String.format("%.2f", buyAmountDouble * offer.price_per_unit)}",
+                                        fontSize = 15.sp, fontWeight = FontWeight.Bold, color = SuccessColor
                                     )
                                 }
-                                Icon(Icons.Filled.ArrowForward, contentDescription = null, tint = Primary)
+                                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = Primary, modifier = Modifier.size(18.dp))
+                            }
+
+                            when {
+                                buyAmountDouble < offer.min_transaction ->
+                                    Text("Mínimo: ${offer.min_transaction} ${offer.currency}", color = DangerColor, fontSize = 11.sp)
+                                offer.max_transaction != null && buyAmountDouble > offer.max_transaction ->
+                                    Text("Máximo: ${offer.max_transaction} ${offer.currency}", color = DangerColor, fontSize = 11.sp)
+                                buyAmountDouble > offer.available_amount ->
+                                    Text("Disponible: ${offer.available_amount} ${offer.currency}", color = DangerColor, fontSize = 11.sp)
                             }
                         }
 
-                        // Warnings
-                        if (buyAmountDouble < offer.min_transaction) {
-                            Text("El mínimo es ${offer.min_transaction} ${offer.currency}", color = DangerColor, fontSize = 11.sp)
-                        } else if (offer.max_transaction != null && buyAmountDouble > offer.max_transaction) {
-                            Text("El máximo es ${offer.max_transaction} ${offer.currency}", color = DangerColor, fontSize = 11.sp)
-                        } else if (buyAmountDouble > offer.available_amount) {
-                            Text("Solo hay ${offer.available_amount} ${offer.currency} disponibles", color = DangerColor, fontSize = 11.sp)
-                        }
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Button(
-                            onClick = {
-                                onConfirmBuy(buyAmountDouble)
-                                isExpanded = false
-                                buyAmountText = ""
-                            },
-                            enabled = isAmountValid && buyAmountDouble > 0,
-                            colors = ButtonDefaults.buttonColors(containerColor = SuccessColor),
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text("Confirmar compra", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                        }
-                        OutlinedButton(
-                            onClick = {
-                                isExpanded = false
-                                buyAmountText = ""
-                            },
-                            shape = RoundedCornerShape(8.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = TextMuted),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor),
-                            modifier = Modifier.wrapContentWidth()
-                        ) {
-                            Text("Cancelar", fontSize = 12.sp)
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Button(
+                                onClick = { onConfirmBuy(buyAmountDouble); isExpanded = false; buyAmountText = "" },
+                                enabled = isAmountValid && buyAmountDouble > 0,
+                                colors = ButtonDefaults.buttonColors(containerColor = SuccessColor),
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.weight(1f),
+                                elevation = ButtonDefaults.buttonElevation(0.dp)
+                            ) {
+                                Text("Confirmar", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            }
+                            OutlinedButton(
+                                onClick = { isExpanded = false; buyAmountText = "" },
+                                shape = RoundedCornerShape(8.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = TextMuted),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, BorderColor)
+                            ) {
+                                Text("Cancelar", fontSize = 12.sp)
+                            }
                         }
                     }
                 }
@@ -796,15 +705,97 @@ private fun OfferCard(
     }
 }
 
+// ─── Matching Dialog ──────────────────────────────────────────────────────────
+
 @Composable
-private fun InfoChip(text: String) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(BackgroundApp)
-            .border(1.dp, BorderColor, RoundedCornerShape(8.dp))
-            .padding(horizontal = 8.dp, vertical = 4.dp)
-    ) {
-        Text(text, fontSize = 10.sp, color = TextMuted, fontWeight = FontWeight.Medium)
+private fun MatchingDialog(offer: Offer, onDismiss: () -> Unit, onConfirm: (Double) -> Unit) {
+    val isPartial = offer.offer_type == "partial"
+    var amountText by remember(offer.id) {
+        mutableStateOf(if (isPartial) "" else offer.available_amount.toString())
     }
+    val amountDouble = amountText.toDoubleOrNull() ?: 0.0
+    val isValid = if (isPartial) {
+        amountDouble >= offer.min_transaction &&
+        amountDouble <= (offer.max_transaction ?: offer.available_amount) &&
+        amountDouble <= offer.available_amount
+    } else amountDouble == offer.available_amount
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = SurfaceColor,
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Icon(Icons.Default.Bolt, contentDescription = null, tint = WarningColor)
+                Text("Matching encontrado", fontWeight = FontWeight.Bold, color = TextMain)
+            }
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(BackgroundApp)
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text("Vendedor", fontSize = 10.sp, color = TextMuted)
+                        Text(offer.vendor?.full_name ?: "Vendedor", fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = TextMain)
+                    }
+                    Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text("Tasa", fontSize = 10.sp, color = TextMuted)
+                        Text("${offer.fiat_currency} ${String.format("%.3f", offer.price_per_unit)}", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Primary)
+                    }
+                }
+                if (isPartial) {
+                    OutlinedTextField(
+                        value = amountText,
+                        onValueChange = { amountText = it },
+                        label = { Text("Monto a comprar (${offer.currency})") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Primary, unfocusedBorderColor = BorderColor,
+                            focusedTextColor = TextMain, cursorColor = Primary
+                        )
+                    )
+                } else {
+                    Text(
+                        "Venta completa — debes comprar ${offer.available_amount} ${offer.currency}",
+                        fontSize = 12.sp, color = WarningColor
+                    )
+                }
+                if (amountDouble > 0) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(SuccessColor.copy(alpha = 0.07f))
+                            .padding(10.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text("Pagarás", fontSize = 10.sp, color = TextMuted)
+                            Text("${offer.fiat_currency} ${String.format("%.2f", amountDouble * offer.price_per_unit)}", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = SuccessColor)
+                        }
+                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = Primary, modifier = Modifier.size(18.dp))
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onConfirm(amountDouble) },
+                enabled = isValid,
+                colors = ButtonDefaults.buttonColors(containerColor = SuccessColor),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text("Confirmar compra", fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancelar", color = TextMuted) }
+        }
+    )
 }

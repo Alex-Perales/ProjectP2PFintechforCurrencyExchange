@@ -8,7 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.MonetizationOn
@@ -26,7 +26,6 @@ import com.example.p2p.ui.theme.*
 
 import androidx.compose.ui.platform.LocalContext
 import android.widget.Toast
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.p2p.data.remote.model.CreateOfferRequest
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,6 +60,23 @@ fun PublishScreen(
     var minTransactionText by remember { mutableStateOf("") }
     var maxTransactionText by remember { mutableStateOf("") }
 
+    // Estado de divisas — compartido en toda la pantalla
+    var selectedCurrency by remember { mutableStateOf("USD") }
+    var expandedCurrency by remember { mutableStateOf(false) }
+    var selectedFiatCurrency by remember { mutableStateOf("PEN") }
+    var expandedFiat by remember { mutableStateOf(false) }
+
+    val currencies = listOf("USD", "EUR", "USDT")
+    val fiatCurrencies = listOf("PEN", "COP", "MXN", "ARS")
+
+    val fiatSymbol = when (selectedFiatCurrency) {
+        "PEN" -> "S/"
+        "COP" -> "COP"
+        "MXN" -> "MX$"
+        "ARS" -> "AR$"
+        else -> selectedFiatCurrency
+    }
+
     val currentRate = if (customRateEnabled) {
         customRateText.toDoubleOrNull() ?: 3.780
     } else {
@@ -83,7 +99,7 @@ fun PublishScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.Filled.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver",
                             tint = TextMain
                         )
@@ -121,26 +137,43 @@ fun PublishScreen(
                             fontWeight = FontWeight.Medium
                         )
                         Spacer(modifier = Modifier.height(4.dp))
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(10.dp))
-                                .border(1.5.dp, BorderColor, RoundedCornerShape(10.dp))
-                                .background(SurfaceColor)
-                                .padding(horizontal = 14.dp, vertical = 14.dp)
+                        ExposedDropdownMenuBox(
+                            expanded = expandedCurrency,
+                            onExpandedChange = { expandedCurrency = !expandedCurrency }
                         ) {
-                            Row(
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .border(1.5.dp, BorderColor, RoundedCornerShape(10.dp))
+                                    .background(SurfaceColor)
+                                    .padding(horizontal = 14.dp, vertical = 14.dp)
                             ) {
-                                Text(
-                                    text = "USD",
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = TextMain
-                                )
-                                Text(text = "▾", fontSize = 12.sp, color = TextMuted)
+                                Row(
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = selectedCurrency,
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = TextMain
+                                    )
+                                    Text(text = "▾", fontSize = 12.sp, color = TextMuted)
+                                }
+                            }
+                            ExposedDropdownMenu(
+                                expanded = expandedCurrency,
+                                onDismissRequest = { expandedCurrency = false }
+                            ) {
+                                currencies.forEach { cur ->
+                                    DropdownMenuItem(
+                                        text = { Text(cur) },
+                                        onClick = { selectedCurrency = cur; expandedCurrency = false }
+                                    )
+                                }
                             }
                         }
                     }
@@ -161,35 +194,42 @@ fun PublishScreen(
                         )
                     }
 
-                    // Recibo dropdown
+                    // Recibo dropdown — usa el estado compartido del nivel superior
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Recibo",
-                            fontSize = 11.sp,
-                            color = TextMuted,
-                            fontWeight = FontWeight.Medium
-                        )
+                        Text("Recibo", fontSize = 11.sp, color = TextMuted, fontWeight = FontWeight.Medium)
                         Spacer(modifier = Modifier.height(4.dp))
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(10.dp))
-                                .border(1.5.dp, BorderColor, RoundedCornerShape(10.dp))
-                                .background(SurfaceColor)
-                                .padding(horizontal = 14.dp, vertical = 14.dp)
+                        ExposedDropdownMenuBox(
+                            expanded = expandedFiat,
+                            onExpandedChange = { expandedFiat = !expandedFiat }
                         ) {
-                            Row(
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .border(1.5.dp, BorderColor, RoundedCornerShape(10.dp))
+                                    .background(SurfaceColor)
+                                    .padding(horizontal = 14.dp, vertical = 14.dp)
                             ) {
-                                Text(
-                                    text = "PEN",
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = TextMain
-                                )
-                                Text(text = "▾", fontSize = 12.sp, color = TextMuted)
+                                Row(
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(text = selectedFiatCurrency, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextMain)
+                                    Text(text = "▾", fontSize = 12.sp, color = TextMuted)
+                                }
+                            }
+                            ExposedDropdownMenu(
+                                expanded = expandedFiat,
+                                onDismissRequest = { expandedFiat = false }
+                            ) {
+                                fiatCurrencies.forEach { cur ->
+                                    DropdownMenuItem(
+                                        text = { Text(cur) },
+                                        onClick = { selectedFiatCurrency = cur; expandedFiat = false }
+                                    )
+                                }
                             }
                         }
                     }
@@ -268,7 +308,6 @@ fun PublishScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    // Venta Completa
                     SaleModeOption(
                         modifier = Modifier.weight(1f),
                         title = "Venta Completa",
@@ -277,7 +316,6 @@ fun PublishScreen(
                         isSelected = selectedSaleMode == 0,
                         onClick = { selectedSaleMode = 0 }
                     )
-                    // Venta por Partes
                     SaleModeOption(
                         modifier = Modifier.weight(1f),
                         title = "Venta por Partes",
@@ -292,26 +330,23 @@ fun PublishScreen(
             // --- Exchange rate card ---
             PublishSectionCard(title = "Tasa de Cambio") {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    // Two rate options
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        // Tasa Mercado
                         RateOption(
                             modifier = Modifier.weight(1f),
                             label = "Tasa Mercado",
-                            rate = "S/ 3.780",
+                            rate = "$fiatSymbol 3.780",
                             rateColor = SuccessColor,
                             subtitle = "Precio actual",
                             isSelected = selectedRate == 0,
                             onClick = { selectedRate = 0 }
                         )
-                        // Venta Rápida
                         RateOption(
                             modifier = Modifier.weight(1f),
                             label = "Venta Rápida",
-                            rate = "S/ 3.772",
+                            rate = "$fiatSymbol 3.772",
                             rateColor = WarningColor,
                             subtitle = "Tasa recomendada",
                             isSelected = selectedRate == 1,
@@ -319,7 +354,6 @@ fun PublishScreen(
                         )
                     }
 
-                    // Custom rate toggle row
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -393,9 +427,22 @@ fun PublishScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Text(text = "Par:", fontSize = 13.sp, color = TextMuted)
+                    Text(
+                        text = "$selectedCurrency → $selectedFiatCurrency",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Primary
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(text = "Recibirás:", fontSize = 13.sp, color = TextMuted)
                     Text(
-                        text = "S/ ${String.format("%.2f", amountToReceive)}",
+                        text = "$fiatSymbol ${String.format("%.2f", amountToReceive)}",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         color = SuccessColor
@@ -438,8 +485,8 @@ fun PublishScreen(
                     }
 
                     val req = CreateOfferRequest(
-                        currency = "USD",
-                        fiat_currency = "PEN",
+                        currency = selectedCurrency,
+                        fiat_currency = selectedFiatCurrency,
                         amount = amountDouble,
                         price_per_unit = currentRate,
                         offer_type = if (selectedSaleMode == 0) "full" else "partial",
