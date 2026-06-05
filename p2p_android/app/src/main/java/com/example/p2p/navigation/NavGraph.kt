@@ -1,5 +1,8 @@
 package com.example.p2p.navigation
 
+
+import com.example.p2p.presentation.dispute.DisputeDetailScreen
+import com.example.p2p.presentation.dispute.DisputesViewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.BarChart
@@ -36,6 +39,7 @@ import com.example.p2p.presentation.auth.RegisterScreen
 import com.example.p2p.presentation.auth.RegisterViewModel
 import com.example.p2p.presentation.bank_accounts.BankAccountsScreen
 import com.example.p2p.presentation.complaints.ComplaintsScreen
+import com.example.p2p.presentation.complaints.ComplaintsViewModel
 import com.example.p2p.presentation.dispute.MyDisputesScreen
 import com.example.p2p.presentation.dispute.RegisterDisputeScreen
 import com.example.p2p.presentation.help.HelpScreen
@@ -244,11 +248,13 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
                 route = Screen.TransactionDetail.route,
                 arguments = listOf(navArgument("transactionId") { type = NavType.StringType })
             ) { backStack ->
+                val id = backStack.arguments?.getString("transactionId") ?: ""
                 val txnRepo = com.example.p2p.data.repository.TransactionRepositoryImpl(com.example.p2p.core.network.ApiClient.transactionApi)
                 val vm: com.example.p2p.presentation.transaction.TransactionViewModel = viewModel(factory = com.example.p2p.presentation.transaction.TransactionViewModel.Factory(txnRepo))
                 TransactionDetailScreen(
-                    transactionId = backStack.arguments?.getString("transactionId"),
+                    transactionId = id,
                     viewModel = vm,
+                    onNavigateToDispute = { txnId -> navController.navigate(Screen.RegisterDispute.createRoute(txnId)) },
                     onBack = { navController.popBackStack() }
                 )
             }
@@ -316,7 +322,16 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
             }
 
             composable(Screen.Complaints.route) {
-                ComplaintsScreen(onBack = { navController.popBackStack() })
+                val repo = com.example.p2p.data.repository.ComplaintsRepositoryImpl(
+                    com.example.p2p.core.network.ApiClient.complaintApi
+                )
+                val vm: ComplaintsViewModel = viewModel(
+                    factory = ComplaintsViewModel.Factory(repo)
+                )
+                ComplaintsScreen(
+                    viewModel = vm,
+                    onBack = { navController.popBackStack() }
+                )
             }
 
             // ── Disputes ─────────────────────────────────────────────────────────
@@ -341,13 +356,27 @@ fun NavGraph(startDestination: String = Screen.Login.route) {
                     onNavigateBack = { navController.popBackStack() }
                 )
             }
+            composable(
+                route = Screen.DisputeDetail.route,
+                arguments = listOf(navArgument("disputeId") { type = NavType.StringType })
+            ) { backStack ->
+                val repo = com.example.p2p.data.repository.DisputeRepositoryImpl(com.example.p2p.core.network.ApiClient.disputeApi)
+                val vm: DisputesViewModel = viewModel(factory = DisputesViewModel.Factory(repo))
+                val id = backStack.arguments?.getString("disputeId") ?: ""
+                DisputeDetailScreen(
+                    disputeId = id,
+                    viewModel = vm,
+                    onBack = { navController.popBackStack() }
+                )
+            }
 
             // ── Admin ─────────────────────────────────────────────────────────────
             composable(Screen.Admin.route) {
                 val adminRepo = com.example.p2p.data.repository.AdminRepositoryImpl(com.example.p2p.core.network.ApiClient.adminApi)
-                val vm: com.example.p2p.presentation.admin.AdminViewModel = viewModel(factory = com.example.p2p.presentation.admin.AdminViewModel.Factory(adminRepo))
+                val vm: AdminViewModel = viewModel(factory = com.example.p2p.presentation.admin.AdminViewModel.Factory(adminRepo))
                 AdminScreen(
                     viewModel = vm,
+                    onNavigate = { route -> navController.navigate(route) },
                     onBack = { navController.popBackStack() }
                 )
             }

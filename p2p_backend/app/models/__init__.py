@@ -74,13 +74,7 @@ class Rating(BaseModel):
     comment        = db.Column(db.Text)
 
 
-class Dispute(BaseModel):
-    __tablename__ = 'disputes'
-    transaction_id = db.Column(db.String(36), db.ForeignKey('transactions.id'), nullable=False, index=True)
-    initiator_id   = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
-    reason         = db.Column(db.String(255), nullable=False)
-    description    = db.Column(db.Text)
-    status         = db.Column(db.String(20), default='open')
+
 
 
 class AuditLog(BaseModel):
@@ -89,6 +83,9 @@ class AuditLog(BaseModel):
     action   = db.Column(db.String(100), nullable=False)
     resource = db.Column(db.String(100), nullable=False)
     changes  = db.Column(db.Text)
+
+from app.models.dispute import Dispute
+from app.models.complaint import Complaint
 
 
 class Notification(BaseModel):
